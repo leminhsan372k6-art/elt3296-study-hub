@@ -248,14 +248,17 @@ function signalLabel(sig) {
  * Compile ONCE and run student's C11 code against ALL test cases (Sample + Hidden) in a single HTTP round-trip!
  */
 export async function runRealTestSuite(studentCode, testCases, onProgress) {
+  const t0 = Date.now();
   if (onProgress) onProgress(1, testCases.length, `Biên dịch 1 lần & chạy đồng loạt ${testCases.length} test case…`);
 
   const batchSource = buildBatchSource(studentCode, testCases);
   const run = await compileAndRunBatch(batchSource);
+  const elapsedMs = Date.now() - t0;
 
   if (run.compileError) {
     return {
       engine: run.engine,
+      elapsedMs,
       compileError: run.compileError,
       passed: 0,
       total: testCases.length,
@@ -309,6 +312,7 @@ export async function runRealTestSuite(studentCode, testCases, onProgress) {
 
   return {
     engine: run.engine,
+    elapsedMs,
     compileError: '',
     passed: results.filter((r) => r.ok).length,
     total: results.length,

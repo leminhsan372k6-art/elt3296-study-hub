@@ -1,7 +1,7 @@
 import { esc, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
 import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js';
 import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js';
-import { runRealTestSuite } from '../core/c-runner.js';
+import { runRealTestSuite } from '../core/c-runner.js?v=2';
 
 const DIFFICULTIES = ['all', 'Dễ', 'Trung bình', 'Khó'];
 
@@ -42,7 +42,7 @@ function renderGradeBox(state, q) {
       <div class="grade-box" id="gradeResultBox">
         <div style="font-size:13.6px;font-weight:700;color:#fbbf24">⏳ ${esc(state.sebRunStatus || 'Đang biên dịch GCC Linux & chạy test ẩn…')}</div>
         <div style="font-size:12.2px;color:#94a3b8;margin-top:4px">
-          Mã nguồn của bạn đang được biên dịch thật bằng <code>gcc -O2 -std=c11 -pthread</code> trên máy chủ Linux và chạy lần lượt ${tcList.length} test case (gồm ${hiddenCnt} test ẩn).
+          Đang biên dịch <b>1 lần duy nhất</b> (<code>gcc -std=gnu11 -pthread</code>) và chạy đồng loạt ${tcList.length} test case (${hiddenCnt} test ẩn) trên máy chủ Linux song song…
         </div>
       </div>
     `;
@@ -76,20 +76,22 @@ function renderGradeBox(state, q) {
         </div>
       `;
     } else if (realRun.compileError) {
+      const secLabel = realRun.elapsedMs ? ` · ${(realRun.elapsedMs / 1000).toFixed(2)}s` : '';
       realHtml = `
         <div class="tc-run-row is-fail" style="margin-bottom:10px">
-          <div style="font-size:13.4px;font-weight:700;color:#f06a6a">🔴 Lỗi Biên Dịch GCC (Compile Error · ${esc(realRun.engine)})</div>
+          <div style="font-size:13.4px;font-weight:700;color:#f06a6a">🔴 Lỗi Biên Dịch GCC (Compile Error · ${esc(realRun.engine)}${secLabel})</div>
           <pre class="gcc-err-pre">${esc(realRun.compileError)}</pre>
         </div>
       `;
     } else {
       const allPass = realRun.passed === realRun.total && realRun.total > 0;
       const missingNames = realRun.results.filter((r) => !r.ok).map((r) => r.name);
+      const secLabel = realRun.elapsedMs ? ` · ${(realRun.elapsedMs / 1000).toFixed(2)}s` : '';
       realHtml = `
         <div style="margin-bottom:12px">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
             <div>
-              <div style="font-size:11.2px;color:#94a3b8;text-transform:uppercase">Biên dịch &amp; Chạy thật · ${esc(realRun.engine)}</div>
+              <div style="font-size:11.2px;color:#94a3b8;text-transform:uppercase">Biên dịch 1 lần &amp; Chạy thật · ${esc(realRun.engine)}${secLabel}</div>
               <div style="font-size:14.8px;font-weight:700;color:${allPass ? '#4cc38a' : '#f0ab4c'}">
                 ${allPass ? '✅ PASS 100% TẤT CẢ TEST MẪU & TEST ẨN!' : `⚠ Đạt ${realRun.passed}/${realRun.total} Test Case — Còn thiếu ${realRun.total - realRun.passed} test`}
               </div>
