@@ -88,19 +88,12 @@ function renderGradeBox(state, q) {
   `;
 }
 
-function renderDetailGuide(q) {
+function renderDetailGuideInline(q) {
   const g = q.detailGuide;
   if (!g) return '';
 
   return `
-    <section class="detail-guide-card" aria-label="Giải thích code siêu chi tiết 4 tầng">
-      <div style="border-bottom:1px solid var(--bd);padding-bottom:10px">
-        <div style="font-family:var(--font-ui);font-size:11.6px;font-weight:700;color:var(--accent-strong);text-transform:uppercase;letter-spacing:0.06em">
-          Giải thích Siêu Chi Tiết · ${esc(q.id)}
-        </div>
-        <h2 style="margin:3px 0 0;font-size:19px">Phân tích Bản chất, Từng Dòng Lệnh &amp; Bảo Đảm Test Case</h2>
-      </div>
-
+    <div style="display:grid;gap:18px;margin-top:8px">
       <!-- Tầng 1 -->
       <div>
         <h3 class="guide-block-title"><span class="guide-num">1</span> Bản chất &amp; Thuộc Chương / Bài học nào</h3>
@@ -170,7 +163,60 @@ function renderDetailGuide(q) {
           ${(g.examRecipe || []).map((step) => `<li>${esc(step)}</li>`).join('')}
         </ol>
       </div>
-    </section>
+    </div>
+  `;
+}
+
+function renderProblemBody(activeQ, spec) {
+  return `
+    <div class="static-rule-box">
+      <div><b>Kiểm tra tĩnh CodeRunner:</b> ${esc(activeQ.staticSummary)}</div>
+      ${spec.requiredApis?.length ? `<div style="margin-top:4px"><b>API bắt buộc:</b> ${spec.requiredApis.map((a) => `<code>${esc(a)}</code>`).join(' ')}</div>` : ''}
+      ${spec.forbiddenApis?.length ? `<div style="margin-top:4px;color:var(--ink-err)"><b>Hàm bị cấm:</b> ${spec.forbiddenApis.map((a) => `<code>${esc(a)}</code>`).join(' ')}</div>` : ''}
+    </div>
+
+    <h3 style="font-size:16px;margin:14px 0 6px">Đề bài</h3>
+    <p style="margin:0 0 14px;font-size:15.5px;line-height:1.68;color:var(--fg-body)">${esc(activeQ.prompt)}</p>
+
+    <h3 style="font-size:16px;margin:12px 0 6px">Yêu cầu bắt buộc</h3>
+    <ul style="margin:0 0 14px;padding-left:20px;font-size:14.8px;line-height:1.62;color:var(--fg-body)">
+      ${(activeQ.requirements || []).map((r) => `<li>${esc(r)}</li>`).join('')}
+    </ul>
+
+    <div style="padding:12px 14px;border-radius:11px;background:var(--surface-sub);border:1px solid var(--bd);font-size:14.4px;display:grid;gap:5px">
+      <div><b>Input:</b> ${esc(activeQ.inputSpec)}</div>
+      <div><b>Output:</b> ${esc(activeQ.outputSpec)}</div>
+      ${activeQ.constraints?.length ? `<div><b>Ràng buộc:</b> ${activeQ.constraints.map((c) => `<code>${esc(c)}</code>`).join(' · ')}</div>` : ''}
+    </div>
+
+    ${
+      activeQ.example
+        ? `<div style="margin-top:14px">
+            <div style="font-family:var(--font-ui);font-size:13.2px;font-weight:700;margin-bottom:4px">Ví dụ kiểm thử chuẩn</div>
+            ${activeQ.example.note ? `<div style="font-size:13.6px;color:var(--mut);margin-bottom:6px"><i>${esc(activeQ.example.note)}</i></div>` : ''}
+            <div class="io-grid">
+              <div class="io-box"><div class="io-label">stdin</div><pre class="io-pre">${esc(activeQ.example.input || '(rỗng)')}</pre></div>
+              <div class="io-box"><div class="io-label">stdout</div><pre class="io-pre">${esc(activeQ.example.output || '')}</pre></div>
+            </div>
+          </div>`
+        : ''
+    }
+
+    ${
+      activeQ.relatedQuestions?.length
+        ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)">
+            <div style="font-family:var(--font-ui);font-size:12.4px;font-weight:700;color:var(--mut)">Câu cùng dạng để luyện liền mạch:</div>
+            <div class="chip-wrap">
+              ${activeQ.relatedQuestions
+                .map((rqId) => {
+                  const rq = OFFICIAL_SEB_50.find((x) => x.id === rqId);
+                  return rq ? `<button type="button" class="link-chip" data-pick-cr="${esc(rq.id)}">${esc(rq.id)} · ${esc(rq.title)}</button>` : '';
+                })
+                .join('')}
+            </div>
+          </div>`
+        : ''
+    }
   `;
 }
 
@@ -217,9 +263,9 @@ export function renderCodeView(state) {
       </section>
 
       <div class="studio-split ${state.codeSide === 'left' ? 'is-code-left' : ''}">
-        <!-- Problem Statement -->
-        <section class="pane-problem">
-          <div class="sheet-running-head" style="margin-bottom:12px">
+        <!-- Left Independent Scroll Pane: Problem Statement OR 4-Layer Detailed Code Explanation -->
+        <section class="pane-problem" id="paneLeftScroll">
+          <div class="sheet-running-head" style="margin-bottom:10px">
             <span>${esc(activeQ.partLabel)}</span>
             <div style="display:flex;gap:6px;align-items:center">
               ${prevQ ? `<button type="button" class="btn sm" data-pick-cr="${esc(prevQ.id)}">‹ ${esc(prevQ.id)}</button>` : ''}
@@ -228,70 +274,26 @@ export function renderCodeView(state) {
             </div>
           </div>
 
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
             <span class="mono" style="font-size:12.8px;font-weight:700;padding:3px 10px;border-radius:7px;background:var(--fg);color:var(--surface)">${esc(activeQ.id)}</span>
             <span class="diff-pill ${diffClass(activeQ.difficulty)}">${esc(activeQ.difficulty)}</span>
+            <button type="button" class="left-explain-toggle ${state.sebLeftView === 'explain' ? 'is-open' : ''}" id="btnToggleLeftExplain" title="Bật/tắt Giải thích code 4 tầng ngay bên trái để vừa xem giải thích vừa đối chiếu code bên phải (Alt + E)">
+              ${state.sebLeftView === 'explain' ? '📄 Đóng giải thích · Xem Đề bài' : '📘 Mở giải thích code (4 tầng)'}
+            </button>
           </div>
 
-          <h1 style="margin:0 0 10px;font-size:23px;line-height:1.3">${esc(activeQ.title)}</h1>
+          <h1 style="margin:0 0 10px;font-size:22px;line-height:1.3">${esc(activeQ.title)}</h1>
 
-          <div class="static-rule-box">
-            <div><b>Kiểm tra tĩnh CodeRunner:</b> ${esc(activeQ.staticSummary)}</div>
-            ${spec.requiredApis?.length ? `<div style="margin-top:4px"><b>API bắt buộc:</b> ${spec.requiredApis.map((a) => `<code>${esc(a)}</code>`).join(' ')}</div>` : ''}
-            ${spec.forbiddenApis?.length ? `<div style="margin-top:4px;color:var(--ink-err)"><b>Hàm bị cấm:</b> ${spec.forbiddenApis.map((a) => `<code>${esc(a)}</code>`).join(' ')}</div>` : ''}
-          </div>
-
-          <h3 style="font-size:16px;margin:14px 0 6px">Đề bài</h3>
-          <p style="margin:0 0 14px;font-size:15.5px;line-height:1.68;color:var(--fg-body)">${esc(activeQ.prompt)}</p>
-
-          <h3 style="font-size:16px;margin:12px 0 6px">Yêu cầu bắt buộc</h3>
-          <ul style="margin:0 0 14px;padding-left:20px;font-size:14.8px;line-height:1.62;color:var(--fg-body)">
-            ${(activeQ.requirements || []).map((r) => `<li>${esc(r)}</li>`).join('')}
-          </ul>
-
-          <div style="padding:12px 14px;border-radius:11px;background:var(--surface-sub);border:1px solid var(--bd);font-size:14.4px;display:grid;gap:5px">
-            <div><b>Input:</b> ${esc(activeQ.inputSpec)}</div>
-            <div><b>Output:</b> ${esc(activeQ.outputSpec)}</div>
-            ${activeQ.constraints?.length ? `<div><b>Ràng buộc:</b> ${activeQ.constraints.map((c) => `<code>${esc(c)}</code>`).join(' · ')}</div>` : ''}
-          </div>
-
-          ${
-            activeQ.example
-              ? `<div style="margin-top:14px">
-                  <div style="font-family:var(--font-ui);font-size:13.2px;font-weight:700;margin-bottom:4px">Ví dụ kiểm thử chuẩn</div>
-                  ${activeQ.example.note ? `<div style="font-size:13.6px;color:var(--mut);margin-bottom:6px"><i>${esc(activeQ.example.note)}</i></div>` : ''}
-                  <div class="io-grid">
-                    <div class="io-box"><div class="io-label">stdin</div><pre class="io-pre">${esc(activeQ.example.input || '(rỗng)')}</pre></div>
-                    <div class="io-box"><div class="io-label">stdout</div><pre class="io-pre">${esc(activeQ.example.output || '')}</pre></div>
-                  </div>
-                </div>`
-              : ''
-          }
-
-          ${
-            activeQ.relatedQuestions?.length
-              ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)">
-                  <div style="font-family:var(--font-ui);font-size:12.4px;font-weight:700;color:var(--mut)">Câu cùng dạng để luyện liền mạch:</div>
-                  <div class="chip-wrap">
-                    ${activeQ.relatedQuestions
-                      .map((rqId) => {
-                        const rq = OFFICIAL_SEB_50.find((x) => x.id === rqId);
-                        return rq ? `<button type="button" class="link-chip" data-pick-cr="${esc(rq.id)}">${esc(rq.id)} · ${esc(rq.title)}</button>` : '';
-                      })
-                      .join('')}
-                  </div>
-                </div>`
-              : ''
-          }
+          ${state.sebLeftView === 'explain' ? renderDetailGuideInline(activeQ) : renderProblemBody(activeQ, spec)}
         </section>
 
-        <!-- Code Editor / Solution + 4-Layer Detailed Guide -->
+        <!-- Right Independent Scroll Pane: Blank Code Editor OR Clean Simplified C11 Solution -->
         <div class="pane-code">
           <div class="code-window">
             <div class="code-win-bar">
               <div class="win-tabs" role="tablist">
                 <button type="button" class="win-tab ${state.sebMode === 'practice' ? 'active' : ''}" data-seb-mode="practice">✍ Tự viết Code</button>
-                <button type="button" class="win-tab ${state.sebMode === 'solution' ? 'active' : ''}" data-seb-mode="solution">📖 Đáp án &amp; Giải thích</button>
+                <button type="button" class="win-tab ${state.sebMode === 'solution' ? 'active' : ''}" data-seb-mode="solution">📖 Đáp án chuẩn</button>
               </div>
 
               <div class="win-actions">
@@ -307,32 +309,32 @@ export function renderCodeView(state) {
             </div>
 
             <div class="hotkey-ribbon">
-              <span>⚡ Phím tắt đảo nhanh <b>Tự gõ ⇄ Đáp án</b>: <kbd class="kbd" style="background:#262b38;color:#fff;border-color:#444d63">Alt + A</kbd> hoặc <kbd class="kbd" style="background:#262b38;color:#fff;border-color:#444d63">F2</kbd></span>
+              <span>⚡ <kbd class="kbd" style="background:#262b38;color:#fff;border-color:#444d63">Alt+A</kbd>/<kbd class="kbd" style="background:#262b38;color:#fff;border-color:#444d63">F2</kbd> Tự gõ ⇄ Đáp án &nbsp;·&nbsp; <kbd class="kbd" style="background:#262b38;color:#fff;border-color:#444d63">Alt+E</kbd> Đề bài ⇄ Giải thích bên trái</span>
               <button type="button" class="win-btn" id="btnQuickFlipAnswer" style="padding:3px 9px;font-size:11.6px">
                 ${state.sebMode === 'practice' ? 'Xem Đáp án ngay →' : '← Về khung Tự gõ'}
               </button>
             </div>
 
-            ${
-              state.sebMode === 'practice'
-                ? `<textarea class="code-editor-area" id="codePracticeInput" spellcheck="false" placeholder="// Khung trống hoàn toàn — hãy tự gõ lại toàn bộ #include, hàm main() và lời giải C11 ở đây để ghi nhớ chắc chắn!&#10;// Bấm Alt+A (hoặc F2) bất cứ lúc nào để liếc sang Đáp án &amp; Giải thích chi tiết, rồi bấm Alt+A để quay lại gõ tiếp.&#10;// Bấm Ctrl+Enter để chấm điểm mô phỏng CodeRunner.">${esc(draftVal)}</textarea>
-                   ${renderGradeBox(state, activeQ)}`
-                : `<div class="code-numbered">
-                    ${solLines
-                      .map(
-                        (ln, i) => `<div class="code-ln"><span class="code-ln-num">${i + 1}</span><span class="code-ln-src">${highlightCodeSnippet(ln)}</span></div>`
-                      )
-                      .join('')}
-                  </div>`
-            }
+            <div class="code-scroll-body">
+              ${
+                state.sebMode === 'practice'
+                  ? `<textarea class="code-editor-area" id="codePracticeInput" spellcheck="false" placeholder="// Khung trống hoàn toàn — hãy tự gõ lại toàn bộ #include, hàm main() và lời giải C11 ở đây để ghi nhớ chắc chắn!&#10;// Bấm Alt+A (hoặc F2) bất cứ lúc nào để đảo sang Đáp án chuẩn bên phải.&#10;// Bấm Alt+E (hoặc nút 'Mở giải thích code' cạnh chữ Dễ) để xem giải thích 4 tầng ngay bên trái!&#10;// Bấm Ctrl+Enter để chấm điểm mô phỏng CodeRunner.">${esc(draftVal)}</textarea>
+                     ${renderGradeBox(state, activeQ)}`
+                  : `<div class="code-numbered">
+                      ${solLines
+                        .map(
+                          (ln, i) => `<div class="code-ln"><span class="code-ln-num">${i + 1}</span><span class="code-ln-src">${highlightCodeSnippet(ln)}</span></div>`
+                        )
+                        .join('')}
+                    </div>`
+              }
+            </div>
 
             <div class="code-win-foot">
               <span>Biên dịch Sandbox: <code style="color:#e5eaf2">${esc(spec.compileFlags || 'gcc -O2 -Wall -Wextra -std=c11 -pthread')}</code></span>
-              <span>${solLines.length} dòng code chuẩn đơn giản</span>
+              <span>${solLines.length} dòng code chuẩn đơn giản · Cuộn độc lập 2 bên</span>
             </div>
           </div>
-
-          ${state.sebMode === 'solution' ? renderDetailGuide(activeQ) : ''}
         </div>
       </div>
     </div>
@@ -359,6 +361,12 @@ export function bindCodeView(state, persist, rerender) {
   });
 
   document.getElementById('btnQuickFlipAnswer')?.addEventListener('click', flipMode);
+
+  document.getElementById('btnToggleLeftExplain')?.addEventListener('click', () => {
+    state.sebLeftView = state.sebLeftView === 'explain' ? 'problem' : 'explain';
+    persist();
+    rerender();
+  });
 
   document.querySelectorAll('[data-seb-part]').forEach((b) => {
     b.addEventListener('click', () => {

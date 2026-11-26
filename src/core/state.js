@@ -28,6 +28,7 @@ export function createAppState(defaultTopicId = '1-1') {
 
     // Code 50 state
     sebMode: saved.sebMode === 'solution' ? 'solution' : 'practice', // 'practice' | 'solution'
+    sebLeftView: saved.sebLeftView === 'explain' ? 'explain' : 'problem', // 'problem' | 'explain'
     sebSelectedId: saved.sebSelectedId || 'CR-01',
     sebPartFilter: saved.sebPartFilter || 'all',
     sebDiffFilter: saved.sebDiffFilter || 'all',
@@ -64,6 +65,7 @@ export function createAppState(defaultTopicId = '1-1') {
           codeSide: state.codeSide,
           bookmarked: [...state.bookmarked],
           sebMode: state.sebMode,
+          sebLeftView: state.sebLeftView,
           sebSelectedId: state.sebSelectedId,
           sebPartFilter: state.sebPartFilter,
           sebDiffFilter: state.sebDiffFilter,

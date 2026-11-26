@@ -185,12 +185,20 @@ async function boot() {
       return;
     }
 
-    // Alt + A or F2: Instant flip between Practice (blank editor) and Solution + 4-Layer Guide in 50-Code tab!
-    // Works EVEN WHILE typing inside the code textarea!
+    // Alt + A or F2: Instant flip between Practice (blank editor) and Solution in right pane
+    // Alt + E: Instant flip between Problem statement and 4-Layer Code Explanation in left pane
+    // Both work EVEN WHILE typing inside the code textarea!
     if (state.activeTab === 'code' && !state.searchOpen) {
       if ((e.altKey && e.key.toLowerCase() === 'a') || e.key === 'F2') {
         e.preventDefault();
         state.sebMode = state.sebMode === 'practice' ? 'solution' : 'practice';
+        persist();
+        render();
+        return;
+      }
+      if (e.altKey && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        state.sebLeftView = state.sebLeftView === 'explain' ? 'problem' : 'explain';
         persist();
         render();
         return;
