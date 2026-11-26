@@ -32,7 +32,7 @@ export function highlightCodeSnippet(raw) {
     return `\u0000CM${comments.length - 1}\u0000`;
   });
   const strings = [];
-  html = html.replace(/("(?:\\.|[^"\\])*")/g, (m) => {
+  html = html.replace(/(&quot;(?:\\.|(?!&quot;).)*&quot;|&#39;(?:\\.|(?!&#39;).)*&#39;)/g, (m) => {
     strings.push(`<span class="kc-st">${m}</span>`);
     return `\u0000ST${strings.length - 1}\u0000`;
   });
@@ -50,7 +50,7 @@ export function highlightCodeSnippet(raw) {
     '<span class="kc-fn">$1</span>'
   );
   html = html.replace(
-    /\b(NULL|EOF|O_RDONLY|O_WRONLY|O_RDWR|O_CREAT|O_TRUNC|O_APPEND|SEEK_SET|SEEK_CUR|SEEK_END|STDIN_FILENO|STDOUT_FILENO|SIGINT|SIGKILL|SIGUSR1|SIGUSR2|SIG_BLOCK|MAP_SHARED|MAP_PRIVATE|MAP_FAILED|PROT_READ|PROT_WRITE|PTHREAD_MUTEX_INITIALIZER|PTHREAD_COND_INITIALIZER|0644|0777|\d+)\b/g,
+    /(?<!&#)\b(NULL|EOF|O_RDONLY|O_WRONLY|O_RDWR|O_CREAT|O_TRUNC|O_APPEND|SEEK_SET|SEEK_CUR|SEEK_END|STDIN_FILENO|STDOUT_FILENO|SIGINT|SIGKILL|SIGUSR1|SIGUSR2|SIG_BLOCK|MAP_SHARED|MAP_PRIVATE|MAP_FAILED|PROT_READ|PROT_WRITE|PTHREAD_MUTEX_INITIALIZER|PTHREAD_COND_INITIALIZER|0644|0777|\d+)\b/g,
     '<span class="kc-nu">$1</span>'
   );
 
