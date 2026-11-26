@@ -35,7 +35,17 @@ async function boot() {
     return renderEbookView(state);
   }
 
+  let lastCodeKey = `${state.activeTab}:${state.sebSelectedId}`;
+
   function render() {
+    // Capture pane scroll positions BEFORE re-rendering so F2 / Alt+A / Alt+E never jump to top!
+    const nextCodeKey = `${state.activeTab}:${state.sebSelectedId}`;
+    const keepPaneScroll = nextCodeKey === lastCodeKey && state.activeTab === 'code';
+    const prevLeftScroll = keepPaneScroll ? (document.getElementById('paneLeftScroll')?.scrollTop ?? 0) : 0;
+    const prevRightScroll = keepPaneScroll ? (document.querySelector('.code-scroll-body')?.scrollTop ?? 0) : 0;
+    const prevSolScroll = keepPaneScroll ? (document.querySelector('.code-numbered')?.scrollTop ?? 0) : 0;
+    lastCodeKey = nextCodeKey;
+
     root.innerHTML = `
       <div class="app-shell">
         ${renderTopBar(state, mcqBank.length)}
@@ -61,6 +71,14 @@ async function boot() {
       bindMcqView(state, mcqBank, persist, render);
     } else if (state.activeTab === 'code') {
       bindCodeView(state, persist, render);
+      if (keepPaneScroll) {
+        const leftEl = document.getElementById('paneLeftScroll');
+        if (leftEl) leftEl.scrollTop = prevLeftScroll;
+        const rightEl = document.querySelector('.code-scroll-body');
+        if (rightEl) rightEl.scrollTop = prevRightScroll;
+        const solEl = document.querySelector('.code-numbered');
+        if (solEl) solEl.scrollTop = prevSolScroll;
+      }
     } else if (state.activeTab === 'extras') {
       bindExtrasView(state, persist, render);
     }
