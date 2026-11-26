@@ -1,7 +1,11 @@
-/* 50-Question CodeRunner Studio — Blank Practice + Hotkey Solution + 4-Layer Detailed Guide */
+/* 50-Question CodeRunner Studio — Viewport-Fitted Dual Pane + Bottom GCC Drawer (Zero Topbar Clipping) */
+.workspace-body:has(.code-studio) {
+  padding: 14px 20px 14px;
+}
+
 .code-studio {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .studio-header {
@@ -47,14 +51,24 @@
 .m50-cell.is-good { background: var(--accent-soft); border-color: var(--accent); }
 .m50-cell.is-fail { background: var(--ink-err-soft); border-color: var(--ink-err); }
 
+/* Viewport-fitted Workspace Deck: Split Pane + Bottom GCC Panel ALWAYS fit below sticky topbar without cutting off headers */
+.studio-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: calc(100vh - 84px);
+  min-height: 520px;
+  scroll-margin-top: 70px;
+}
+
 /* Independent Dual-Scroll Split: Problem/Explain <-> Code Editor/Solution */
 .studio-split {
+  flex: 1 1 auto;
+  min-height: 260px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: 16px;
+  gap: 14px;
   align-items: stretch;
-  height: calc(100vh - 210px);
-  min-height: 540px;
 }
 
 .studio-split.is-code-left .pane-problem { order: 2; }
@@ -326,20 +340,43 @@
   color: var(--code-mut);
 }
 
-/* Full-width Grader & Real Linux GCC Test Runner placed cleanly at bottom of Code Studio */
+/* Full-width Grader & Real Linux GCC Test Runner placed cleanly at bottom of Studio Deck (never pushes headers off-screen) */
 .grade-box {
-  padding: 16px 20px;
+  padding: 12px 16px;
   background: #141821;
   border-top: 1px solid var(--code-bd);
   font-family: var(--font-ui);
 }
 
 .grade-panel-bottom {
+  flex: 0 0 auto;
+  max-height: 215px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: 1px solid var(--code-bd);
-  border-radius: 16px;
+  border-radius: 14px;
   box-shadow: var(--shadow-card);
   color: #e5eaf2;
 }
+
+.grade-panel-bottom.is-collapsed {
+  padding: 9px 16px;
+  max-height: none;
+  overflow: visible;
+}
+
+.grade-toggle-btn {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+  border-radius: 8px;
+  padding: 3px 10px;
+  font-family: var(--font-ui);
+  font-size: 11.6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.grade-toggle-btn:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
 
 .foot-status-pill {
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -521,6 +558,10 @@
 }
 
 @media (max-width: 1120px) {
+  .studio-deck {
+    height: auto;
+    min-height: 0;
+  }
   .studio-split {
     grid-template-columns: 1fr;
     height: auto;
@@ -529,6 +570,9 @@
   .pane-problem, .pane-code {
     height: auto;
     overflow-y: visible;
+  }
+  .grade-panel-bottom {
+    max-height: none;
   }
   .studio-split.is-code-left .pane-problem, .studio-split.is-code-left .pane-code { order: unset; }
   .io-grid { grid-template-columns: 1fr; }

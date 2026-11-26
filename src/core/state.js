@@ -38,6 +38,7 @@ export function createAppState(defaultTopicId = '1-1') {
     sebRealRuns: {},
     sebRunningId: null,
     sebRunStatus: '',
+    sebGradeCollapsed: false,
     solvedCodeIds: new Set(Array.isArray(saved.solvedCodeIds) ? saved.solvedCodeIds : []),
 
     // MCQ state (persisted wrong questions for focused review)

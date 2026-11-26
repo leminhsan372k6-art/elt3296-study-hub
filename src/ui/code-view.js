@@ -50,17 +50,35 @@ function renderGradeBox(state, q) {
 
   if (!rep && !realRun) {
     return `
-      <section class="grade-box grade-panel-bottom" id="gradeResultBox">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-          <strong style="font-size:13.8px;color:#f8fafc">🖥 Bảng Biên Dịch GCC Thật &amp; ${tcList.length} Test Case (${hiddenCnt} Test Ẩn)</strong>
+      <section class="grade-box grade-panel-bottom is-collapsed" id="gradeResultBox">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <strong style="font-size:13px;color:#f8fafc">🖥 Bảng Biên Dịch GCC Thật (${tcList.length} Test · ${hiddenCnt} Ẩn)</strong>
+            <span style="font-size:12px;color:#94a3b8">Bấm <b>▶ Biên dịch &amp; Chấm Test ẩn</b> hoặc <code>Ctrl+Enter</code> — kết quả &amp; lỗi sẽ hiện gọn tại đây (~1s).</span>
+          </div>
           ${
             prev
-              ? `<span style="font-size:12.2px;color:#4cc38a;font-weight:700">Điểm gần nhất: ${Number(prev.score10).toFixed(1)} / 10.0</span>`
-              : `<span style="font-size:12.2px;color:#94a3b8">Ctrl + Enter: Biên dịch GCC &amp; Chạy test ẩn</span>`
+              ? `<span style="font-size:12px;color:#4cc38a;font-weight:700">Điểm gần nhất: ${Number(prev.score10).toFixed(1)} / 10.0</span>`
+              : ''
           }
         </div>
-        <div style="font-size:12.6px;color:#94a3b8;margin-top:5px;line-height:1.55">
-          Khu vực kết quả biên dịch, lỗi GCC và chi tiết test ẩn được đặt gọn ở cuối trang để không che khung gõ code phía trên. Bấm <b>▶ Biên dịch &amp; Chấm Test ẩn</b> để chấm ngay (~1 giây)!
+      </section>
+    `;
+  }
+
+  if (state.sebGradeCollapsed) {
+    const summaryText = realRun?.compileError
+      ? `🔴 Lỗi biên dịch GCC (${realRun.engine})`
+      : realRun && !realRun.networkError && realRun.total > 0
+        ? `${realRun.passed === realRun.total ? '✅' : '⚠'} Đạt ${realRun.passed}/${realRun.total} Test Case (${realRun.engine}${realRun.elapsedMs ? ` · ${(realRun.elapsedMs / 1000).toFixed(2)}s` : ''})`
+        : rep
+          ? `Kiểm tra tĩnh: ${rep.score10.toFixed(1)} / 10.0 — ${rep.badge}`
+          : 'Kết quả biên dịch GCC';
+    return `
+      <section class="grade-box grade-panel-bottom is-collapsed" id="gradeResultBox">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <strong style="font-size:13px;color:#f8fafc">${esc(summaryText)}</strong>
+          <button type="button" class="grade-toggle-btn" id="btnToggleGradePanel">▴ Mở rộng kết quả</button>
         </div>
       </section>
     `;
@@ -170,7 +188,14 @@ function renderGradeBox(state, q) {
     `;
   }
 
-  return `<section class="grade-box grade-panel-bottom" id="gradeResultBox">${realHtml}${staticHtml}</section>`;
+  return `
+    <section class="grade-box grade-panel-bottom" id="gradeResultBox">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+        <button type="button" class="grade-toggle-btn" id="btnToggleGradePanel">▾ Thu gọn để mở rộng khung code</button>
+      </div>
+      ${realHtml}${staticHtml}
+    </section>
+  `;
 }
 
 function renderDetailGuideInline(q) {
@@ -347,7 +372,8 @@ export function renderCodeView(state) {
         </div>
       </section>
 
-      <div class="studio-split ${state.codeSide === 'left' ? 'is-code-left' : ''}">
+      <div class="studio-deck" id="studioDeck">
+        <div class="studio-split ${state.codeSide === 'left' ? 'is-code-left' : ''}">
         <!-- Left Independent Scroll Pane: Problem Statement OR 4-Layer Detailed Code Explanation -->
         <section class="pane-problem" id="paneLeftScroll">
           <div class="sheet-running-head" style="margin-bottom:10px">
@@ -437,8 +463,9 @@ export function renderCodeView(state) {
         </div>
       </div>
 
-      <!-- Full-width GCC Compiler Output, Error Log & Hidden Test Results below the Code Studio -->
+      <!-- Full-width GCC Compiler Output, Error Log & Hidden Test Results locked inside viewport deck -->
       ${renderGradeBox(state, activeQ)}
+      </div>
     </div>
   `;
 }
@@ -531,9 +558,10 @@ export function bindCodeView(state, persist, rerender) {
     const rep = gradeSubmission(activeQ, code);
     state.sebLastReports[activeQ.id] = rep;
     state.sebScores[activeQ.id] = { score10: rep.score10, tier: rep.tier };
+    state.sebGradeCollapsed = false;
     persist();
     rerender();
-    document.getElementById('gradeResultBox')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    document.getElementById('studioDeck')?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   };
 
   const runRealCompiler = async () => {
@@ -583,16 +611,23 @@ export function bindCodeView(state, persist, rerender) {
     } finally {
       state.sebRunningId = null;
       state.sebRunStatus = '';
+      state.sebGradeCollapsed = false;
       persist();
       rerender();
-      document.getElementById('gradeResultBox')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById('studioDeck')?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   };
 
   document.getElementById('btnStaticCheck')?.addEventListener('click', runStaticOnly);
   document.getElementById('btnRunRealGcc')?.addEventListener('click', runRealCompiler);
+  document.getElementById('btnToggleGradePanel')?.addEventListener('click', () => {
+    state.sebGradeCollapsed = !state.sebGradeCollapsed;
+    rerender();
+  });
   document.getElementById('btnJumpGradeBox')?.addEventListener('click', () => {
-    document.getElementById('gradeResultBox')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    state.sebGradeCollapsed = false;
+    rerender();
+    document.getElementById('studioDeck')?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   });
 
   document.getElementById('btnClearEditor')?.addEventListener('click', () => {
