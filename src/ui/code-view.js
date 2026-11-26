@@ -39,30 +39,30 @@ function renderGradeBox(state, q) {
 
   if (isRunning) {
     return `
-      <div class="grade-box" id="gradeResultBox">
-        <div style="font-size:13.6px;font-weight:700;color:#fbbf24">⏳ ${esc(state.sebRunStatus || 'Đang biên dịch GCC Linux & chạy test ẩn…')}</div>
-        <div style="font-size:12.2px;color:#94a3b8;margin-top:4px">
+      <section class="grade-box grade-panel-bottom" id="gradeResultBox">
+        <div style="font-size:13.8px;font-weight:700;color:#fbbf24">⏳ ${esc(state.sebRunStatus || 'Đang biên dịch GCC Linux & chạy test ẩn…')}</div>
+        <div style="font-size:12.4px;color:#94a3b8;margin-top:4px">
           Đang biên dịch <b>1 lần duy nhất</b> (<code>gcc -std=gnu11 -pthread</code>) và chạy đồng loạt ${tcList.length} test case (${hiddenCnt} test ẩn) trên máy chủ Linux song song…
         </div>
-      </div>
+      </section>
     `;
   }
 
   if (!rep && !realRun) {
     return `
-      <div class="grade-box">
+      <section class="grade-box grade-panel-bottom" id="gradeResultBox">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-          <strong style="font-size:13.4px;color:#f8fafc">Trình Biên Dịch GCC Thật + ${tcList.length} Test Case (${hiddenCnt} Test Ẩn)</strong>
+          <strong style="font-size:13.8px;color:#f8fafc">🖥 Bảng Biên Dịch GCC Thật &amp; ${tcList.length} Test Case (${hiddenCnt} Test Ẩn)</strong>
           ${
             prev
-              ? `<span style="font-size:12px;color:#4cc38a;font-weight:700">Điểm gần nhất: ${Number(prev.score10).toFixed(1)} / 10.0</span>`
-              : `<span style="font-size:12px;color:#94a3b8">Ctrl + Enter: Biên dịch GCC &amp; Chạy test ẩn</span>`
+              ? `<span style="font-size:12.2px;color:#4cc38a;font-weight:700">Điểm gần nhất: ${Number(prev.score10).toFixed(1)} / 10.0</span>`
+              : `<span style="font-size:12.2px;color:#94a3b8">Ctrl + Enter: Biên dịch GCC &amp; Chạy test ẩn</span>`
           }
         </div>
-        <div style="font-size:12.4px;color:#94a3b8;margin-top:5px;line-height:1.55">
-          Bấm <b>▶ Biên dịch &amp; Chấm Test ẩn</b> để biên dịch C thật trên Linux (<code>gcc -std=c11 -pthread</code>), tự tạo tệp sandbox và kiểm tra chi tiết từng test case bạn còn thiếu!
+        <div style="font-size:12.6px;color:#94a3b8;margin-top:5px;line-height:1.55">
+          Khu vực kết quả biên dịch, lỗi GCC và chi tiết test ẩn được đặt gọn ở cuối trang để không che khung gõ code phía trên. Bấm <b>▶ Biên dịch &amp; Chấm Test ẩn</b> để chấm ngay (~1 giây)!
         </div>
-      </div>
+      </section>
     `;
   }
 
@@ -170,7 +170,7 @@ function renderGradeBox(state, q) {
     `;
   }
 
-  return `<div class="grade-box" id="gradeResultBox">${realHtml}${staticHtml}</div>`;
+  return `<section class="grade-box grade-panel-bottom" id="gradeResultBox">${realHtml}${staticHtml}</section>`;
 }
 
 function renderDetailGuideInline(q) {
@@ -404,8 +404,7 @@ export function renderCodeView(state) {
             <div class="code-scroll-body">
               ${
                 state.sebMode === 'practice'
-                  ? `<textarea class="code-editor-area" id="codePracticeInput" spellcheck="false" placeholder="// Khung trống hoàn toàn — hãy tự gõ lại toàn bộ #include, hàm main() và lời giải C11 ở đây để ghi nhớ chắc chắn!&#10;// Bấm Alt+A (hoặc F2) bất cứ lúc nào để đảo sang Đáp án chuẩn bên phải.&#10;// Bấm Alt+E (hoặc nút 'Mở giải thích code' cạnh chữ Dễ) để xem giải thích 4 tầng ngay bên trái!&#10;// Bấm Ctrl+Enter để chấm điểm mô phỏng CodeRunner.">${esc(draftVal)}</textarea>
-                     ${renderGradeBox(state, activeQ)}`
+                  ? `<textarea class="code-editor-area" id="codePracticeInput" spellcheck="false" placeholder="// Khung trống hoàn toàn — hãy tự gõ lại toàn bộ #include, hàm main() và lời giải C11 ở đây để ghi nhớ chắc chắn!&#10;// Bấm Alt+A (hoặc F2) bất cứ lúc nào để đảo sang Đáp án chuẩn bên phải.&#10;// Bấm Alt+E (hoặc nút 'Mở giải thích code' cạnh chữ Dễ) để xem giải thích 4 tầng ngay bên trái!&#10;// Bấm Ctrl+Enter để biên dịch GCC thật &amp; chấm test ẩn (kết quả hiện ở cuối trang).">${esc(draftVal)}</textarea>`
                   : `<div class="code-numbered">
                       ${solLines
                         .map(
@@ -418,11 +417,28 @@ export function renderCodeView(state) {
 
             <div class="code-win-foot">
               <span>Biên dịch Sandbox: <code style="color:#e5eaf2">${esc(spec.compileFlags || 'gcc -O2 -Wall -Wextra -std=c11 -pthread')}</code></span>
-              <span>${solLines.length} dòng code chuẩn đơn giản · Cuộn độc lập 2 bên</span>
+              ${(() => {
+                const rr = state.sebRealRuns?.[activeQ.id];
+                if (state.sebRunningId === activeQ.id) {
+                  return `<button type="button" class="foot-status-pill is-warn" id="btnJumpGradeBox">⏳ Đang biên dịch GCC… ↓</button>`;
+                }
+                if (rr?.compileError) {
+                  return `<button type="button" class="foot-status-pill is-fail" id="btnJumpGradeBox">🔴 Lỗi biên dịch GCC · Xem lỗi bên dưới ↓</button>`;
+                }
+                if (rr && !rr.networkError && rr.total > 0) {
+                  const allOk = rr.passed === rr.total;
+                  const s = rr.elapsedMs ? ` (${(rr.elapsedMs / 1000).toFixed(1)}s)` : '';
+                  return `<button type="button" class="foot-status-pill ${allOk ? 'is-pass' : 'is-warn'}" id="btnJumpGradeBox">${allOk ? '✅' : '⚠'} ${rr.passed}/${rr.total} PASS${s} · Xem chi tiết ↓</button>`;
+                }
+                return `<button type="button" class="foot-status-pill" id="btnJumpGradeBox">${solLines.length} dòng chuẩn · Kết quả biên dịch ở cuối trang ↓</button>`;
+              })()}
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Full-width GCC Compiler Output, Error Log & Hidden Test Results below the Code Studio -->
+      ${renderGradeBox(state, activeQ)}
     </div>
   `;
 }
@@ -517,6 +533,7 @@ export function bindCodeView(state, persist, rerender) {
     state.sebScores[activeQ.id] = { score10: rep.score10, tier: rep.tier };
     persist();
     rerender();
+    document.getElementById('gradeResultBox')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
   const runRealCompiler = async () => {
@@ -574,6 +591,9 @@ export function bindCodeView(state, persist, rerender) {
 
   document.getElementById('btnStaticCheck')?.addEventListener('click', runStaticOnly);
   document.getElementById('btnRunRealGcc')?.addEventListener('click', runRealCompiler);
+  document.getElementById('btnJumpGradeBox')?.addEventListener('click', () => {
+    document.getElementById('gradeResultBox')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   document.getElementById('btnClearEditor')?.addEventListener('click', () => {
     state.codeDrafts[activeQ.id] = '';

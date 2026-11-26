@@ -268,7 +268,8 @@
 .code-editor-area {
   width: 100%;
   flex: 1;
-  min-height: 260px;
+  height: 100%;
+  min-height: 100%;
   padding: 16px 18px;
   border: none;
   outline: none;
@@ -325,13 +326,36 @@
   color: var(--code-mut);
 }
 
-/* Grader & Real Linux GCC Test Runner inside Practice tab */
+/* Full-width Grader & Real Linux GCC Test Runner placed cleanly at bottom of Code Studio */
 .grade-box {
-  padding: 14px 16px;
+  padding: 16px 20px;
   background: #141821;
   border-top: 1px solid var(--code-bd);
   font-family: var(--font-ui);
 }
+
+.grade-panel-bottom {
+  border: 1px solid var(--code-bd);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  color: #e5eaf2;
+}
+
+.foot-status-pill {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-family: var(--font-ui);
+  font-size: 11.6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.foot-status-pill:hover { background: rgba(255, 255, 255, 0.14); }
+.foot-status-pill.is-pass { border-color: rgba(76, 195, 138, 0.45); background: rgba(76, 195, 138, 0.14); color: #6ee7b7; }
+.foot-status-pill.is-warn { border-color: rgba(240, 171, 76, 0.45); background: rgba(240, 171, 76, 0.14); color: #fcd34d; }
+.foot-status-pill.is-fail { border-color: rgba(240, 106, 106, 0.48); background: rgba(240, 106, 106, 0.16); color: #fca5a5; }
 
 .grade-crit {
   padding: 9px 11px;
