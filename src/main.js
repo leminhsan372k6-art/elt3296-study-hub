@@ -4,7 +4,7 @@ import { TOPICS, ORDERED_TOPIC_IDS } from '../data/book/chapters-data.js';
 import { renderTopBar, renderBookSidebar, renderSearchModal } from './ui/shell.js';
 import { renderEbookView, bindEbookView, stepBookPage } from './ui/ebook-view.js';
 import { renderMcqView, bindMcqView, startMcqForChapter, jumpToMcqById } from './ui/mcq-view.js';
-import { renderCodeView, bindCodeView } from './ui/code-view.js?v=2';
+import { renderCodeView, bindCodeView } from './ui/code-view.js?v=3';
 import { renderExtrasView, bindExtrasView } from './ui/extras-view.js';
 
 function isTypingTarget(el) {

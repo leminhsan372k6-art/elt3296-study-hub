@@ -1,5 +1,5 @@
 import { PART1_FILE_QUESTIONS } from './part1-file.js';
-import { PART2_PROCESS_QUESTIONS } from './part2-process.js';
+import { PART2_PROCESS_QUESTIONS } from './part2-process.js?v=3';
 import { PART3_THREAD_QUESTIONS } from './part3-thread.js';
 import { PART4_PARALLEL_QUESTIONS } from './part4-parallel.js';
 import { PART5_DP_QUESTIONS } from './part5-dp.js';

@@ -64,7 +64,7 @@ export const REAL_TEST_CASES = {
   'CR-09': [
     { name: 'Test mẫu (1..25)', hidden: false, stdin: '1 25\n', expected: '125' },
     { name: 'Test ẩn 1: a == b == 0', hidden: true, stdin: '0 0\n', expected: '0', hint: 'Kiểm tra đoạn 1 phần tử bằng 0.' },
-    { name: 'Test ẩn 2: Đoạn lớn 1..100000 (tràn int)', hidden: true, stdin: '1 100000\n', expected: '50', hint: 'Tổng = 5000050000 % 200 = 50; nhớ lấy % 200 hoặc dùng long long.' },
+    { name: 'Test ẩn 2: Đoạn lớn 1..100001 (tràn int)', hidden: true, stdin: '1 100001\n', expected: '1', hint: 'Tổng = 5000150001 % 200 = 1; nhớ dùng long long hoặc cộng dồn theo % 200 để tránh tràn int 32-bit.' },
   ],
   'CR-10': [
     { name: 'Test mẫu (5 số âm dương)', hidden: false, stdin: '5\n10 -3 7 8 12\n', expected: '34' },

@@ -1,7 +1,7 @@
 import { esc, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
-import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js';
-import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js';
-import { runRealTestSuite } from '../core/c-runner.js?v=2';
+import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=3';
+import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=3';
+import { runRealTestSuite } from '../core/c-runner.js?v=3';
 
 const DIFFICULTIES = ['all', 'Dễ', 'Trung bình', 'Khó'];
 
