@@ -1,0 +1,398 @@
+/* 50-Question CodeRunner Studio — Blank Practice + Hotkey Solution + 4-Layer Detailed Guide */
+.code-studio {
+  display: grid;
+  gap: 16px;
+}
+
+.studio-header {
+  background: var(--surface);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+  display: grid;
+  gap: 12px;
+}
+
+.studio-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.matrix-50 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 5px;
+}
+
+.m50-cell {
+  height: 31px;
+  border-radius: 7px;
+  border: 1px solid var(--bd-strong);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 0.13s ease;
+}
+
+.m50-cell:hover { border-color: var(--accent); transform: translateY(-1px); }
+.m50-cell.active { background: var(--fg); color: var(--surface); border-color: var(--fg); }
+.m50-cell.is-mastered { background: var(--ink-ok-soft); border-color: var(--ink-ok); color: var(--ink-ok); }
+.m50-cell.is-mastered.active { background: var(--ink-ok); color: #fff; }
+.m50-cell.is-good { background: var(--accent-soft); border-color: var(--accent); }
+.m50-cell.is-fail { background: var(--ink-err-soft); border-color: var(--ink-err); }
+
+/* Split Problem <-> Editor/Solution */
+.studio-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.studio-split.is-code-left .pane-problem { order: 2; }
+.studio-split.is-code-left .pane-code { order: 1; }
+
+.pane-problem {
+  background: var(--surface);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  padding: 24px 26px;
+  box-shadow: var(--shadow-card);
+}
+
+.diff-pill {
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 11.8px;
+  font-weight: 700;
+}
+.diff-pill.easy { background: var(--ink-ok-soft); color: var(--ink-ok); }
+.diff-pill.medium { background: var(--ink-warn-soft); color: var(--ink-warn); }
+.diff-pill.hard { background: var(--ink-err-soft); color: var(--ink-err); }
+
+.static-rule-box {
+  padding: 12px 14px;
+  border-radius: 11px;
+  background: var(--surface-sub);
+  border: 1px solid var(--bd-strong);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 12px 0 16px;
+}
+
+.static-rule-box code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--surface);
+  border: 1px solid var(--bd);
+  font-size: 12px;
+}
+
+.io-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 10px 0 16px;
+}
+
+.io-box {
+  border-radius: 10px;
+  border: 1px solid var(--bd-strong);
+  overflow: hidden;
+  background: var(--surface-sub);
+}
+
+.io-label {
+  padding: 5px 10px;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--mut);
+  border-bottom: 1px solid var(--bd);
+}
+
+.io-pre {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 12.8px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+/* Right/Left Code Window */
+.pane-code {
+  display: grid;
+  gap: 16px;
+}
+
+.code-window {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border: 1px solid var(--code-bd);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.code-win-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--code-head);
+  border-bottom: 1px solid var(--code-bd);
+  font-family: var(--font-ui);
+}
+
+.win-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.win-tab {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--code-mut);
+  font-size: 12.6px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.win-tab.active {
+  background: #cfa97e;
+  color: #111318;
+}
+
+.win-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.win-btn {
+  padding: 5px 11px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5eaf2;
+  font-family: var(--font-ui);
+  font-size: 12.2px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.win-btn:hover { background: rgba(255, 255, 255, 0.13); }
+.win-btn.grade { background: #2e8b57; border-color: #2e8b57; color: #fff; }
+.win-btn.grade:hover { background: #267448; }
+
+.hotkey-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 7px 14px;
+  background: rgba(207, 169, 126, 0.1);
+  border-bottom: 1px solid rgba(207, 169, 126, 0.22);
+  font-family: var(--font-ui);
+  font-size: 12.2px;
+  color: #e9d7bf;
+}
+
+.code-editor-area {
+  width: 100%;
+  min-height: 430px;
+  padding: 16px 18px;
+  border: none;
+  outline: none;
+  resize: vertical;
+  background: #0d0f14;
+  color: #f0f4fa;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+  tab-size: 4;
+}
+
+.code-editor-area::placeholder {
+  color: #657084;
+  font-style: italic;
+}
+
+.code-numbered {
+  padding: 14px 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13.2px;
+  line-height: 1.65;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.code-ln {
+  display: flex;
+  padding: 0 16px 0 0;
+}
+.code-ln:hover { background: rgba(255, 255, 255, 0.04); }
+.code-ln-num {
+  width: 44px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 14px;
+  color: #5a657a;
+  user-select: none;
+}
+.code-ln-src { white-space: pre; }
+
+.code-win-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 14px;
+  background: var(--code-head);
+  border-top: 1px solid var(--code-bd);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--code-mut);
+}
+
+/* Grader Report inside Practice tab */
+.grade-box {
+  padding: 16px 18px;
+  background: #141821;
+  border-top: 1px solid var(--code-bd);
+  font-family: var(--font-ui);
+}
+
+.grade-crit {
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  margin-top: 8px;
+}
+
+/* 4-Layer Detailed Explanation Card directly under Solution Code */
+.detail-guide-card {
+  background: var(--surface);
+  border: 1px solid var(--bd-strong);
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow-card);
+  display: grid;
+  gap: 20px;
+}
+
+.guide-block-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.guide-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  display: grid;
+  place-items: center;
+  font-size: 12.2px;
+  font-weight: 700;
+}
+
+.line-explain-list {
+  display: grid;
+  gap: 9px;
+}
+
+.line-explain-row {
+  padding: 11px 14px;
+  border-radius: 11px;
+  background: var(--surface-sub);
+  border: 1px solid var(--bd);
+}
+
+.line-explain-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.line-badge {
+  font-family: var(--font-mono);
+  font-size: 11.4px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--fg);
+  color: var(--surface);
+}
+
+.line-cmd {
+  font-family: var(--font-mono);
+  font-size: 12.4px;
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.tc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.2px;
+}
+
+.tc-table th, .tc-table td {
+  border: 1px solid var(--bd-strong);
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.tc-table th {
+  background: var(--surface-sub);
+  font-family: var(--font-ui);
+  font-size: 12.4px;
+}
+
+.recipe-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1120px) {
+  .studio-split { grid-template-columns: 1fr; }
+  .studio-split.is-code-left .pane-problem, .studio-split.is-code-left .pane-code { order: unset; }
+  .io-grid { grid-template-columns: 1fr; }
+}

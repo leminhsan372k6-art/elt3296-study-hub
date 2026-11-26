@@ -1,0 +1,157 @@
+:root,
+[data-theme='white-titanium'] {
+  --font-latex: 'CMU Serif', 'Computer Modern Serif', 'Georgia', 'Times New Roman', serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', Consolas, monospace;
+
+  --bg: #f3f2ee;
+  --bg-bar: rgba(248, 247, 243, 0.88);
+  --surface: #fcfbf8;
+  --surface-sub: #f0eee8;
+  --surface-hover: #eae7df;
+  --fg: #19191b;
+  --fg-body: #2c2c30;
+  --mut: #6b6a64;
+  --bd: rgba(25, 25, 27, 0.09);
+  --bd-strong: rgba(25, 25, 27, 0.19);
+  --accent: #8c6b48;
+  --accent-strong: #6e5132;
+  --accent-soft: rgba(140, 107, 72, 0.11);
+  --ink-ok: #25734d;
+  --ink-ok-soft: rgba(37, 115, 77, 0.12);
+  --ink-warn: #b06c1a;
+  --ink-warn-soft: rgba(176, 108, 26, 0.13);
+  --ink-err: #c03939;
+  --ink-err-soft: rgba(192, 57, 57, 0.12);
+  --ink-flag: #b45309;
+  --shadow-card: 0 12px 34px rgba(20, 20, 22, 0.06), 0 1px 3px rgba(20, 20, 22, 0.04);
+  --shadow-float: 0 22px 54px rgba(20, 20, 22, 0.14);
+
+  --code-bg: #111318;
+  --code-head: #181b22;
+  --code-bd: rgba(255, 255, 255, 0.09);
+  --code-fg: #e5eaf2;
+  --code-mut: #8b95a7;
+}
+
+[data-theme='natural-titanium'] {
+  --bg: #e6e4de;
+  --bg-bar: rgba(235, 233, 227, 0.9);
+  --surface: #f5f4f0;
+  --surface-sub: #e9e6df;
+  --surface-hover: #dfdcd3;
+  --fg: #19191c;
+  --fg-body: #2a2a2e;
+  --mut: #605e58;
+  --bd: rgba(25, 25, 28, 0.11);
+  --bd-strong: rgba(25, 25, 28, 0.22);
+  --accent: #5d574e;
+  --accent-strong: #3e3a33;
+  --accent-soft: rgba(93, 87, 78, 0.13);
+  --ink-ok: #266c49;
+  --ink-ok-soft: rgba(38, 108, 73, 0.13);
+  --ink-warn: #9f6015;
+  --ink-warn-soft: rgba(159, 96, 21, 0.13);
+  --ink-err: #b83737;
+  --ink-err-soft: rgba(184, 55, 55, 0.12);
+  --ink-flag: #a1520a;
+  --shadow-card: 0 12px 34px rgba(18, 18, 20, 0.075), 0 1px 3px rgba(18, 18, 20, 0.05);
+  --shadow-float: 0 22px 54px rgba(18, 18, 20, 0.16);
+}
+
+[data-theme='desert-titanium'] {
+  --bg: #f1eae1;
+  --bg-bar: rgba(246, 240, 233, 0.9);
+  --surface: #fbf8f4;
+  --surface-sub: #efe6db;
+  --surface-hover: #e7dccd;
+  --fg: #231d19;
+  --fg-body: #342c27;
+  --mut: #76685d;
+  --bd: rgba(45, 32, 22, 0.1);
+  --bd-strong: rgba(45, 32, 22, 0.2);
+  --accent: #9a6e47;
+  --accent-strong: #74502f;
+  --accent-soft: rgba(154, 110, 71, 0.13);
+  --ink-ok: #317050;
+  --ink-ok-soft: rgba(49, 112, 80, 0.13);
+  --ink-warn: #a96314;
+  --ink-warn-soft: rgba(169, 99, 20, 0.13);
+  --ink-err: #be3b3b;
+  --ink-err-soft: rgba(190, 59, 59, 0.12);
+  --ink-flag: #b45309;
+  --shadow-card: 0 12px 34px rgba(45, 30, 18, 0.07), 0 1px 3px rgba(45, 30, 18, 0.04);
+  --shadow-float: 0 22px 54px rgba(45, 30, 18, 0.15);
+}
+
+[data-theme='black-titanium'] {
+  --bg: #0b0c0f;
+  --bg-bar: rgba(16, 17, 22, 0.88);
+  --surface: #14151a;
+  --surface-sub: #1c1e25;
+  --surface-hover: #242731;
+  --fg: #f3f4f7;
+  --fg-body: #d6d9e2;
+  --mut: #9095a3;
+  --bd: rgba(255, 255, 255, 0.09);
+  --bd-strong: rgba(255, 255, 255, 0.18);
+  --accent: #cfa97e;
+  --accent-strong: #e3c39d;
+  --accent-soft: rgba(207, 169, 126, 0.15);
+  --ink-ok: #4cc38a;
+  --ink-ok-soft: rgba(76, 195, 138, 0.16);
+  --ink-warn: #f0ab4c;
+  --ink-warn-soft: rgba(240, 171, 76, 0.16);
+  --ink-err: #f06a6a;
+  --ink-err-soft: rgba(240, 106, 106, 0.16);
+  --ink-flag: #fbbf24;
+  --shadow-card: 0 18px 46px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 26px 64px rgba(0, 0, 0, 0.7);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-latex);
+  font-size: 16.5px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+  overflow-x: clip;
+  transition: background-color 0.25s ease, color 0.2s ease;
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+  font-variant-ligatures: none;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* KaTeX harmony */
+.katex { font-size: 1.03em; }
+.katex .mord.text { font-family: var(--font-latex); }
+.math-display-block { margin: 14px 0; overflow-x: auto; padding: 4px 0; }
+
+/* Syntax Highlighting Tokens */
+.kc-kw { color: #ff7b72; font-weight: 600; }
+.kc-ty { color: #79c0ff; }
+.kc-fn { color: #d2a8ff; }
+.kc-nu { color: #79c0ff; }
+.kc-st { color: #a5d6ff; }
+.kc-cm { color: #7c879a; font-style: italic; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bd-strong); border-radius: 99px; }

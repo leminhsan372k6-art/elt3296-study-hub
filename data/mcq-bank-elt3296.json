@@ -1,0 +1,2902 @@
+[
+  {
+    "id": "MCQ-001",
+    "chapter": 1,
+    "topicId": "1-1",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 1",
+    "question": "Trong cấu trúc hệ điều hành Linux, ba đặc điểm nào mô tả đúng về không gian nhân (Kernel space)?",
+    "options": [
+      "Tách biệt hoàn toàn, chỉ cho phép đọc và cố định (Private, Read-only).",
+      "Bị cô lập riêng, không có đặc quyền và không an toàn (Isolated, Unprivileged).",
+      "Dùng chung, có đặc quyền và nguy hiểm (Shared, Privileged, Dangerous).",
+      "Được bảo vệ, bị hạn chế và an toàn (Protected, Restricted, Safe)."
+    ],
+    "answer": 2,
+    "explain": "Kernel space dùng chung cho toàn hệ thống (Shared), chạy ở chế độ đặc quyền cao nhất truy cập trực tiếp phần cứng (Privileged), và rất nguy hiểm (Dangerous) vì một lỗi con trỏ hay tràn bộ nhớ trong nhân có thể làm sập (kernel panic) toàn bộ hệ điều hành. Ngược lại, User space bị cô lập và hạn chế đặc quyền."
+  },
+  {
+    "id": "MCQ-002",
+    "chapter": 1,
+    "topicId": "1-1",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 2",
+    "question": "Trong hệ thống quản lý người dùng của Linux, tài khoản siêu người dùng (root) có mã định danh số UID bằng bao nhiêu?",
+    "options": [
+      "UID = 0",
+      "UID = 1",
+      "UID = -1",
+      "UID = 255"
+    ],
+    "answer": 0,
+    "explain": "Trên mọi hệ thống Unix/Linux, tài khoản siêu người dùng root luôn có UID = 0 (và GID = 0). Các tài khoản người dùng thường trên Ubuntu/Debian hiện đại thường bắt đầu từ UID 1000."
+  },
+  {
+    "id": "MCQ-003",
+    "chapter": 1,
+    "topicId": "3-1",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 3",
+    "question": "Trong bố cục bộ nhớ (memory layout) của một chương trình C trên Linux, phân đoạn BSS segment dùng để lưu trữ thành phần nào?",
+    "options": [
+      "Các vùng nhớ được cấp phát động trong thời gian chạy.",
+      "Các biến cục bộ và thông tin lưu của các lời gọi hàm.",
+      "Các biến toàn cục chưa được khởi tạo giá trị ban đầu.",
+      "Các lệnh máy nhị phân mà bộ xử lý trực tiếp thực thi."
+    ],
+    "answer": 2,
+    "explain": "Phân đoạn BSS (Block Started by Symbol) chứa các biến toàn cục và biến static chưa khởi tạo (hoặc khởi tạo bằng 0) — nhân Linux tự khởi tạo về 0 khi nạp chương trình. Heap lưu cấp phát động (malloc), Stack lưu biến cục bộ, còn Text lưu mã máy."
+  },
+  {
+    "id": "MCQ-004",
+    "chapter": 1,
+    "topicId": "1-5",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 4",
+    "question": "Trong quá trình gỡ lỗi chương trình C trên Linux, công cụ memcheck của Valgrind chủ yếu dùng để phát hiện nhóm lỗi nào?",
+    "options": [
+      "Lỗi rò rỉ bộ nhớ và truy cập con trỏ không hợp lệ khi thực thi.",
+      "Lỗi cú pháp C trước khi trình biên dịch GCC tạo tệp đối tượng.",
+      "Lỗi phân quyền đọc/ghi tệp trên hệ thống thư mục của người dùng.",
+      "Lỗi thiếu tệp cấu hình biên dịch khi chạy công cụ Make / CMake."
+    ],
+    "answer": 0,
+    "explain": "Valgrind Memcheck (công cụ mặc định của Valgrind) chuyên phát hiện memory leak (malloc không free), đọc bộ nhớ chưa khởi tạo, ghi tràn vùng Heap, use-after-free và double-free trong lúc chạy. (Còn lỗi race condition đa luồng dùng Valgrind Helgrind.)"
+  },
+  {
+    "id": "MCQ-005",
+    "chapter": 1,
+    "topicId": "1-3",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 5",
+    "question": "Trong kịch bản Linux Shell, dòng `#!/bin/bash` đặt ở đầu tệp được gọi là gì và có vai trò gì?",
+    "options": [
+      "Dòng shebang, chỉ định trình thông dịch sẽ dùng để chạy kịch bản.",
+      "Lệnh phân quyền tự động, cấp quyền chạy mà không cần gọi lệnh chmod.",
+      "Lệnh biên dịch tĩnh, yêu cầu nhân dịch kịch bản ra mã máy nhị phân.",
+      "Dòng ghi chú thường, chỉ dùng để mô tả tên tác giả của kịch bản."
+    ],
+    "answer": 0,
+    "explain": "Ký tự `#!` ở dòng đầu tiên gọi là Shebang (hashbang). Khi thực thi tệp script (`./script.sh`), nhân Linux đọc đường dẫn sau `#!` (`/bin/bash`) để nạp đúng trình thông dịch chạy tệp đó."
+  },
+  {
+    "id": "MCQ-006",
+    "chapter": 1,
+    "topicId": "1-3",
+    "tag": "real-exam",
+    "type": "syntax",
+    "source": "Đề thi thật UET · Câu 6",
+    "question": "Trong Bash shell script, câu lệnh gán biến nào sau đây viết ĐÚNG cú pháp?",
+    "options": [
+      "NAME=\"Alice\"",
+      "1NAME=\"Alice\"",
+      "NAME = \"Alice\"",
+      "$NAME=\"Alice\""
+    ],
+    "answer": 0,
+    "explain": "Trong Bash, phép gán biến TUYỆT ĐỐI KHÔNG có khoảng trắng xung quanh dấu `=`, không có dấu `$` ở vế trái, và tên biến không được bắt đầu bằng chữ số. Nếu viết `NAME = \"Alice\"`, Bash hiểu nhầm `NAME` là tên một câu lệnh cần thực thi."
+  },
+  {
+    "id": "MCQ-007",
+    "chapter": 1,
+    "topicId": "1-4",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 7",
+    "question": "Trong hàm của kịch bản Bash shell, ký hiệu `$#` và từ khóa `local` lần lượt dùng để làm gì?",
+    "options": [
+      "`$#` lấy số lượng đối số; `local` tạo biến cục bộ bên trong phạm vi hàm.",
+      "`$#` lấy đối số đầu tiên; `local` khóa luồng đầu vào chuẩn của kịch bản.",
+      "`$#` lấy tên tệp kịch bản; `local` khai báo hằng số không thể thay đổi.",
+      "`$#` lấy mã thoát trả về; `local` xuất biến ra môi trường toàn hệ thống."
+    ],
+    "answer": 0,
+    "explain": "Trong Bash: `$#` là số lượng tham số truyền vào script/hàm; `$0` là tên script; `$1` là tham số thứ nhất; `$?` là mã thoát lệnh trước. Từ khóa `local` giới hạn phạm vi biến chỉ tồn tại trong hàm hiện tại (mặc định biến Bash là toàn cục)."
+  },
+  {
+    "id": "MCQ-008",
+    "chapter": 1,
+    "topicId": "1-4",
+    "tag": "real-exam",
+    "type": "trace",
+    "source": "Đề thi thật UET · Câu 8",
+    "question": "Cho chương trình Bash shell script sau. Khi thực thi kịch bản, hai dòng in ra màn hình lần lượt là gì?",
+    "code": "#!/bin/bash\nNAME=\"Bob\"\ngreet() {\n    local NAME=$1\n    echo \"Hello, $NAME!\"\n    return 0\n}\ngreet \"Alice\"\necho \"$NAME\"",
+    "options": [
+      "Hello, Bob! rồi đến Alice",
+      "Hello, Alice! rồi đến Alice",
+      "Hello, $1! rồi đến Bob",
+      "Hello, Alice! rồi đến Bob"
+    ],
+    "answer": 3,
+    "explain": "Trong hàm `greet`, biến `NAME` được khai báo bằng từ khóa `local`, nên gán `NAME=$1` (\"Alice\") chỉ có hiệu lực bên trong hàm `greet` và không làm thay đổi biến toàn cục `NAME=\"Bob\"` bên ngoài. Do đó in `Hello, Alice!` rồi đến `Bob`."
+  },
+  {
+    "id": "MCQ-009",
+    "chapter": 1,
+    "topicId": "1-2",
+    "tag": "real-exam",
+    "type": "syntax",
+    "source": "Đề thi thật UET · Câu 9",
+    "question": "Trong Bash shell, câu lệnh nào dùng để in thông báo \"error!\" sang đầu ra lỗi chuẩn (standard error)?",
+    "options": [
+      "echo \"error!\" < 2",
+      "echo \"error!\" | 2",
+      "echo \"error!\" >> 2",
+      "echo \"error!\" >&2"
+    ],
+    "answer": 3,
+    "explain": "Toán tử `>&2` (viết đầy đủ là `1>&2`) chuyển hướng đầu ra chuẩn (FD 1 — stdout) sang đầu ra lỗi chuẩn (FD 2 — stderr). Còn `>> 2` chỉ ghi nối vào một tệp tên là `2`."
+  },
+  {
+    "id": "MCQ-010",
+    "chapter": 1,
+    "topicId": "1-2",
+    "tag": "real-exam",
+    "type": "trace",
+    "source": "Đề thi cuối kỳ cũ · Shell Pipe",
+    "question": "Giả sử thư mục hiện tại chứa đúng 3 tệp: `a.txt`, `b.txt`, `c.txt`. Lệnh Shell `echo *.txt | wc -w` sẽ in ra số nào?",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "0"
+    ],
+    "answer": 2,
+    "explain": "Shell mở rộng ký tự đại diện `*.txt` thành `a.txt b.txt c.txt`, `echo` in 3 tên tệp cách nhau bởi dấu cách trên 1 dòng, và `wc -w` đếm số từ → kết quả là `3`."
+  },
+  {
+    "id": "MCQ-011",
+    "chapter": 1,
+    "topicId": "1-2",
+    "tag": "real-exam",
+    "type": "trace",
+    "source": "Đề thi cuối kỳ cũ · Shell Pipe",
+    "question": "Giả sử thư mục hiện tại chứa đúng 3 tệp: `a.txt`, `b.txt`, `c.c`. Lệnh Shell `ls *.txt | wc -l` sẽ in ra số nào?",
+    "options": [
+      "3",
+      "2",
+      "1",
+      "0"
+    ],
+    "answer": 1,
+    "explain": "`*.txt` chỉ khớp với `a.txt` và `b.txt` (không khớp `c.c`). Khi stdout của `ls` được nối vào pipe, `ls` in mỗi tên tệp trên một dòng, nên `wc -l` đếm được `2` dòng."
+  },
+  {
+    "id": "MCQ-012",
+    "chapter": 1,
+    "topicId": "1-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Kiến trúc Linux",
+    "question": "Trong kiến trúc phân lớp của Linux, chương trình người dùng (User space) tương tác với phần cứng và dịch vụ của nhân (Kernel space) thông qua giao diện nào?",
+    "options": [
+      "Lời gọi hệ thống (System Calls) và thư viện chuẩn C (glibc)",
+      "Ghi trực tiếp vào thanh ghi điều khiển phần cứng ở Ring 0",
+      "Trình duyệt web tích hợp sẵn trong nhân",
+      "Chỉ thông qua biến môi trường PATH"
+    ],
+    "answer": 0,
+    "explain": "Tiến trình User space không được truy cập phần cứng trực tiếp mà phải đi qua System Call Interface (như `open`, `read`, `fork`) hoặc các hàm thư viện C bọc bên trên system call."
+  },
+  {
+    "id": "MCQ-013",
+    "chapter": 1,
+    "topicId": "1-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Quyền truy cập tệp",
+    "question": "Chuỗi quyền `-rwxr-xr--` hiển thị bởi lệnh `ls -l` tương ứng với giá trị quyền bát phân (octal) nào?",
+    "options": [
+      "754",
+      "644",
+      "755",
+      "764"
+    ],
+    "answer": 0,
+    "explain": "Tách 9 bit quyền thành 3 nhóm 3 bit: Owner `rwx` = 4+2+1 = 7; Group `r-x` = 4+0+1 = 5; Other `r--` = 4+0+0 = 4 → bát phân là `754` (`0754`)."
+  },
+  {
+    "id": "MCQ-014",
+    "chapter": 1,
+    "topicId": "1-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Quyền thư mục",
+    "question": "Đối với một THƯ MỤC trong Linux, quyền thực thi `x` (execute) có ý nghĩa gì?",
+    "options": [
+      "Cho phép đi vào thư mục (`cd`) và truy cập các mục bên trong nếu biết tên",
+      "Cho phép chạy thư mục như một tệp nhị phân thực thi",
+      "Cho phép xóa mọi tệp trong toàn bộ ổ đĩa",
+      "Không có tác dụng gì vì thư mục không phải chương trình"
+    ],
+    "answer": 0,
+    "explain": "Với thư mục: `r` cho phép liệt kê tên mục (`ls`), `w` cho phép tạo/xóa/đổi tên mục bên trong, và `x` (search bit) cho phép đi qua/chuyển vào thư mục (`cd`) và truy xuất inode của các tệp con."
+  },
+  {
+    "id": "MCQ-015",
+    "chapter": 1,
+    "topicId": "1-1",
+    "tag": "extended",
+    "type": "syntax",
+    "source": "Chương 1 · Phân quyền",
+    "question": "Sau khi tạo một tệp Bash script `run.sh`, lệnh nào dùng để cấp quyền thực thi cho chủ sở hữu trước khi chạy `./run.sh`?",
+    "options": [
+      "chmod u+x run.sh",
+      "chown +x run.sh",
+      "ls -x run.sh",
+      "exec -r run.sh"
+    ],
+    "answer": 0,
+    "explain": "`chmod u+x run.sh` (hoặc `chmod +x run.sh`) bật bit quyền thực thi (`x`) cho user sở hữu tệp. `chown` dùng để đổi chủ sở hữu tệp."
+  },
+  {
+    "id": "MCQ-016",
+    "chapter": 1,
+    "topicId": "1-2",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Chuyển hướng I/O",
+    "question": "Sự khác nhau cơ bản giữa toán tử `>` và `>>` trong Bash shell là gì?",
+    "options": [
+      "`>` ghi đè (cắt cụt nội dung cũ) vào tệp đích; `>>` ghi nối tiếp vào cuối tệp đích",
+      "`>` chuyển hướng stderr; `>>` chuyển hướng stdin",
+      "`>` chỉ dùng cho tệp nhị phân; `>>` chỉ dùng cho tệp văn bản",
+      "`>` truyền dữ liệu qua pipe; `>>` tạo tiến trình nền"
+    ],
+    "answer": 0,
+    "explain": "Toán tử `>` mở tệp với cờ `O_WRONLY | O_CREAT | O_TRUNC` (xóa nội dung cũ), còn `>>` mở tệp với `O_WRONLY | O_CREAT | O_APPEND` (ghi nối vào cuối)."
+  },
+  {
+    "id": "MCQ-017",
+    "chapter": 1,
+    "topicId": "1-2",
+    "tag": "extended",
+    "type": "syntax",
+    "source": "Chương 1 · Chuyển hướng stdout & stderr",
+    "question": "Lệnh nào ghi cả đầu ra chuẩn (stdout) lẫn đầu ra lỗi (stderr) của `./app` vào cùng một tệp `out.log`?",
+    "options": [
+      "./app > out.log 2>&1",
+      "./app 2>&1 > out.log",
+      "./app < out.log 2>&1",
+      "./app | out.log"
+    ],
+    "answer": 0,
+    "explain": "Thứ tự chuyển hướng trong Bash đọc từ trái sang phải: `> out.log` trỏ FD 1 vào `out.log` trước, sau đó `2>&1` sao chép FD 1 sang FD 2 nên cả hai cùng ghi vào `out.log`. Nếu viết ngược `2>&1 > out.log`, FD 2 vẫn trỏ ra màn hình cũ!"
+  },
+  {
+    "id": "MCQ-018",
+    "chapter": 1,
+    "topicId": "1-2",
+    "tag": "extended",
+    "type": "syntax",
+    "source": "Chương 1 · Lab 1 grep & sed",
+    "question": "Lệnh nào trích xuất duy nhất dòng thứ 3 của tệp `Hello.txt` và đếm số từ trên dòng đó?",
+    "options": [
+      "sed -n '3p' Hello.txt | wc -w",
+      "sed '3p' Hello.txt | wc -l",
+      "grep -n 3 Hello.txt | wc -c",
+      "cat -3 Hello.txt | wc -w"
+    ],
+    "answer": 0,
+    "explain": "`sed -n '3p' Hello.txt` tắt in mặc định (`-n`) và chỉ in dòng 3 (`3p`), sau đó pipe sang `wc -w` để đếm số từ. Nếu thiếu `-n`, `sed '3p'` sẽ in toàn bộ tệp và lặp lại dòng 3 hai lần!"
+  },
+  {
+    "id": "MCQ-019",
+    "chapter": 1,
+    "topicId": "1-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Dấu nháy trong Bash",
+    "question": "Cho `X=42`. Hai lệnh `echo \"$X\"` và `echo '$X'` lần lượt in ra màn hình kết quả nào?",
+    "options": [
+      "42 và $X",
+      "$X và 42",
+      "42 và 42",
+      "\"42\" và '$X'"
+    ],
+    "answer": 0,
+    "explain": "Dấu nháy kép `\"...\"` cho phép mở rộng biến (`$X` → `42`), còn dấu nháy đơn `'...'` giữ nguyên mọi ký tự theo nghĩa đen nên in đúng chuỗi `$X`."
+  },
+  {
+    "id": "MCQ-020",
+    "chapter": 1,
+    "topicId": "1-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Tham số vị trí Bash",
+    "question": "Trong Bash script, biến đặc biệt `$?` lưu giá trị gì?",
+    "options": [
+      "Mã thoát (exit status) của câu lệnh vừa thực thi gần nhất (0 là thành công)",
+      "PID của tiến trình Shell hiện tại",
+      "Tổng số đối số truyền vào kịch bản",
+      "Chuỗi chứa toàn bộ các đối số dòng lệnh"
+    ],
+    "answer": 0,
+    "explain": "`$?` chứa mã thoát của lệnh ngay trước đó (`0` = thành công, khác `0` = lỗi). `$$` là PID của Shell hiện tại, `$#` là số đối số, `$@` là danh sách đối số."
+  },
+  {
+    "id": "MCQ-021",
+    "chapter": 1,
+    "topicId": "1-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Sự khác biệt $@ và $*",
+    "question": "Khi gọi script `./test.sh \"New York\" Hanoi`, điểm khác biệt quan trọng giữa `\"$@\"` và `\"$*\"` là gì?",
+    "options": [
+      "`\"$@\"` giữ nguyên 2 đối số tách biệt (`\"New York\"` và `\"Hanoi\"`), còn `\"$*\"` gộp tất cả thành 1 chuỗi duy nhất",
+      "`\"$@\"` chỉ lấy đối số cuối cùng, còn `\"$*\"` lấy đối số đầu tiên",
+      "`\"$@\"` xóa hết khoảng trắng, còn `\"$*\"` giữ nguyên từng phần tử",
+      "Hai ký hiệu hoàn toàn giống nhau trong mọi ngữ cảnh"
+    ],
+    "answer": 0,
+    "explain": "`\"$@\"` mở rộng thành `\"$1\" \"$2\" ...` nên bảo toàn đúng các đối số có chứa khoảng trắng. Ngược lại `\"$*\"` nối toàn bộ thành một chuỗi duy nhất `\"$1 $2 ...\"`."
+  },
+  {
+    "id": "MCQ-022",
+    "chapter": 1,
+    "topicId": "1-3",
+    "tag": "extended",
+    "type": "syntax",
+    "source": "Chương 1 · Phép toán số học Bash",
+    "question": "Trong Bash, cách viết nào đúng để cộng hai biến nguyên `a=3` và `b=5` rồi gán kết quả `8` vào `sum`?",
+    "options": [
+      "sum=$((a + b))",
+      "sum=$a + $b",
+      "sum=\"$a+$b\"",
+      "sum=($a + $b)"
+    ],
+    "answer": 0,
+    "explain": "Cú pháp mở rộng số học chuẩn POSIX trong Bash là `$(( biểu_thức ))`. Viết `sum=\"$a+$b\"` chỉ tạo chuỗi ký tự `\"3+5\"`, còn `sum=$a + $b` bị lỗi cú pháp do dấu cách."
+  },
+  {
+    "id": "MCQ-023",
+    "chapter": 1,
+    "topicId": "1-4",
+    "tag": "extended",
+    "type": "syntax",
+    "source": "Chương 1 · So sánh trong Bash",
+    "question": "Trong câu lệnh điều kiện `if [ ... ]` của Bash, cặp toán tử nào dùng để so sánh SỐ NGUYÊN (lớn hơn hoặc bằng, nhỏ hơn)?",
+    "options": [
+      "-ge và -lt",
+      ">= và <",
+      "== và !=",
+      "-s và -f"
+    ],
+    "answer": 0,
+    "explain": "Trong `[ ... ]` (lệnh `test`), so sánh số nguyên dùng `-eq, -ne, -gt, -ge, -lt, -le`. Ký hiệu `>` và `<` bên trong `[ ... ]` lại bị hiểu nhầm là chuyển hướng tệp nếu không escape hoặc không dùng `(( ... ))`."
+  },
+  {
+    "id": "MCQ-024",
+    "chapter": 1,
+    "topicId": "1-4",
+    "tag": "extended",
+    "type": "syntax",
+    "source": "Chương 1 · Kiểm tra tệp trong Bash",
+    "question": "Biểu thức điều kiện `[ -f \"$path\" ]` và `[ -d \"$path\" ]` trong Bash lần lượt kiểm tra điều gì?",
+    "options": [
+      "`-f` kiểm tra là tệp thường (regular file); `-d` kiểm tra là thư mục (directory)",
+      "`-f` kiểm tra tệp có thể ghi; `-d` kiểm tra tệp đã bị xóa",
+      "`-f` kiểm tra tệp rỗng; `-d` kiểm tra tệp có kích thước lớn hơn 0",
+      "`-f` kiểm tra liên kết cứng; `-d` kiểm tra thiết bị khối"
+    ],
+    "answer": 0,
+    "explain": "Các cờ kiểm tra tệp hay gặp trong Bash: `-e` (tồn tại), `-f` (tệp thường), `-d` (thư mục), `-r/-w/-x` (quyền đọc/ghi/thực thi), `-s` (tồn tại và kích thước > 0)."
+  },
+  {
+    "id": "MCQ-025",
+    "chapter": 1,
+    "topicId": "1-4",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 1 · Truy vết vòng lặp Bash",
+    "question": "Đoạn Bash script sau in ra kết quả nào?",
+    "code": "s=0\nfor i in 1 2 3 4; do\n    if [ $((i % 2)) -eq 0 ]; then\n        s=$((s + i))\n    fi\ndone\necho $s",
+    "options": [
+      "6",
+      "10",
+      "4",
+      "0"
+    ],
+    "answer": 0,
+    "explain": "Vòng `for` duyệt `i` qua `1, 2, 3, 4`. Điều kiện `i % 2 == 0` chỉ đúng với `i = 2` và `i = 4`, nên `s = 2 + 4 = 6`."
+  },
+  {
+    "id": "MCQ-026",
+    "chapter": 1,
+    "topicId": "1-4",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 1 · Truy vết biến toàn cục trong hàm Bash",
+    "question": "Nếu BỎ từ khóa `local` trong hàm `greet()` ở đoạn script sau thì hai dòng in ra là gì?",
+    "code": "NAME=\"Bob\"\ngreet() {\n    NAME=$1\n    echo \"Hi $NAME\"\n}\ngreet \"Alice\"\necho \"$NAME\"",
+    "options": [
+      "Hi Alice rồi đến Alice",
+      "Hi Alice rồi đến Bob",
+      "Hi Bob rồi đến Bob",
+      "Báo lỗi biên dịch vì trùng tên biến"
+    ],
+    "answer": 0,
+    "explain": "Trong Bash, biến khai báo bên trong hàm mặc định là TOÀN CỤC nếu không có `local`. Do đó `NAME=$1` ghi đè thẳng lên biến `NAME` bên ngoài thành `\"Alice\"`."
+  },
+  {
+    "id": "MCQ-027",
+    "chapter": 1,
+    "topicId": "1-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Vòng lặp until vs while",
+    "question": "Điểm khác nhau giữa vòng lặp `while` và `until` trong Bash là gì?",
+    "options": [
+      "`while` lặp khi điều kiện ĐÚNG (exit status = 0); `until` lặp khi điều kiện SAI (exit status != 0) cho tới khi đúng",
+      "`while` luôn chạy ít nhất 1 lần; `until` có thể không chạy lần nào",
+      "`until` chỉ dùng cho chuỗi ký tự, không dùng cho số nguyên",
+      "Hai từ khóa hoàn toàn tương đương nhau"
+    ],
+    "answer": 0,
+    "explain": "`while cmd` tiếp tục lặp chừng nào `cmd` trả về mã thoát 0 (đúng). Ngược lại `until cmd` lặp chừng nào `cmd` trả về khác 0 (sai) và dừng ngay khi `cmd` thành công."
+  },
+  {
+    "id": "MCQ-028",
+    "chapter": 1,
+    "topicId": "1-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Quy trình biên dịch GCC",
+    "question": "Thứ tự 4 giai đoạn biên dịch một tệp mã nguồn C bằng GCC từ `.c` sang tệp thực thi là gì?",
+    "options": [
+      "Tiền xử lý (Preprocessing) → Biên dịch (Compilation) → Hợp dịch (Assembly) → Liên kết (Linking)",
+      "Liên kết (Linking) → Tiền xử lý → Hợp dịch → Biên dịch",
+      "Biên dịch → Tiền xử lý → Liên kết → Hợp dịch",
+      "Hợp dịch → Tiền xử lý → Biên dịch → Liên kết"
+    ],
+    "answer": 0,
+    "explain": "Chuỗi biên dịch GCC chuẩn: `.c` —(`-E` Preprocessing)→ `.i` —(`-S` Compilation)→ `.s` —(`-c` Assembly)→ `.o` —(Linking)→ tệp thực thi ELF."
+  },
+  {
+    "id": "MCQ-029",
+    "chapter": 1,
+    "topicId": "1-5",
+    "tag": "extended",
+    "type": "syntax",
+    "source": "Chương 1 · Cờ GCC & GDB",
+    "question": "Để biên dịch chương trình C có đầy đủ thông tin gỡ lỗi cho GDB và bật cảnh báo cơ bản, ta dùng cặp cờ GCC nào?",
+    "options": [
+      "-g -Wall",
+      "-E -O3",
+      "-S -c",
+      "-static -strip"
+    ],
+    "answer": 0,
+    "explain": "Cờ `-g` chèn bảng ký hiệu gỡ lỗi (debug symbols) giúp GDB ánh xạ từng dòng lệnh C và tên biến; `-Wall` bật các cảnh báo quan trọng giúp phát hiện sớm lỗi tiềm ẩn."
+  },
+  {
+    "id": "MCQ-030",
+    "chapter": 1,
+    "topicId": "1-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Memory Layout C",
+    "question": "Xét hai biến trong C: `int g = 10;` khai báo ngoài hàm và `int *p = malloc(100);` trong `main()`. Lần lượt giá trị `g` và vùng nhớ 100 byte do `malloc` trả về nằm ở phân đoạn nào?",
+    "options": [
+      "`g` nằm ở Initialized Data segment; vùng nhớ 100 byte nằm ở Heap",
+      "`g` nằm ở BSS; vùng nhớ 100 byte nằm ở Stack",
+      "Cả hai đều nằm ở Text segment",
+      "`g` nằm ở Stack; vùng nhớ 100 byte nằm ở BSS"
+    ],
+    "answer": 0,
+    "explain": "Biến toàn cục đã khởi tạo khác 0 (`g = 10`) nằm ở Initialized Data segment; vùng nhớ cấp phát bởi `malloc/calloc` nằm ở Heap (còn bản thân biến con trỏ cục bộ `p` nằm ở Stack)."
+  },
+  {
+    "id": "MCQ-031",
+    "chapter": 1,
+    "topicId": "1-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · GDB cơ bản",
+    "question": "Trong trình gỡ lỗi GDB, hai lệnh `next` (`n`) và `step` (`s`) khác nhau ở điểm nào?",
+    "options": [
+      "`next` bước qua (step over) lời gọi hàm mà không đi vào thân hàm; `step` đi sâu vào bên trong hàm (step into)",
+      "`next` chạy đến hết chương trình; `step` xóa tất cả breakpoint",
+      "`next` chỉ dùng cho vòng lặp; `step` chỉ dùng cho câu lệnh `if`",
+      "Hai lệnh giống hệt nhau"
+    ],
+    "answer": 0,
+    "explain": "`step` (`s`) đi vào bên trong hàm con nếu dòng hiện tại gọi hàm (có debug symbols); `next` (`n`) thực thi trọn vẹn lời gọi hàm đó như một bước đơn và dừng ở dòng kế tiếp trong hàm hiện tại."
+  },
+  {
+    "id": "MCQ-032",
+    "chapter": 1,
+    "topicId": "1-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 1 · Valgrind Helgrind vs Memcheck",
+    "question": "Công cụ nào của Valgrind chuyên dùng để phát hiện lỗi tranh chấp dữ liệu (data race) và nguy cơ deadlock trong chương trình đa luồng Pthreads?",
+    "options": [
+      "Helgrind",
+      "Memcheck",
+      "Cachegrind",
+      "Massif"
+    ],
+    "answer": 0,
+    "explain": "Trong bộ công cụ Valgrind (Slide APT04): `memcheck` phát hiện rò rỉ/truy cập bộ nhớ sai, còn `helgrind` (`valgrind --tool=helgrind ./prog`) chuyên phát hiện data race và sai thứ tự khóa mutex ở chương trình đa luồng."
+  },
+  {
+    "id": "MCQ-033",
+    "chapter": 1,
+    "topicId": "1-2",
+    "tag": "extended",
+    "type": "syntax",
+    "source": "Chương 1 · Lệnh Linux cơ bản",
+    "question": "Lệnh `grep -ow \"course\" Hello.txt | wc -l` dùng để làm gì?",
+    "options": [
+      "Đếm tổng số lần xuất hiện chính xác của từ độc lập \"course\" trong Hello.txt (kể cả khi xuất hiện nhiều lần trên cùng 1 dòng)",
+      "Đếm số dòng KHÔNG chứa từ \"course\" trong Hello.txt",
+      "Xóa tất cả các từ \"course\" khỏi Hello.txt",
+      "Đếm tổng số ký tự của tệp Hello.txt"
+    ],
+    "answer": 0,
+    "explain": "Cờ `-o` (`--only-matching`) in mỗi lần khớp ra một dòng riêng, cờ `-w` khớp nguyên từ độc lập. Khi nối pipe qua `wc -l`, ta đếm chính xác tổng số lần xuất hiện của từ đó thay vì chỉ đếm số dòng."
+  },
+  {
+    "id": "MCQ-034",
+    "chapter": 1,
+    "topicId": "1-3",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 1 · Độ dài chuỗi Bash",
+    "question": "Cho `STR=\"Linux OS\"`. Lệnh `echo ${#STR}` in ra giá trị nào?",
+    "options": [
+      "8",
+      "7",
+      "2",
+      "1"
+    ],
+    "answer": 0,
+    "explain": "Cú pháp `${#STR}` trả về tổng số ký tự của chuỗi `STR`, bao gồm cả dấu cách ở giữa (`L-i-n-u-x- -O-S` = 8 ký tự)."
+  },
+  {
+    "id": "MCQ-035",
+    "chapter": 2,
+    "topicId": "2-4",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 10",
+    "question": "Mỗi tiến trình Linux shell khi bắt đầu đều mở sẵn 3 File Descriptor 0, 1, 2 tương ứng theo thứ tự nào?",
+    "options": [
+      "0: Standard input, 1: Standard output, 2: Standard error.",
+      "0: Standard output, 1: Standard input, 2: Standard error.",
+      "0: Standard input, 1: Standard error, 2: Standard output.",
+      "0: Standard error, 1: Standard input, 2: Standard output."
+    ],
+    "answer": 0,
+    "explain": "Chuẩn POSIX quy định 3 FD mặc định cho mọi tiến trình mới: `0 = STDIN_FILENO (stdin)`, `1 = STDOUT_FILENO (stdout)`, `2 = STDERR_FILENO (stderr)`."
+  },
+  {
+    "id": "MCQ-036",
+    "chapter": 2,
+    "topicId": "2-5",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 11",
+    "question": "Khi đọc/ghi dữ liệu bằng lời gọi hệ thống trên Linux, hiện tượng short count KHÔNG xảy ra trong trường hợp nào dưới đây?",
+    "options": [
+      "Khi bắt gặp điểm cuối tệp (EOF) trong quá trình đọc tệp.",
+      "Khi đọc các dòng văn bản trực tiếp từ thiết bị terminal.",
+      "Khi đọc hoặc ghi dữ liệu thông qua các kết nối socket mạng.",
+      "Khi thực hiện ghi dữ liệu vào các tệp lưu trên đĩa cứng."
+    ],
+    "answer": 3,
+    "explain": "Theo Slide APT02 (On Short Counts): Short count CÓ THỂ xảy ra khi gặp EOF lúc đọc, đọc từ terminal, hoặc đọc/ghi network socket; và KHÔNG xảy ra khi đọc từ tệp đĩa (trừ lúc gặp EOF) hay khi GHI vào tệp đĩa thông thường."
+  },
+  {
+    "id": "MCQ-037",
+    "chapter": 2,
+    "topicId": "2-10",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 12",
+    "question": "Kỹ thuật Memory-mapped I/O (`mmap`) trên Linux phù hợp nhất với trường hợp sử dụng nào?",
+    "options": [
+      "Xuất các chuỗi văn bản ngắn ra màn hình chuẩn thông qua hàm `printf()`.",
+      "Đọc và ghi tuần tự từng ký tự trên những tệp văn bản dung lượng nhỏ.",
+      "Tệp lớn, truy cập ngẫu nhiên và chia sẻ bộ nhớ giữa các tiến trình.",
+      "Đọc từng dòng lệnh do người dùng nhập trực tiếp từ bàn phím terminal."
+    ],
+    "answer": 2,
+    "explain": "Theo bảng so sánh Slide APT02: `mmap()` ánh xạ tệp trực tiếp vào không gian địa chỉ ảo (nạp trang theo yêu cầu on-demand paging, tránh sao chép thêm giữa kernel buffer và user buffer), tối ưu nhất cho tệp lớn, truy cập ngẫu nhiên và chia sẻ bộ nhớ giữa các tiến trình."
+  },
+  {
+    "id": "MCQ-038",
+    "chapter": 2,
+    "topicId": "2-6",
+    "tag": "real-exam",
+    "type": "fill",
+    "source": "Đề thi cuối kỳ cũ · lseek bản ghi 48 byte",
+    "question": "Một tệp log nhị phân gồm các bản ghi cố định 48 byte. Để ghi đè bản ghi thứ `n` (đánh số từ 0) bằng biến `rec` (`sizeof(rec) == 48`), tham số offset trong `lseek(fd, ___, SEEK_SET);` phải điền gì?",
+    "code": "int fd = open(\"log.bin\", O_WRONLY);\nlseek(fd, ___, SEEK_SET);\nwrite(fd, &rec, sizeof(rec));",
+    "options": [
+      "n * 48 (hoặc n * sizeof(rec))",
+      "n",
+      "n + 48",
+      "(n + 1) * 48"
+    ],
+    "answer": 0,
+    "explain": "Hàm `lseek` tính vị trí theo **byte** chứ không theo chỉ số bản ghi! Bản ghi thứ 0 nằm ở byte `0`, bản ghi thứ 1 ở byte `48`, nên bản ghi thứ `n` (0-based) nằm ở `n * 48` (hoặc `n * sizeof(rec)`). Điền `n` là lỗi sai rất phổ biến."
+  },
+  {
+    "id": "MCQ-039",
+    "chapter": 2,
+    "topicId": "2-6",
+    "tag": "real-exam",
+    "type": "fill",
+    "source": "Đề thi cuối kỳ cũ · lseek struct Student",
+    "question": "Một tệp nhị phân chứa mảng `struct Student`, mỗi phần tử 64 byte. Để đọc phần tử thứ `i` (đánh số từ 0), hai chỗ trống cần điền lần lượt là gì?",
+    "code": "int fd = open(\"student.dat\", O_RDONLY);\nstruct Student st;\nlseek(fd, ___(1)___, SEEK_SET);\n___(2)___(fd, &st, sizeof(st));",
+    "options": [
+      "(1) i * sizeof(st) (hoặc i * 64) và (2) read",
+      "(1) 0 và (2) read",
+      "(1) i và (2) fread",
+      "(1) i * sizeof(st) và (2) write"
+    ],
+    "answer": 0,
+    "explain": "Để nhảy tới phần tử thứ `i` (0-based), phải dịch đúng `i * sizeof(st)` byte tính từ đầu tệp (`SEEK_SET`), sau đó dùng lời gọi hệ thống `read(fd, &st, sizeof(st))`."
+  },
+  {
+    "id": "MCQ-040",
+    "chapter": 2,
+    "topicId": "2-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Triết lý Linux",
+    "question": "Phát biểu nào mô tả đúng triết lý 'Everything is a file' trong Linux?",
+    "options": [
+      "Tệp thường, thư mục, thiết bị phần cứng, terminal, pipe và socket đều được trừu tượng hóa để thao tác thống nhất qua File Descriptor và read/write",
+      "Mọi chương trình trên Linux chỉ được phép lưu dữ liệu dưới dạng tệp văn bản `.txt`",
+      "Nhân Linux không hỗ trợ thư mục mà lưu tất cả tệp chung một danh sách phẳng",
+      "Mọi tệp trong Linux đều nằm trong RAM và biến mất khi tắt máy"
+    ],
+    "answer": 0,
+    "explain": "Linux trừu tượng hóa tài nguyên hệ thống (tệp thường, terminal, pipe, socket, thiết bị) thành luồng byte truy cập qua cùng bộ API `open/read/write/close`."
+  },
+  {
+    "id": "MCQ-041",
+    "chapter": 2,
+    "topicId": "2-2",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Cây thư mục & Pathname",
+    "question": "Mỗi thư mục trong hệ thống tệp Linux chứa tối thiểu 2 liên kết (entry) đặc biệt nào?",
+    "options": [
+      "`.` (trỏ tới chính nó) và `..` (trỏ tới thư mục cha)",
+      "`/` (gốc) và `~` (home)",
+      "`0` (stdin) và `1` (stdout)",
+      "`head` và `tail`"
+    ],
+    "answer": 0,
+    "explain": "Theo Slide APT02: mỗi thư mục là mảng liên kết ánh xạ tên tệp → inode và luôn có tối thiểu 2 mục là `.` (chính nó) và `..` (thư mục cha). Khi duyệt thư mục bằng `readdir()`, cần chú ý bỏ qua `.` và `..`."
+  },
+  {
+    "id": "MCQ-042",
+    "chapter": 2,
+    "topicId": "2-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · System Calls vs stdio",
+    "question": "Cặp phân biệt nào sau đây ĐÚNG giữa lời gọi hệ thống (System Calls) và thư viện chuẩn C (`stdio.h`)?",
+    "options": [
+      "System Calls dùng File Descriptor (`int`) với `open/read/write/lseek/close`; `stdio` dùng File Stream (`FILE*`) với `fopen/fread/fwrite/fseek/fclose`",
+      "System Calls dùng `FILE*` có bộ đệm người dùng; `stdio` dùng `int fd` không bộ đệm",
+      "System Calls luôn nhanh hơn `stdio` khi đọc từng 1 byte",
+      "`stdio` không gọi xuống System Calls mà đọc trực tiếp ổ cứng"
+    ],
+    "answer": 0,
+    "explain": "`stdio` là lớp thư viện bậc cao xây trên System Calls, bổ sung vùng đệm ở User Space (Buffered I/O) và quản lý qua con trỏ `FILE*`, còn System Calls làm việc trực tiếp với số nguyên `int fd`."
+  },
+  {
+    "id": "MCQ-043",
+    "chapter": 2,
+    "topicId": "2-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Nguyên tắc cấp phát FD",
+    "question": "Khi gọi `open()` thành công trong một tiến trình bình thường (chưa đóng FD 0, 1, 2 và chưa mở tệp nào khác), giá trị File Descriptor trả về được đảm bảo là số mấy?",
+    "options": [
+      "3 (FD nguyên không âm nhỏ nhất còn trống)",
+      "0",
+      "1",
+      "Một số ngẫu nhiên lớn hơn 1024"
+    ],
+    "answer": 0,
+    "explain": "Kernel Linux đảm bảo `open()` luôn trả về số nguyên không âm **nhỏ nhất chưa được sử dụng** trong bảng FD của tiến trình. Vì 0, 1, 2 đã mở sẵn nên tệp đầu tiên nhận `fd = 3`. Nếu lỗi, `open()` trả về `-1`."
+  },
+  {
+    "id": "MCQ-044",
+    "chapter": 2,
+    "topicId": "2-4",
+    "tag": "extended",
+    "type": "syntax",
+    "source": "Chương 2 · Cờ mở tệp open()",
+    "question": "Để mô phỏng chính xác toán tử `>` trong Linux (tạo mới nếu chưa có, xóa sạch nội dung cũ nếu đã có, chỉ ghi, quyền `0644`), ta gọi `open()` với tham số nào?",
+    "options": [
+      "open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644)",
+      "open(path, O_RDONLY | O_CREAT, 0644)",
+      "open(path, O_WRONLY | O_APPEND, 0644)",
+      "open(path, O_RDWR)"
+    ],
+    "answer": 0,
+    "explain": "`O_WRONLY` mở để ghi, `O_CREAT` tạo tệp mới nếu chưa tồn tại (bắt buộc truyền tham số thứ 3 là quyền như `0644`), và `O_TRUNC` cắt cụt tệp về 0 byte nếu đã tồn tại."
+  },
+  {
+    "id": "MCQ-045",
+    "chapter": 2,
+    "topicId": "2-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Cờ O_APPEND & lseek",
+    "question": "Một tệp đang chứa `\"ABC\"` được mở với `O_WRONLY | O_APPEND`. Sau đó chương trình gọi `lseek(fd, 0, SEEK_SET)` rồi `write(fd, \"X\", 1)`. Nội dung tệp lúc này là gì?",
+    "options": [
+      "ABCX",
+      "XBC",
+      "XABC",
+      "X"
+    ],
+    "answer": 0,
+    "explain": "Khi tệp được mở với cờ `O_APPEND`, kernel tự động (nguyên tử) dời con trỏ ghi về cuối tệp trước MỌI thao tác `write()`, bất chấp trước đó bạn có gọi `lseek(fd, 0, SEEK_SET)` hay không!"
+  },
+  {
+    "id": "MCQ-046",
+    "chapter": 2,
+    "topicId": "2-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Giá trị trả về của read()",
+    "question": "Lời gọi `ssize_t n = read(fd, buf, sizeof(buf));` trả về giá trị `0` có ý nghĩa gì?",
+    "options": [
+      "Đã đọc tới cuối tệp (EOF — End of File)",
+      "Xảy ra lỗi đọc tệp",
+      "Tệp bị khóa bởi tiến trình khác",
+      "Cần gọi `open()` lại ngay lập tức"
+    ],
+    "answer": 0,
+    "explain": "`read()` trả về `> 0`: số byte thực sự đọc được; `== 0`: đã chạm cuối tệp (EOF); `< 0` (`-1`): xảy ra lỗi."
+  },
+  {
+    "id": "MCQ-047",
+    "chapter": 2,
+    "topicId": "2-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Đọc dữ liệu nhị phân & byte '\\0'",
+    "question": "Vì sao khi dùng `read(fd, buf, sizeof(buf))` để thống kê byte của một tệp nhị phân, KHÔNG ĐƯỢC dùng `strlen(buf)` để lấy số byte vừa đọc?",
+    "options": [
+      "`read()` không tự thêm `'\\0'` và tệp nhị phân có thể chứa byte `0x00` (`'\\0'`) ngay giữa dữ liệu khiến `strlen` dừng sớm hoặc đọc tràn bộ đệm",
+      "`strlen` chỉ chạy được trên Windows, không có trong `<string.h>` của Linux",
+      "`strlen` làm thay đổi con trỏ vị trí tệp (file offset)",
+      "`read()` luôn trả về chuỗi đã mã hóa Base64"
+    ],
+    "answer": 0,
+    "explain": "`read()` trả về trực tiếp số byte `n` đã đọc vào `buf`. Với dữ liệu nhị phân (hoặc văn bản chưa gắn `'\\0'`), phải duyệt đúng `for (int i = 0; i < n; i++)`."
+  },
+  {
+    "id": "MCQ-048",
+    "chapter": 2,
+    "topicId": "2-6",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Tham số whence của lseek()",
+    "question": "Cách gọi `lseek()` nào dùng để lấy tổng kích thước (tính theo byte) của một tệp đang mở `fd`?",
+    "options": [
+      "off_t size = lseek(fd, 0, SEEK_END);",
+      "off_t size = lseek(fd, 0, SEEK_SET);",
+      "off_t size = lseek(fd, 1, SEEK_CUR);",
+      "off_t size = lseek(fd, -1, SEEK_SET);"
+    ],
+    "answer": 0,
+    "explain": "`lseek(fd, 0, SEEK_END)` dịch con trỏ tới cuối tệp và trả về vị trí mới tính từ đầu tệp — chính là kích thước byte của tệp. (Lưu ý: sau đó cần `lseek(fd, 0, SEEK_SET)` nếu muốn đọc lại từ đầu.)"
+  },
+  {
+    "id": "MCQ-049",
+    "chapter": 2,
+    "topicId": "2-6",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 2 · Lab 2 Bài 1b lseek",
+    "question": "Tệp `Hello.txt` chứa `\"Hello! What is your name?\"`. Sau khi gọi `lseek(fd, 7, SEEK_SET)` rồi `read()`, chuỗi đọc được bắt đầu từ ký tự nào?",
+    "options": [
+      "Ký tự `'W'` (`\"What is your name?\"`)",
+      "Ký tự `'!'` (`\"! What is your name?\"`)",
+      "Ký tự `' '` (dấu cách trước `'W'`)",
+      "Ký tự `'h'` (`\"hat is your name?\"`)"
+    ],
+    "answer": 0,
+    "explain": "Các byte 0..6 lần lượt là `H(0) e(1) l(2) l(3) o(4) !(5) ' '(6)`. Byte có offset `7` chính là chữ `'W'`, nên đọc tiếp sẽ thu được `\"What is your name?\"`."
+  },
+  {
+    "id": "MCQ-050",
+    "chapter": 2,
+    "topicId": "2-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Siêu dữ liệu stat()",
+    "question": "Trong `struct stat st`, các macro `S_ISREG(st.st_mode)`, `S_ISDIR(st.st_mode)` và biểu thức `st.st_mode & 0777` lần lượt dùng để làm gì?",
+    "options": [
+      "Kiểm tra tệp thường, kiểm tra thư mục, và lọc 9 bit quyền truy cập (rwx của owner/group/other)",
+      "Đổi quyền tệp, xóa thư mục, và lấy kích thước tệp",
+      "Lấy thời gian sửa đổi cuối, số hard link, và UID chủ sở hữu",
+      "Kiểm tra tệp đang mở, tệp đang đóng, và số hiệu File Descriptor"
+    ],
+    "answer": 0,
+    "explain": "`st_mode` chứa cả loại tệp (các bit cao) và quyền truy cập (9 bit thấp). Macro `S_ISREG`/`S_ISDIR` kiểm tra loại tệp, còn phép AND bit `st.st_mode & 0777` lọc 9 bit quyền để in bằng `%03o`."
+  },
+  {
+    "id": "MCQ-051",
+    "chapter": 2,
+    "topicId": "2-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · stat vs lstat vs fstat",
+    "question": "Điểm khác nhau chính giữa 3 hàm `stat()`, `fstat()` và `lstat()` là gì?",
+    "options": [
+      "`stat` nhận đường dẫn (theo dõi symlink); `lstat` nhận đường dẫn (lấy thông tin của chính symlink); `fstat` nhận File Descriptor `int fd` đã mở",
+      "`stat` dùng cho thư mục; `fstat` dùng cho tệp thường; `lstat` dùng cho tệp lớn > 4GB",
+      "`fstat` thuộc thư viện `stdio.h` nhận `FILE*`; còn `stat` nhận `int fd`",
+      "Cả 3 hàm nhận tham số giống hệt nhau"
+    ],
+    "answer": 0,
+    "explain": "`stat(path, &st)` đi theo liên kết mềm (symbolic link) tới tệp đích; `lstat(path, &st)` trả về metadata của chính bản thân symbolic link; còn `fstat(fd, &st)` lấy metadata từ một `fd` đã mở."
+  },
+  {
+    "id": "MCQ-052",
+    "chapter": 2,
+    "topicId": "2-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Duyệt thư mục <dirent.h>",
+    "question": "Khi dùng `opendir(dir_path)` và `readdir(dir)` để thống kê các tệp trong thư mục `dir_path`, vì sao khi gọi `stat()` ta PHẢI ghép chuỗi `dir_path + \"/\" + de->d_name` thay vì truyền thẳng `de->d_name`?",
+    "options": [
+      "Vì `de->d_name` chỉ chứa tên tệp ngắn chứ không chứa đường dẫn thư mục, nên nếu `dir_path` khác thư mục hiện tại `.` thì `stat(de->d_name)` sẽ không tìm thấy tệp",
+      "Vì `de->d_name` được mã hóa bằng số nguyên inode",
+      "Vì `stat()` không chấp nhận chuỗi ngắn hơn 10 ký tự",
+      "Không cần ghép, `stat()` luôn tự biết thư mục của `opendir()`"
+    ],
+    "answer": 0,
+    "explain": "`readdir()` chỉ trả về tên mục (`a.txt`), không chứa tiền tố thư mục (`dir06/a.txt`). Nếu không ghép thành `dir_path/d_name`, `stat()` sẽ tìm nhầm trong thư mục làm việc hiện tại (`cwd`) và báo lỗi `-1`."
+  },
+  {
+    "id": "MCQ-053",
+    "chapter": 2,
+    "topicId": "2-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Lab 2 Bài 8 linuxcd.c",
+    "question": "Tại sao lệnh `cd` trong Linux bắt buộc phải là lệnh nội trú của Shell (Shell built-in) mà không thể là một chương trình thực thi độc lập như `/bin/ls`?",
+    "options": [
+      "Vì chương trình độc lập chạy trong tiến trình con; gọi `chdir()` chỉ đổi thư mục làm việc (CWD) của tiến trình con đó, khi con thoát thì CWD của Shell cha vẫn giữ nguyên",
+      "Vì lệnh `cd` không được phép gọi lời gọi hệ thống `chdir()`",
+      "Vì `cd` cần quyền root UID = 0 mới đổi được thư mục",
+      "Vì hệ thống tệp Linux cấm tiến trình con truy cập thư mục cha"
+    ],
+    "answer": 0,
+    "explain": "Thư mục làm việc hiện tại (CWD) là thuộc tính riêng trong PCB của từng tiến trình. Tiến trình con đổi CWD của nó không hề ảnh hưởng tới tiến trình Shell cha."
+  },
+  {
+    "id": "MCQ-054",
+    "chapter": 2,
+    "topicId": "2-9",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Lab 2 Bài 2 Buffered I/O vs Syscall",
+    "question": "Khi sao chép một tệp 2 MB bằng cách đọc/ghi từng 1 byte, vì sao phiên bản dùng thư viện chuẩn C (`fgetc`/`fputc`) nhanh hơn rất nhiều so với gọi trực tiếp `read(..., 1)`/`write(..., 1)`?",
+    "options": [
+      "`stdio` gom dữ liệu vào vùng đệm User Space (4KB–8KB) rồi mới gọi System Call 1 lần, giảm hàng trăm nghìn lần chuyển ngữ cảnh (Context Switch) sang Kernel Space",
+      "`fgetc`/`fputc` bỏ qua nhân hệ điều hành và ghi thẳng vào ổ cứng",
+      "`read()` và `write()` tự động gọi `sleep()` sau mỗi byte",
+      "`stdio` tự động nén tệp 2 MB xuống còn 2 KB"
+    ],
+    "answer": 0,
+    "explain": "Mỗi lời gọi hệ thống tốn > 10.000 chu kỳ xung nhịp cho việc chuyển User ↔ Kernel mode (Slide APT02). Thư viện `stdio` dùng Buffered I/O gom hàng nghìn byte thành 1 syscall duy nhất nên `sys time` giảm hàng trăm lần."
+  },
+  {
+    "id": "MCQ-055",
+    "chapter": 2,
+    "topicId": "2-9",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Cơ chế xả đệm printf/fflush",
+    "question": "Khi xuất ra thiết bị terminal bằng `printf()`, trong trường hợp mặc định (line-buffered), bộ đệm stdout được tự động xả (flush) xuống lời gọi `write(1, ...)` khi nào?",
+    "options": [
+      "Khi gặp ký tự xuống dòng `'\\n'`, khi bộ đệm đầy, khi gọi `fflush(stdout)`, hoặc khi chương trình kết thúc bình thường",
+      "Ngay lập tức sau mỗi một ký tự bất kỳ",
+      "Chỉ khi người dùng nhấn Ctrl+C",
+      "Chỉ khi chương trình gọi `_exit()`"
+    ],
+    "answer": 0,
+    "explain": "Theo Slide APT02: `printf` tích lũy ký tự vào buffer của `stdout` và tự động gọi `fflush(stdout)` → `write(1, ...)` khi gặp `'\\n'` (với terminal), khi đầy buffer, hoặc lúc `exit()` (nhưng `_exit()` KHÔNG xả buffer stdio!)."
+  },
+  {
+    "id": "MCQ-056",
+    "chapter": 2,
+    "topicId": "2-10",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Cờ mmap() ghi sửa tại chỗ",
+    "question": "Để dùng `mmap()` sửa trực tiếp nội dung tệp trên đĩa (ví dụ biến đổi XOR tại chỗ ở Câu 07), cần dùng cờ bảo vệ và cờ ánh xạ nào?",
+    "options": [
+      "`open(..., O_RDWR)` kết hợp `PROT_READ | PROT_WRITE` và `MAP_SHARED`",
+      "`open(..., O_RDONLY)` kết hợp `PROT_WRITE` và `MAP_PRIVATE`",
+      "`open(..., O_WRONLY)` kết hợp `PROT_READ | PROT_WRITE` và `MAP_PRIVATE`",
+      "`open(..., O_RDWR)` kết hợp `PROT_READ` và `MAP_ANONYMOUS`"
+    ],
+    "answer": 0,
+    "explain": "Muốn thay đổi trên vùng ánh xạ được ghi ngược xuống tệp trên đĩa, bắt buộc mở tệp `O_RDWR`, truyền `PROT_READ | PROT_WRITE` và `MAP_SHARED` (nếu dùng `MAP_PRIVATE`, thay đổi chỉ nằm ở bản sao riêng trên RAM và không ghi ra tệp)."
+  },
+  {
+    "id": "MCQ-057",
+    "chapter": 2,
+    "topicId": "2-10",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Bẫy mmap() với tệp rỗng",
+    "question": "Điều gì xảy ra nếu ta gọi `mmap(NULL, 0, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0)` trên một tệp rỗng kích thước 0 byte?",
+    "options": [
+      "`mmap()` thất bại và trả về `MAP_FAILED` (lỗi `EINVAL`), do đó phải kiểm tra `size == 0` trước khi gọi `mmap()`",
+      "`mmap()` tự động mở rộng tệp lên 4096 byte",
+      "`mmap()` trả về con trỏ `NULL` hợp lệ và vẫn đọc bình thường",
+      "`mmap()` xóa tệp khỏi đĩa"
+    ],
+    "answer": 0,
+    "explain": "Chuẩn POSIX quy định tham số `length` của `mmap()` phải `> 0`; nếu truyền `0`, `mmap()` trả về `MAP_FAILED` (`(void*)-1`) với `errno = EINVAL`. Vì vậy với tệp 0 byte phải xử lý riêng không gọi `mmap()`."
+  },
+  {
+    "id": "MCQ-058",
+    "chapter": 2,
+    "topicId": "2-6",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · File Hole với lseek",
+    "question": "Một tệp rỗng (0 byte) được mở để ghi. Nếu gọi `lseek(fd, 8, SEEK_SET)` rồi `write(fd, \"A\", 1)`, kích thước `st_size` của tệp sẽ bằng bao nhiêu?",
+    "options": [
+      "9 byte (tạo file hole gồm 8 byte 0 ở đầu và byte 'A' ở vị trí 8)",
+      "1 byte",
+      "8 byte",
+      "Lỗi vì không thể lseek vượt cuối tệp"
+    ],
+    "answer": 0,
+    "explain": "Linux cho phép `lseek()` vượt quá cuối tệp hiện tại. Khi có thao tác `write()` ở vị trí 8 (ghi 1 byte), các byte ở giữa (0..7) được coi là byte 0 (file hole) và `st_size` trở thành `8 + 1 = 9` byte."
+  },
+  {
+    "id": "MCQ-059",
+    "chapter": 2,
+    "topicId": "2-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Đóng tệp close()",
+    "question": "Điều gì nguy hiểm nếu một chương trình đa luồng gọi `close(fd)` hai lần liên tiếp trên cùng một biến `fd`?",
+    "options": [
+      "Số hiệu `fd` có thể vừa được luồng khác tái sử dụng cho một tệp mới, khiến lần `close(fd)` thứ hai vô tình đóng nhầm tệp của luồng khác",
+      "Nhân Linux tự động tắt nguồn máy tính",
+      "Tệp trên đĩa bị xóa vĩnh viễn",
+      "Không có tác hại nào vì `close()` luôn bỏ qua âm thầm"
+    ],
+    "answer": 0,
+    "explain": "Slide APT02 nhấn mạnh: \"Closing an already closed file is a recipe for disaster in threaded programs\" vì `open()` luôn cấp lại số FD nhỏ nhất còn trống nên luồng khác có thể nhận đúng số `fd` vừa đóng."
+  },
+  {
+    "id": "MCQ-060",
+    "chapter": 2,
+    "topicId": "2-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 2 · Quyền tạo tệp & umask",
+    "question": "Khi mở tệp mới với `open(\"a.txt\", O_WRONLY | O_CREAT, 0644)`, ý nghĩa của `0644` (hệ cơ số 8) là gì?",
+    "options": [
+      "Chủ sở hữu đọc/ghi (`rw-`), nhóm chỉ đọc (`r--`), người khác chỉ đọc (`r--`)",
+      "Mọi người đều có toàn quyền đọc/ghi/thực thi (`rwxrwxrwx`)",
+      "Chỉ chủ sở hữu được đọc (`r--------`)",
+      "Chủ sở hữu có quyền thực thi (`--x`), nhóm đọc/ghi"
+    ],
+    "answer": 0,
+    "explain": "Trong hệ bát phân: `6 = 4+2 (rw-)`, `4 = 4 (r--)`, `4 = 4 (r--)`. Tiền tố số `0` ở đầu `0644` trong C rất quan trọng để báo hằng số bát phân (nếu viết `644` thập phân sẽ ra quyền hoàn toàn sai!)."
+  },
+  {
+    "id": "MCQ-061",
+    "chapter": 3,
+    "topicId": "3-3",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 13",
+    "question": "Khi lời gọi hệ thống `fork()` tạo tiến trình mới thành công trên Linux, giá trị trả về của `fork()` ở tiến trình con và tiến trình cha lần lượt là gì?",
+    "options": [
+      "Trả về PID của cha ở tiến trình con; trả về 0 ở tiến trình cha.",
+      "Trả về cùng giá trị PID của con mới ở cả tiến trình cha lẫn con.",
+      "Trả về 1 ở tiến trình con; trả về 0 ở tiến trình cha sau khi tạo.",
+      "Trả về 0 ở tiến trình con; trả về PID của con mới ở tiến trình cha."
+    ],
+    "answer": 3,
+    "explain": "`fork()` được gọi 1 lần nhưng trả về 2 lần: trả về `0` trong tiến trình con (con có thể biết cha qua `getppid()`), trả về `PID > 0` của con mới trong tiến trình cha (để cha theo dõi bằng `waitpid`), và trả về `-1` nếu lỗi."
+  },
+  {
+    "id": "MCQ-062",
+    "chapter": 3,
+    "topicId": "3-5",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 14",
+    "question": "Trên Linux, khi tiến trình con đã kết thúc nhưng tiến trình cha chưa thu gom trạng thái thoát (reap), tiến trình con nằm ở trạng thái nào?",
+    "options": [
+      "Trạng thái phong tỏa (Blocked).",
+      "Trạng thái mồ côi (Orphan).",
+      "Trạng thái xác sống (Zombie).",
+      "Trạng thái sẵn sàng (Ready)."
+    ],
+    "answer": 2,
+    "explain": "Tiến trình con đã dừng chạy nhưng PCB và mã thoát vẫn còn trong bảng tiến trình chờ cha gọi `wait()`/`waitpid()` gọi là **Zombie**. (Còn nếu cha chết trước con đang chạy thì con trở thành **Orphan** và được `init`/PID 1 nhận nuôi.)"
+  },
+  {
+    "id": "MCQ-063",
+    "chapter": 3,
+    "topicId": "3-8",
+    "tag": "real-exam",
+    "type": "trace",
+    "source": "Đề thi thật UET · Câu 15",
+    "question": "Đoạn chương trình C nối đường ống giữa hai tiến trình trên Linux dưới đây tương đương với câu lệnh Shell nào?",
+    "code": "int p[2];\npipe(p);\nif (fork() == 0) {\n    dup2(p[1], 1);\n    close(p[0]);\n    execlp(\"ls\", \"ls\", (char *)0);\n}\ndup2(p[0], 0);\nclose(p[1]);\nexeclp(\"sort\", \"sort\", \"-r\", (char *)0);",
+    "options": [
+      "ls >> sort -r",
+      "sort -r | ls",
+      "ls | sort -r",
+      "ls > sort -r"
+    ],
+    "answer": 2,
+    "explain": "Tiến trình con nối `stdout` (FD 1) vào đầu ghi `p[1]` rồi chạy `ls` → output của `ls` chảy vào pipe. Tiến trình cha nối `stdin` (FD 0) vào đầu đọc `p[0]` rồi chạy `sort -r` → nhận dữ liệu từ pipe. Tương đương lệnh `ls | sort -r` (Slide APT03)."
+  },
+  {
+    "id": "MCQ-064",
+    "chapter": 3,
+    "topicId": "3-3",
+    "tag": "real-exam",
+    "type": "fill",
+    "source": "Đề thi cuối kỳ cũ · Cha in PID con",
+    "question": "Để tiến trình CHA in ra PID của tiến trình CON vừa được tạo bởi `fork()`, hai chỗ trống cần điền là gì?",
+    "code": "pid_t pid = fork();\nif (___(1)___) {\n    printf(\"Child PID = %d\\n\", ___(2)___);\n}",
+    "options": [
+      "(1) pid > 0 và (2) pid",
+      "(1) pid == 0 và (2) pid",
+      "(1) pid == 0 và (2) getppid()",
+      "(1) pid < 0 và (2) getpid()"
+    ],
+    "answer": 0,
+    "explain": "Nhánh tiến trình CHA tương ứng điều kiện `pid > 0`, và chính giá trị `pid` lúc này là PID của tiến trình con vừa tạo. (Nếu viết `pid == 0`, đó là tiến trình con và `pid` bằng 0!)"
+  },
+  {
+    "id": "MCQ-065",
+    "chapter": 3,
+    "topicId": "3-6",
+    "tag": "real-exam",
+    "type": "fill",
+    "source": "Đề thi cuối kỳ cũ · waitpid",
+    "question": "Hoàn thiện đoạn code để tiến trình cha đợi đúng tiến trình con vừa tạo kết thúc:",
+    "code": "pid_t pid = fork();\nif (___(1)___) {\n    waitpid(___(2)___, NULL, 0);\n}",
+    "options": [
+      "(1) pid > 0 và (2) pid",
+      "(1) pid == 0 và (2) pid",
+      "(1) pid > 0 và (2) 0",
+      "(1) pid < 0 và (2) -1"
+    ],
+    "answer": 0,
+    "explain": "Ở tiến trình cha (`pid > 0`), gọi `waitpid(pid, NULL, 0)` sẽ chặn cha cho đến khi đúng tiến trình con có mã định danh `pid` kết thúc và thu dọn zombie."
+  },
+  {
+    "id": "MCQ-066",
+    "chapter": 3,
+    "topicId": "3-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Hai trừu tượng của Process",
+    "question": "Hệ điều hành cung cấp cho mỗi tiến trình hai ảo giác (abstraction) cốt lõi nào?",
+    "options": [
+      "Luồng điều khiển logic riêng (Logical control flow) và không gian bộ nhớ riêng (Private address space)",
+      "Ổ đĩa vật lý riêng và card mạng riêng",
+      "Quyền root tuyệt đối và không bao giờ bị ngắt",
+      "Tất cả tiến trình dùng chung một Stack duy nhất"
+    ],
+    "answer": 0,
+    "explain": "Theo Slide APT03: Process tạo ra 2 trừu tượng là Logical control flow (tưởng như độc chiếm CPU) và Private memory (tưởng như độc chiếm RAM)."
+  },
+  {
+    "id": "MCQ-067",
+    "chapter": 3,
+    "topicId": "3-2",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Vòng đời 5 trạng thái tiến trình",
+    "question": "Năm trạng thái cơ bản trong vòng đời một tiến trình (Slide APT03) gồm những trạng thái nào?",
+    "options": [
+      "New, Ready, Running, Wait/Blocked, Terminated",
+      "Init, Compile, Link, Execute, Exit",
+      "Fork, Exec, Pipe, Wait, Kill",
+      "Text, Data, BSS, Heap, Stack"
+    ],
+    "answer": 0,
+    "explain": "5 trạng thái vòng đời tiến trình: New (mới tạo) → Ready (sẵn sàng trong ready queue) ↔ Running (đang chạy trên CPU) → Wait/Blocked (chờ I/O hoặc sự kiện) → Terminated (kết thúc)."
+  },
+  {
+    "id": "MCQ-068",
+    "chapter": 3,
+    "topicId": "3-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Lab 3 Bài 2 Biến idata/istack sau fork()",
+    "question": "Trước khi `fork()`, biến tĩnh `idata = 1000` và biến cục bộ `istack = 150`. Tiến trình con thay đổi `idata = 1500; istack = 200;` rồi thoát. Sau khi `wait()`, tiến trình cha in ra giá trị `idata` và `istack` bằng bao nhiêu?",
+    "options": [
+      "`idata = 1000`, `istack = 150` (không đổi do cha và con có không gian địa chỉ riêng biệt / Copy-on-Write)",
+      "`idata = 1500`, `istack = 200` (cả hai đều đổi)",
+      "`idata = 1500`, `istack = 150` (chỉ biến tĩnh đổi)",
+      "`idata = 1000`, `istack = 200` (chỉ biến stack đổi)"
+    ],
+    "answer": 0,
+    "explain": "Sau `fork()`, cha và con có bản sao độc lập của Data, Heap và Stack (tối ưu bằng Copy-on-Write). Con sửa bất kỳ biến nào trong bộ nhớ của nó đều không ảnh hưởng tới biến của cha."
+  },
+  {
+    "id": "MCQ-069",
+    "chapter": 3,
+    "topicId": "3-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Lab 3 Bài 2 File Offset sau fork()",
+    "question": "Tiến trình cha mở `fd = open(\"Hello.txt\", O_RDONLY)` TRƯỚC khi gọi `fork()`. Tiến trình con gọi `lseek(fd, 7, SEEK_SET)` rồi thoát. Sau `wait()`, cha gọi `read(fd, ...)` sẽ đọc bắt đầu từ vị trí nào?",
+    "options": [
+      "Từ byte thứ 7 (vì cha và con chia sẻ chung Open File Table Entry chứa Current File Offset trong kernel)",
+      "Từ byte thứ 0 (vì cha và con có file offset hoàn toàn độc lập)",
+      "Trả về lỗi `-1` vì con đã đóng tệp",
+      "Trả về `0` (EOF) ngay lập tức"
+    ],
+    "answer": 0,
+    "explain": "Khác với biến RAM (tách riêng), khi `fd` được mở TRƯỚC `fork()`, bảng FD của cha và con cùng trỏ tới một Open File Table Entry duy nhất trong kernel nên **chia sẻ chung con trỏ file offset**!"
+  },
+  {
+    "id": "MCQ-070",
+    "chapter": 3,
+    "topicId": "3-3",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 3 · Bẫy cây tiến trình 2^k",
+    "question": "Nếu viết `for (int i = 0; i < 3; i++) fork();` mà tiến trình con KHÔNG gọi `exit()`/`break`, tổng cộng sẽ có bao nhiêu tiến trình (tính cả cha ban đầu) tồn tại sau vòng lặp?",
+    "options": [
+      "8 tiến trình ($2^3$)",
+      "4 tiến trình ($3 + 1$)",
+      "3 tiến trình",
+      "6 tiến trình"
+    ],
+    "answer": 0,
+    "explain": "Mỗi lần gọi `fork()`, mọi tiến trình hiện có đều nhân đôi: 1 → 2 → 4 → 8 tiến trình ($2^3$). Trong bài Fan-out `CR-11`, mỗi con bắt buộc phải `_exit(0)` ngay để chỉ sinh đúng `k` con cùng cấp."
+  },
+  {
+    "id": "MCQ-071",
+    "chapter": 3,
+    "topicId": "3-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Cơ chế họ hàm exec()",
+    "question": "Khi một tiến trình gọi `execlp(\"ls\", \"ls\", NULL)` thành công, thành phần nào của tiến trình được GIỮ NGUYÊN và thành phần nào bị THAY THẾ?",
+    "options": [
+      "Giữ nguyên PID, các File Descriptor đang mở và ngữ cảnh tín hiệu; thay thế toàn bộ vùng nhớ Code (Text), Data, Heap, Stack",
+      "Tạo ra một PID mới hoàn toàn và giữ nguyên vùng nhớ Stack cũ",
+      "Chỉ thay thế hàm `main()` còn giữ nguyên mọi biến toàn cục cũ",
+      "Quay về câu lệnh ngay sau `execlp()` sau khi lệnh `ls` chạy xong"
+    ],
+    "answer": 0,
+    "explain": "`exec*()` không tạo tiến trình mới: nó nạp đè chương trình mới vào cùng PID, giữ nguyên open FDs (nhờ thế mới chuyển hướng `dup2` trước `exec` được!) và **không bao giờ return** nếu thành công."
+  },
+  {
+    "id": "MCQ-072",
+    "chapter": 3,
+    "topicId": "3-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Các biến thể exec()",
+    "question": "Trong họ hàm `exec` (`execl`, `execlp`, `execv`, `execvp`, `execve`), hai chữ cái `p` và `v` trong `execvp` có ý nghĩa gì?",
+    "options": [
+      "`v` nhận danh sách đối số dạng mảng con trỏ `char *argv[]` kết thúc bằng `NULL`; `p` tự động tìm tệp thực thi trong biến môi trường `PATH`",
+      "`v` chạy tiến trình ảo; `p` tạo đường ống pipe tự động",
+      "`v` in thông tin verbose; `p` đặt mức ưu tiên priority",
+      "`v` truyền biến môi trường; `p` chờ tiến trình cha"
+    ],
+    "answer": 0,
+    "explain": "Quy tắc đặt tên họ `exec`: `l` (list đối số lẻ kết thúc bằng `NULL`), `v` (vector mảng `argv[]`), `p` (tìm theo `PATH` nên chỉ cần truyền `\"ls\"` thay vì `\"/bin/ls\"`), `e` (truyền mảng `envp[]` riêng)."
+  },
+  {
+    "id": "MCQ-073",
+    "chapter": 3,
+    "topicId": "3-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · exit() vs _exit()",
+    "question": "Tại sao trong tiến trình con sau `fork()`, người ta thường khuyến khích dùng `_exit()` thay vì `exit()` (đặc biệt khi trước `fork()` có dữ liệu chưa xả trong buffer `stdout`)?",
+    "options": [
+      "`_exit()` là system call thoát ngay mà KHÔNG xả bộ đệm `stdio` kế thừa từ cha, tránh việc dữ liệu trong buffer bị in lặp 2 lần",
+      "`exit()` không trả về được mã thoát cho `waitpid()`",
+      "`_exit()` tự động giải phóng tiến trình cha luôn",
+      "`exit()` chỉ dùng được trong chương trình đa luồng"
+    ],
+    "answer": 0,
+    "explain": "`exit()` là hàm thư viện C sẽ flush mọi buffer `stdio` trước khi thoát. Nếu cha có dữ liệu nằm trong buffer `stdout` chưa gặp `'\\n'` trước `fork()`, con gọi `exit()` sẽ xả bản sao buffer đó gây in đúp. `_exit()` thoát thẳng ở mức kernel."
+  },
+  {
+    "id": "MCQ-074",
+    "chapter": 3,
+    "topicId": "3-6",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Giới hạn 8-bit exit status",
+    "question": "Nếu tiến trình con gọi `_exit(260)`, giá trị mà tiến trình cha nhận được từ `WEXITSTATUS(status)` sau `waitpid()` là bao nhiêu?",
+    "options": [
+      "4 (vì chỉ giữ 8 bit thấp: `260 & 0xFF = 260 % 256 = 4`)",
+      "260",
+      "255",
+      "-1"
+    ],
+    "answer": 0,
+    "explain": "Mã thoát truyền qua `exit`/`_exit` chỉ giữ đúng 8 bit thấp (`0..255`). `260 % 256 = 4`. Đó là lý do các bài như `CR-09` và `CR-16` phải lấy modulo `200`!"
+  },
+  {
+    "id": "MCQ-075",
+    "chapter": 3,
+    "topicId": "3-6",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Các macro kiểm tra status của waitpid()",
+    "question": "Để kiểm tra xem một tiến trình con có bị kết thúc bởi tín hiệu `SIGKILL` hay không, tiến trình cha dùng cặp macro nào trên biến `status` của `waitpid()`?",
+    "options": [
+      "`WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL`",
+      "`WIFEXITED(status) && WEXITSTATUS(status) == SIGKILL`",
+      "`status == SIGKILL`",
+      "`WIFSTOPPED(status) && WEXITSTATUS(status) == 9`"
+    ],
+    "answer": 0,
+    "explain": "`WIFEXITED`/`WEXITSTATUS` dùng khi con tự thoát bình thường (`return`/`exit`/`_exit`). Khi con bị kết liễu bởi tín hiệu (như `SIGKILL`), `WIFSIGNALED(status)` trả về đúng và `WTERMSIG(status)` trả về số hiệu tín hiệu (`SIGKILL = 9`)."
+  },
+  {
+    "id": "MCQ-076",
+    "chapter": 3,
+    "topicId": "3-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Tín hiệu không thể bắt/bỏ qua",
+    "question": "Tín hiệu nào sau đây KHÔNG THỂ bị tiến trình bắt (catch), chặn (block) hoặc bỏ qua (ignore) trong Linux?",
+    "options": [
+      "SIGKILL (9) và SIGSTOP",
+      "SIGINT (2) và SIGTERM (15)",
+      "SIGUSR1 và SIGUSR2",
+      "SIGALRM (14) và SIGCHLD (17)"
+    ],
+    "answer": 0,
+    "explain": "Theo Slide APT03: `SIGKILL` (số 9) và `SIGSTOP` là 2 tín hiệu tối thượng của nhân Linux — không thể cài handler bắt hay bỏ qua, đảm bảo hệ thống luôn có thể buộc dừng tiến trình bất kỳ."
+  },
+  {
+    "id": "MCQ-077",
+    "chapter": 3,
+    "topicId": "3-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Hàm kill() với sig = 0",
+    "question": "Trong C trên Linux, lời gọi `kill(pid, 0)` thực hiện tác vụ gì?",
+    "options": [
+      "Không gửi tín hiệu nào mà chỉ kiểm tra xem tiến trình `pid` có tồn tại và có quyền gửi tín hiệu hay không",
+      "Kết thúc ngay tiến trình `pid` giống `SIGKILL`",
+      "Gửi tín hiệu `SIGINT` tới tiến trình `pid`",
+      "Đặt mã thoát của tiến trình `pid` về 0"
+    ],
+    "answer": 0,
+    "explain": "Slide APT03 ghi rõ: tham số `sig = 0` trong `kill(pid, 0)` dùng để kiểm tra sự tồn tại của tiến trình đích mà không gửi tín hiệu nào."
+  },
+  {
+    "id": "MCQ-078",
+    "chapter": 3,
+    "topicId": "3-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Signal Handler & volatile sig_atomic_t",
+    "question": "Biến toàn cục dùng chung giữa hàm `main()` và hàm xử lý tín hiệu (signal handler) nên khai báo kiểu gì để đảm bảo an toàn?",
+    "options": [
+      "`volatile sig_atomic_t`",
+      "`register int`",
+      "`const char *`",
+      "`static double`"
+    ],
+    "answer": 0,
+    "explain": "`volatile` ngăn trình biên dịch tối ưu hóa giữ giá trị biến trong thanh ghi (luôn đọc lại từ RAM), còn `sig_atomic_t` đảm bảo phép đọc/ghi biến là nguyên tử không bị tín hiệu ngắt giữa chừng."
+  },
+  {
+    "id": "MCQ-079",
+    "chapter": 3,
+    "topicId": "3-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Tránh race condition khi cài handler trước fork",
+    "question": "Nếu tiến trình con cần gửi tín hiệu `SIGUSR1` báo hoàn tất cho tiến trình cha, cha nên đăng ký signal handler cho `SIGUSR1` ở thời điểm nào?",
+    "options": [
+      "TRƯỚC khi gọi `fork()` để tránh trường hợp con chạy nhanh gửi tín hiệu trước khi cha kịp cài handler (mặc định sẽ làm chết tiến trình cha)",
+      "SAU khi cha gọi `waitpid()` xong",
+      "Bên trong nhánh `if (pid == 0)` của tiến trình con",
+      "Thời điểm nào cũng được vì tín hiệu luôn chờ sẵn 1 giây"
+    ],
+    "answer": 0,
+    "explain": "Hành động mặc định của `SIGUSR1` là **Terminate** (chấm dứt tiến trình). Nếu cha gọi `fork()` trước rồi mới đăng ký handler, con có thể chạy trước và gửi `SIGUSR1` làm chết tiến trình cha ngay lập tức!"
+  },
+  {
+    "id": "MCQ-080",
+    "chapter": 3,
+    "topicId": "3-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Cấu tạo đường ống pipe()",
+    "question": "Sau lời gọi `int p[2]; pipe(p);`, vai trò của `p[0]` và `p[1]` lần lượt là gì?",
+    "options": [
+      "`p[0]` là đầu đọc (read end), `p[1]` là đầu ghi (write end)",
+      "`p[0]` là đầu ghi (write end), `p[1]` là đầu đọc (read end)",
+      "Cả `p[0]` và `p[1]` đều dùng để đọc/ghi hai chiều tùy ý",
+      "`p[0]` lưu PID cha, `p[1]` lưu PID con"
+    ],
+    "answer": 0,
+    "explain": "Mẹo dễ nhớ: giống STDIN (`0`) để đọc và STDOUT (`1`) để ghi — trong `pipe(p)`, `p[0]` luôn là đầu đọc và `p[1]` luôn là đầu ghi. Pipe ẩn danh là kênh **một chiều (unidirectional)**."
+  },
+  {
+    "id": "MCQ-081",
+    "chapter": 3,
+    "topicId": "3-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Bẫy quên đóng đầu ghi p[1]",
+    "question": "Cha gửi dữ liệu cho con qua `pipe(p)`, sau khi ghi xong cha gọi `close(p[1])`. Tuy nhiên tiến trình con lại QUÊN gọi `close(p[1])` trước khi vòng lặp `while (read(p[0], ...) > 0)`. Điều gì xảy ra?",
+    "options": [
+      "Tiến trình con bị treo (block) vĩnh viễn ở `read()` sau khi đọc hết dữ liệu vì vẫn còn 1 FD trỏ tới đầu ghi `p[1]` (chính là của con) nên không bao giờ nhận EOF",
+      "Con nhận EOF ngay lập tức và thoát bình thường",
+      "Hàm `read()` trả về `-1` với lỗi `EPIPE`",
+      "Dữ liệu trong pipe bị đảo ngược thứ tự"
+    ],
+    "answer": 0,
+    "explain": "Đầu đọc `p[0]` chỉ trả về `0` (EOF) khi **TẤT CẢ** các bản sao FD của đầu ghi `p[1]` ở cả cha lẫn con đều đã đóng! Đây là lỗi treo chương trình phổ biến nhất khi lập trình `pipe`."
+  },
+  {
+    "id": "MCQ-082",
+    "chapter": 3,
+    "topicId": "3-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Giao tiếp 2 chiều cha-con",
+    "question": "Để tiến trình cha và tiến trình con trao đổi dữ liệu HAI CHIỀU an toàn bằng đường ống ẩn danh (như `CR-12` và Lab 3 Bài 5), ta cần tối thiểu bao nhiêu ống `pipe()`?",
+    "options": [
+      "2 ống `pipe()` riêng biệt (4 File Descriptor): một ống chiều Cha → Con và một ống chiều Con → Cha",
+      "1 ống `pipe()` duy nhất là đủ",
+      "4 ống `pipe()` (8 File Descriptor)",
+      "Không thể dùng `pipe()` để giao tiếp giữa cha và con"
+    ],
+    "answer": 0,
+    "explain": "Pipe ẩn danh trong POSIX chỉ truyền dữ liệu một chiều (half-duplex). Nếu cha và con cùng đọc/ghi trên 1 ống sẽ tự đọc nhầm dữ liệu của chính mình hoặc gây deadlock; do đó bắt buộc dùng 2 ống."
+  },
+  {
+    "id": "MCQ-083",
+    "chapter": 3,
+    "topicId": "3-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Thứ tự gọi pipe() và fork()",
+    "question": "Để cha và con dùng chung được một đường ống ẩn danh, phải gọi `pipe(p)` và `fork()` theo thứ tự nào?",
+    "options": [
+      "Gọi `pipe(p)` TRƯỚC rồi mới gọi `fork()` để con kế thừa hai đầu ống `p[0]`, `p[1]` của cha",
+      "Gọi `fork()` TRƯỚC rồi mỗi tiến trình tự gọi `pipe(p)` riêng",
+      "Thứ tự nào cũng được vì kernel tự nối tên biến `p`",
+      "Chỉ gọi `pipe(p)` trong tiến trình con"
+    ],
+    "answer": 0,
+    "explain": "Anonymous pipe không có tên trên hệ thống tệp; cách duy nhất để hai tiến trình liên quan chia sẻ nó là tạo `pipe(p)` ở cha trước khi `fork()` để con kế thừa bảng FD."
+  },
+  {
+    "id": "MCQ-084",
+    "chapter": 3,
+    "topicId": "3-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Cơ chế hàm dup2(oldfd, newfd)",
+    "question": "Lời gọi `dup2(p[1], STDOUT_FILENO)` thực hiện hành động gì?",
+    "options": [
+      "Đóng `STDOUT_FILENO` (nếu đang mở) rồi sao chép đầu ghi `p[1]` sang vị trí FD `1`, khiến mọi dữ liệu in ra `stdout` sẽ chảy vào đường ống",
+      "Đóng đầu ghi `p[1]` và chuyển hướng `p[1]` ra màn hình",
+      "Tạo ra một tiến trình con mới có đầu ra là `p[1]`",
+      "Nối hai tệp `p[1]` và `STDOUT_FILENO` thành một tệp trên đĩa"
+    ],
+    "answer": 0,
+    "explain": "`dup2(oldfd, newfd)` làm cho `newfd` trở thành bản sao trỏ cùng Open File Entry với `oldfd`. Sau `dup2(p[1], 1)`, ta thường `close(p[1])` cho gọn, và lệnh `exec` sau đó tự động ghi stdout vào pipe."
+  },
+  {
+    "id": "MCQ-085",
+    "chapter": 3,
+    "topicId": "3-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Pipe ẩn danh vs Named Pipe (FIFO)",
+    "question": "Sự khác biệt chính về phạm vi sử dụng giữa Anonymous Pipe (`pipe()`) và Named Pipe (`mkfifo()`) là gì?",
+    "options": [
+      "Anonymous Pipe chỉ dùng cho các tiến trình có quan hệ họ hàng (cha–con); Named Pipe có tên trong hệ thống tệp nên dùng được cho mọi tiến trình độc lập",
+      "Anonymous Pipe lưu trên đĩa cứng; Named Pipe nằm trong thanh ghi CPU",
+      "Named Pipe không thể dùng với `read()`/`write()`",
+      "Anonymous Pipe truyền 2 chiều; Named Pipe chỉ truyền 1 chiều"
+    ],
+    "answer": 0,
+    "explain": "Slide APT03: Anonymous pipes chỉ dùng được giữa các tiến trình có quan hệ kế thừa FD (như cha và con), còn Named pipes (FIFO) có đường dẫn tệp nên hai tiến trình bất kỳ đều có thể mở và giao tiếp."
+  },
+  {
+    "id": "MCQ-086",
+    "chapter": 3,
+    "topicId": "3-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 3 · Mô hình Shell (Lab 3 Bài 4)",
+    "question": "Tại sao một trình Shell (như Bash hay `myshell` trong Lab 3) phải dùng mô hình `fork() → exec() → waitpid()` thay vì tự gọi thẳng `exec()` để chạy lệnh `ls`?",
+    "options": [
+      "Vì nếu Shell tự gọi `exec()`, chương trình `ls` sẽ ghi đè thay thế chính Shell khiến Shell biến mất ngay sau khi `ls` chạy xong",
+      "Vì lệnh `ls` không thể chạy nếu PID nhỏ hơn 1000",
+      "Vì hàm `exec()` chỉ hoạt động khi được gọi từ tiến trình con",
+      "Vì Shell không được phép sử dụng `STDOUT_FILENO`"
+    ],
+    "answer": 0,
+    "explain": "Shell cha cần sống mãi trong vòng lặp đọc lệnh kế tiếp, nên nó `fork()` tạo con để con hy sinh bản thân cho `exec()`, còn cha gọi `waitpid()` chờ con hoàn thành rồi in dấu nhắc tiếp."
+  },
+  {
+    "id": "MCQ-087",
+    "chapter": 4,
+    "topicId": "4-3",
+    "tag": "real-exam",
+    "type": "syntax",
+    "source": "Đề thi thật UET · Câu 16",
+    "question": "Khi biên dịch chương trình C có sử dụng thư viện POSIX Threads (`<pthread.h>`) trên Linux, cần truyền tùy chọn nào cho trình biên dịch GCC?",
+    "options": [
+      "-fopenmp",
+      "-lfork",
+      "-pthread",
+      "-lprocess"
+    ],
+    "answer": 2,
+    "explain": "Theo Slide APT04: chương trình dùng Pthreads (`<pthread.h>`) phải biên dịch với tùy chọn `-pthread` (ví dụ `gcc main.c -pthread -o main`). Cờ `-fopenmp` là của OpenMP."
+  },
+  {
+    "id": "MCQ-088",
+    "chapter": 4,
+    "topicId": "4-4",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 17",
+    "question": "Trong lập trình POSIX Threads trên Linux, hàm `pthread_detach()` thực hiện tác vụ gì đối với luồng mục tiêu?",
+    "options": [
+      "Tạm dừng luồng mục tiêu để chờ tín hiệu đánh thức từ biến điều kiện.",
+      "Đổi luồng sang trạng thái detached để tự giải phóng tài nguyên.",
+      "Hủy cưỡng bức luồng ngay lập tức và giải phóng toàn bộ biến toàn cục.",
+      "Tách luồng sang một tiến trình mới có vùng địa chỉ bộ nhớ riêng biệt."
+    ],
+    "answer": 1,
+    "explain": "Slide APT04: `pthread_detach(tid)` chuyển luồng từ `joinable` sang `detached`; khi luồng kết thúc, hệ thống tự động thu hồi tài nguyên mà không cần luồng khác gọi `pthread_join()` (và không thể join luồng đã detach)."
+  },
+  {
+    "id": "MCQ-089",
+    "chapter": 4,
+    "topicId": "4-9",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 18",
+    "question": "Trong lập trình POSIX Threads trên Linux, lời gọi hàm `pthread_mutex_unlock()` sẽ trả về lỗi trong trường hợp nào sau đây?",
+    "options": [
+      "Mở khóa mutex khi đang có từ hai luồng trở lên xếp hàng đợi khóa.",
+      "Mở khóa mutex được khởi tạo tĩnh bằng `PTHREAD_MUTEX_INITIALIZER`.",
+      "Mở khóa mutex bên trong hàm của luồng con thay vì trong hàm `main`.",
+      "Mở khóa mutex đang không khóa hoặc đang bị khóa bởi luồng khác."
+    ],
+    "answer": 3,
+    "explain": "Slide APT04 ghi rõ: `pthread_mutex_unlock()` trả về lỗi nếu mở khóa một mutex hiện không bị khóa, hoặc mở khóa một mutex đang thuộc quyền sở hữu (bị khóa) bởi một luồng khác."
+  },
+  {
+    "id": "MCQ-090",
+    "chapter": 4,
+    "topicId": "4-3",
+    "tag": "real-exam",
+    "type": "fill",
+    "source": "Đề thi cuối kỳ cũ · pthread_create",
+    "question": "Hoàn thiện đoạn code để tạo một luồng thực thi hàm `worker` với thuộc tính mặc định và không truyền tham số:",
+    "code": "pthread_t tid;\n___(1)___(___(2)___, NULL, worker, NULL);",
+    "options": [
+      "(1) pthread_create và (2) &tid",
+      "(1) pthread_create và (2) tid",
+      "(1) pthread_join và (2) &tid",
+      "(1) fork và (2) &tid"
+    ],
+    "answer": 0,
+    "explain": "Nguyên mẫu là `int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg);`. Tham số đầu tiên là con trỏ `&tid` để ghi lại Thread ID."
+  },
+  {
+    "id": "MCQ-091",
+    "chapter": 4,
+    "topicId": "4-5",
+    "tag": "real-exam",
+    "type": "fill",
+    "source": "Đề thi cuối kỳ cũ · pthread_join",
+    "question": "Hoàn thiện đoạn code để luồng chính đợi luồng `worker` kết thúc trước khi in `\"Worker finished\"`:",
+    "code": "pthread_t tid;\npthread_create(&tid, NULL, worker, NULL);\n___(1)___(___(2)___, NULL);\nprintf(\"Worker finished\\n\");",
+    "options": [
+      "(1) pthread_join và (2) tid",
+      "(1) wait_pid và (2) tid",
+      "(1) pthread_join và (2) &tid",
+      "(1) pthread_detach và (2) tid"
+    ],
+    "answer": 0,
+    "explain": "Đợi luồng dùng `pthread_join(tid, NULL)` (chú ý truyền giá trị `tid`, KHÔNG có dấu `&`, và không dùng `waitpid` vì `waitpid` dành cho tiến trình!)."
+  },
+  {
+    "id": "MCQ-092",
+    "chapter": 4,
+    "topicId": "4-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Threads vs Processes",
+    "question": "Các luồng (threads) thuộc cùng một tiến trình CHIA SẺ những thành phần nào và CÓ RIÊNG những thành phần nào?",
+    "options": [
+      "Chia sẻ chung Code (Text), Data (biến toàn cục), Heap và bảng File Descriptor; có riêng Thread ID, thanh ghi (PC, SP) và Stack cục bộ",
+      "Có riêng Heap và biến toàn cục; chỉ chia sẻ chung Stack",
+      "Không chia sẻ bất kỳ vùng nhớ nào giống hệt 2 tiến trình sau `fork()`",
+      "Chia sẻ chung Stack và Program Counter (PC)"
+    ],
+    "answer": 0,
+    "explain": "Slide APT04: mọi luồng trong cùng tiến trình dùng chung không gian địa chỉ (Text, Data, Heap, FD mở) giúp giao tiếp cực nhanh, nhưng mỗi luồng có ngăn xếp (Stack), bộ đếm chương trình (PC) và thanh ghi riêng."
+  },
+  {
+    "id": "MCQ-093",
+    "chapter": 4,
+    "topicId": "4-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Lab 4 Bài 4 Biến toàn cục Thread vs Process",
+    "question": "Biến toàn cục `int sharedVar = 5;`. Chương trình 1 tạo một **luồng** gán `sharedVar = 20;` rồi `pthread_join()`. Chương trình 2 tạo một **tiến trình con** gán `sharedVar = 20;` rồi `wait()`. Giá trị `sharedVar` in ra ở luồng chính (CT1) và tiến trình cha (CT2) lần lượt là:",
+    "options": [
+      "CT1: 20 · CT2: 5",
+      "CT1: 5 · CT2: 20",
+      "CT1: 20 · CT2: 20",
+      "CT1: 5 · CT2: 5"
+    ],
+    "answer": 0,
+    "explain": "Ở CT1, các luồng chia sẻ chung phân đoạn Data nên thay đổi của luồng con hiển thị ngay ở luồng chính (`20`). Ở CT2, `fork()` nhân bản không gian địa chỉ riêng nên cha vẫn thấy giá trị cũ (`5`)."
+  },
+  {
+    "id": "MCQ-094",
+    "chapter": 4,
+    "topicId": "4-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Quan hệ giữa các luồng",
+    "question": "Điểm khác nhau về cấu trúc quan hệ giữa các luồng (threads) và các tiến trình (processes) trên Linux là gì?",
+    "options": [
+      "Các luồng là ngang hàng (peers) nên bất kỳ luồng nào cũng có thể `pthread_join()` luồng khác trong cùng tiến trình; còn tiến trình có phân cấp cha–con (chỉ cha mới `wait()` được con)",
+      "Chỉ luồng chính mới được gọi `pthread_create()`",
+      "Mỗi tiến trình chỉ được tạo tối đa 2 luồng",
+      "Tiến trình nhẹ hơn và tốn ít chu kỳ CPU hơn luồng khi khởi tạo"
+    ],
+    "answer": 0,
+    "explain": "Slide APT04: Threads tạo thành \"Pool of peers\" (mọi luồng ngang hàng, có thể join lẫn nhau), trong khi Processes có cấu trúc cây phân cấp. Tạo/thu hồi thread tốn ~10K cycles (hoặc ít hơn), nhẹ hơn ~20K cycles của process."
+  },
+  {
+    "id": "MCQ-095",
+    "chapter": 4,
+    "topicId": "4-2",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Vòng đời Thread",
+    "question": "Sau lời gọi `pthread_create(&t, NULL, func, arg)`, điều nào ĐÚNG về thứ tự thực thi giữa luồng gọi và luồng mới tạo?",
+    "options": [
+      "Không có sự đảm bảo nào về việc luồng gọi hay luồng mới sẽ được bộ lập lịch CPU chạy trước",
+      "Luồng mới luôn chạy xong hoàn toàn rồi `pthread_create` mới trả về",
+      "Luồng gọi luôn chạy hết hàm `main()` rồi luồng mới mới bắt đầu",
+      "Luồng mới chỉ bắt đầu chạy sau khi gọi `pthread_join()`"
+    ],
+    "answer": 0,
+    "explain": "Slide APT04: `pthread_create()` trả về ngay và không có bảo đảm nào về thứ tự lập lịch giữa hai luồng. Muốn đồng bộ thứ tự bắt buộc phải dùng mutex/condvar hoặc join."
+  },
+  {
+    "id": "MCQ-096",
+    "chapter": 4,
+    "topicId": "4-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Kết thúc luồng chính bằng exit() vs pthread_exit()",
+    "question": "Điều gì xảy ra nếu luồng chính (main thread) gọi `return 0;` (hoặc `exit(0)`) trong khi vẫn còn một luồng detached đang chạy?",
+    "options": [
+      "Toàn bộ tiến trình kết thúc ngay lập tức và tất cả các luồng khác (kể cả detached) đều bị chấm dứt theo",
+      "Luồng detached tiếp tục chạy độc lập mãi mãi",
+      "Luồng chính tự động chuyển sang chờ luồng detached",
+      "Hệ điều hành báo lỗi biên dịch"
+    ],
+    "answer": 0,
+    "explain": "Slide APT04: `return` từ `main()` hoặc bất kỳ luồng nào gọi `exit()` sẽ chấm dứt CẢ tiến trình cùng mọi luồng. Chỉ khi luồng chính gọi `pthread_exit(NULL)` thì các luồng khác mới tiếp tục sống cho đến khi chúng xong việc."
+  },
+  {
+    "id": "MCQ-097",
+    "chapter": 4,
+    "topicId": "4-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Bẫy truyền địa chỉ biến vòng lặp &i",
+    "question": "Khi tạo 4 luồng trong vòng lặp `for (int i = 0; i < 4; i++) pthread_create(&t[i], NULL, work, &i);`, lỗi nghiêm trọng nào xảy ra?",
+    "options": [
+      "Race condition: cả 4 luồng nhận chung địa chỉ `&i`, giá trị `i` thay đổi liên tục trong vòng lặp khiến nhiều luồng đọc trùng cùng một ID hoặc đọc thấy `4`",
+      "Lỗi tràn ngăn xếp ngay tại `i = 0`",
+      "Không có lỗi gì vì `pthread_create` tự sao chép giá trị `i`",
+      "Trình biên dịch GCC từ chối biên dịch dòng lệnh đó"
+    ],
+    "answer": 0,
+    "explain": "Cả 4 luồng đều trỏ vào đúng một ô nhớ `&i` của `main()`. Cách viết chuẩn (như `CR-19`, `Lab 4`) là cấp một mảng `int ids[4]` hoặc mảng `struct Arg args[4]` riêng rồi truyền `&args[i]`."
+  },
+  {
+    "id": "MCQ-098",
+    "chapter": 4,
+    "topicId": "4-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Trả kết quả từ luồng qua pthread_join",
+    "question": "Trong bài toán `CR-17` (luồng con tính tổng `long long` rồi trả về cho luồng chính qua `pthread_join(tid, &ret)`), vì sao KHÔNG ĐƯỢC viết `long long sum = ...; return &sum;`?",
+    "options": [
+      "Vì `sum` là biến cục bộ trên Stack của luồng con; khi luồng con kết thúc, Stack bị thu hồi khiến con trỏ `&sum` trở thành con trỏ treo (dangling pointer). Phải dùng `malloc(sizeof(long long))` trên Heap",
+      "Vì kiểu `long long` không lấy được địa chỉ bằng toán tử `&`",
+      "Vì `pthread_join` chỉ nhận con trỏ kiểu `int*`",
+      "Vì biến cục bộ không thể tính tổng được"
+    ],
+    "answer": 0,
+    "explain": "Heap dùng chung cho cả tiến trình nên vùng nhớ cấp bằng `malloc()` vẫn tồn tại hợp lệ sau khi luồng con kết thúc, giúp luồng chính đọc giá trị từ `ret` rồi `free(ret)` an toàn."
+  },
+  {
+    "id": "MCQ-099",
+    "chapter": 4,
+    "topicId": "4-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Bản chất Race Condition của glob++",
+    "question": "Hai luồng cùng tăng biến toàn cục `glob++` 10.000 lần mà không dùng mutex (Slide APT04). Vì sao kết quả cuối cùng thường NHỎ HƠN 20.000?",
+    "options": [
+      "Vì `glob++` ở mức mã máy gồm 3 bước không nguyên tử (Load vào thanh ghi → Add 1 → Store về RAM); hai luồng xen kẽ nhau đọc cùng giá trị cũ rồi ghi đè làm mất lượt cộng (lost update)",
+      "Vì biến `int` bị tràn số ở giá trị 20.000",
+      "Vì trình biên dịch tự bỏ qua vòng lặp của luồng thứ 2",
+      "Vì `pthread_join` làm giảm giá trị biến toàn cục"
+    ],
+    "answer": 0,
+    "explain": "Slide APT04 minh họa mã Assembly: `movq cnt(%rip), %rdx` (Load) → `addq $1, %rdx` (Update) → `movq %rdx, cnt(%rip)` (Store). Nếu T1 và T2 cùng Load giá trị `k`, cả hai cùng Store `k+1` thay vì `k+2`."
+  },
+  {
+    "id": "MCQ-100",
+    "chapter": 4,
+    "topicId": "4-9",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Quy tắc sử dụng Mutex",
+    "question": "Nếu có 4 luồng cùng cập nhật biến `counter`, nhưng chỉ có 3 luồng dùng `pthread_mutex_lock(&mtx)` còn 1 luồng quên khóa mutex thì điều gì xảy ra?",
+    "options": [
+      "Dữ liệu `counter` VẪN có thể bị hỏng do race condition vì mutex chỉ bảo vệ khi TẤT CẢ các luồng truy cập dữ liệu chung đều cùng khóa mutex đó",
+      "Dữ liệu vẫn an toàn vì đa số (3/4) luồng đã khóa mutex",
+      "Nhân Linux tự động khóa hộ luồng thứ 4",
+      "Chương trình tự động dừng biên dịch"
+    ],
+    "answer": 0,
+    "explain": "Slide APT04: Mutex là cơ chế tự nguyện (advisory lock) theo quy ước của lập trình viên — mọi luồng đọc/ghi biến dùng chung bắt buộc phải dùng cùng một mutex."
+  },
+  {
+    "id": "MCQ-101",
+    "chapter": 4,
+    "topicId": "4-10",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · 3 bước nguyên tử của pthread_cond_wait",
+    "question": "Khi một luồng gọi `pthread_cond_wait(&cond, &mtx)` (trong lúc đang giữ khóa `mtx`), hàm này thực hiện lần lượt 3 thao tác nào?",
+    "options": [
+      "1) Tự động mở khóa `mtx` và đưa luồng vào trạng thái ngủ chờ `cond` (nguyên tử); 2) Ngủ chờ tới khi có tín hiệu; 3) Tự động khóa lại `mtx` trước khi trả về",
+      "1) Khóa thêm `mtx` lần 2; 2) Chạy vòng lặp busy-wait; 3) Hủy `cond`",
+      "1) Hủy `mtx`; 2) Đánh thức mọi luồng khác; 3) Thoát luồng hiện tại",
+      "1) Không mở khóa `mtx`; 2) Ngủ chờ `cond`; 3) Trả về với `mtx` đã mở"
+    ],
+    "answer": 0,
+    "explain": "Nhờ tự động mở khóa `mtx` khi đi ngủ, luồng khác mới vào được miền găng để thay đổi trạng thái và phát tín hiệu `signal`/`broadcast`. Khi thức dậy, nó tự khóa lại `mtx` nên luồng gọi vẫn giữ quyền sở hữu `mtx`."
+  },
+  {
+    "id": "MCQ-102",
+    "chapter": 4,
+    "topicId": "4-10",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Tại sao bắt buộc dùng while quanh pthread_cond_wait",
+    "question": "Trong mô hình Producer-Consumer và Barrier, vì sao PHẢI đặt `pthread_cond_wait(&cond, &mtx)` trong vòng `while (điều_kiện_chưa_đạt)` thay vì câu lệnh `if`?",
+    "options": [
+      "Để chống thức tỉnh giả (spurious wakeup) và phòng trường hợp một luồng khác nhanh hơn đã tiêu thụ mất tài nguyên trước khi luồng này giành lại được mutex",
+      "Vì cú pháp C không cho phép viết `pthread_cond_wait` bên trong `if`",
+      "Vì vòng `while` giúp tự động khởi tạo `mtx`",
+      "Vì `if` sẽ làm luồng gọi `pthread_exit()` ngay"
+    ],
+    "answer": 0,
+    "explain": "Khi `pthread_cond_wait()` trả về, điều kiện có thể KHÔNG còn đúng (do spurious wakeup của OS hoặc một consumer khác đã kịp lấy mất phần tử trong hàng đợi). Vòng `while` ép kiểm tra lại bất biến trước khi đi tiếp."
+  },
+  {
+    "id": "MCQ-103",
+    "chapter": 4,
+    "topicId": "4-10",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · signal vs broadcast trong Barrier",
+    "question": "Khi tự cài đặt Barrier cho `N` luồng (Lab 4 Bài 6, `CR-21`), luồng đến thứ `N` (cuối cùng) bắt buộc phải gọi hàm nào để giải phóng cả `N - 1` luồng đang chờ?",
+    "options": [
+      "`pthread_cond_broadcast(&cond)`",
+      "`pthread_cond_signal(&cond)`",
+      "`pthread_mutex_destroy(&mtx)`",
+      "`pthread_detach(pthread_self())`"
+    ],
+    "answer": 0,
+    "explain": "`pthread_cond_signal()` chỉ đánh thức ít nhất **1** luồng đang ngủ, khiến `N - 2` luồng còn lại ngủ treo vĩnh viễn tại barrier! Bắt buộc dùng `pthread_cond_broadcast()` để đánh thức TẤT CẢ các luồng đang chờ."
+  },
+  {
+    "id": "MCQ-104",
+    "chapter": 4,
+    "topicId": "4-10",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Circular Queue Producer-Consumer (Đề cuối kỳ)",
+    "question": "Trong hàng đợi vòng kích thước `SIZE` biểu diễn bởi `head`, `tail`, `count` (như đề thi cuối kỳ), công thức cập nhật `tail` khi `queue_push` và `head` khi `queue_pop` là gì?",
+    "options": [
+      "`tail = (tail + 1) % SIZE; count++;` và `head = (head + 1) % SIZE; count--;`",
+      "`tail = tail + 1; count--;` và `head = head - 1; count++;`",
+      "`head = (head + 1) % SIZE; count++;` và `tail = (tail + 1) % SIZE; count--;`",
+      "`tail = SIZE - 1;` và `head = 0;`"
+    ],
+    "answer": 0,
+    "explain": "Đẩy vào cuối hàng đợi ghi tại `queue[tail]` rồi quay vòng `tail = (tail + 1) % SIZE; count++`. Lấy ra đầu hàng đợi đọc tại `queue[head]` rồi quay vòng `head = (head + 1) % SIZE; count--`."
+  },
+  {
+    "id": "MCQ-105",
+    "chapter": 4,
+    "topicId": "4-10",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Producer-Consumer 2 Condition Variables",
+    "question": "Trong bài toán Producer-Consumer với bộ đệm dung lượng `B` (`count` phần tử hiện có), Producer chờ trên biến điều kiện nào và phát tín hiệu cho biến điều kiện nào?",
+    "options": [
+      "Producer chờ `while (count == B) pthread_cond_wait(&not_full, &mtx);` và sau khi đẩy vào thì gọi `pthread_cond_signal(&not_empty);`",
+      "Producer chờ `while (count == 0) pthread_cond_wait(&not_empty, &mtx);` và gọi `pthread_cond_signal(&not_full);`",
+      "Producer chỉ cần gọi `sleep(1)` khi đầy",
+      "Producer không cần khóa `mtx` khi kiểm tra `count == B`"
+    ],
+    "answer": 0,
+    "explain": "Producer bị chặn khi bộ đệm ĐẦY (`count == B`, chờ `not_full`), sau khi đẩy 1 phần tử vào thì bộ đệm chắc chắn không rỗng nên báo `not_empty` cho Consumer. Consumer làm ngược lại."
+  },
+  {
+    "id": "MCQ-106",
+    "chapter": 4,
+    "topicId": "4-9",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Chống Deadlock bằng Lock Ordering (CR-24)",
+    "question": "Luồng 1 chuyển tiền từ tài khoản `u = 2` sang `v = 5`; Luồng 2 đồng thời chuyển từ `u = 5` sang `v = 2`. Kỹ thuật nào triệt tiêu hoàn toàn nguy cơ Deadlock giữa hai luồng mà vẫn cho phép các cặp tài khoản khác chạy song song?",
+    "options": [
+      "Luôn khóa mutex theo thứ tự chỉ số tăng dần: khóa `acc_mtx[min(u, v)]` trước, sau đó mới khóa `acc_mtx[max(u, v)]`",
+      "Khóa `acc_mtx[u]` trước rồi khóa `acc_mtx[v]` sau",
+      "Không dùng mutex cho tài khoản nữa",
+      "Cho cả hai luồng gọi `pthread_detach()`"
+    ],
+    "answer": 0,
+    "explain": "Khóa theo thứ tự toàn phần (`min(u, v)` trước, `max(u, v)` sau) phá vỡ điều kiện **Circular Wait** (chờ vòng tròn) của Deadlock: cả 2 luồng đều phải giành `acc_mtx[2]` trước rồi mới giành `acc_mtx[5]`."
+  },
+  {
+    "id": "MCQ-107",
+    "chapter": 4,
+    "topicId": "4-10",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Multi-Producer Multi-Consumer kết thúc sạch (CR-23)",
+    "question": "Trong mô hình `P` Producer và `C` Consumer (`CR-23`), để mọi Consumer thoát sạch khi tất cả Producer đã xong và hàng đợi đã rỗng (không bị treo chờ vĩnh viễn), ta cần làm gì?",
+    "options": [
+      "Duy trì cờ/biến đếm `active_producers` (hoặc `done`); khi Producer cuối cùng kết thúc thì bật cờ báo hết và gọi `pthread_cond_broadcast(&not_empty)` để đánh thức tất cả Consumer kiểm tra điều kiện thoát",
+      "Chỉ gọi `pthread_cond_signal(&not_empty)` đúng 1 lần rồi kết thúc",
+      "Để các Consumer tự gọi `exit(0)` ngay khi thấy `count == 0`",
+      "Không cần báo hiệu vì Consumer tự biết Producer đã thoát"
+    ],
+    "answer": 0,
+    "explain": "Nếu chỉ gọi `signal()` 1 lần khi có nhiều Consumer đang ngủ, các Consumer còn lại sẽ treo vĩnh viễn! Phải cập nhật `active_producers--` (dưới khóa mutex), khi bằng `0` thì gọi `pthread_cond_broadcast(&not_empty)` để mọi Consumer tỉnh dậy thấy `count == 0 && active_producers == 0` và thoát."
+  },
+  {
+    "id": "MCQ-108",
+    "chapter": 4,
+    "topicId": "4-9",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Bẫy Deadlock khi gọi đệ quy hoặc join đang giữ Mutex",
+    "question": "Trong bài `CR-41` (Fibonacci Memoization + 2 luồng) hoặc `CR-47` (LCS Memoization + 2 luồng), điều gì xảy ra nếu luồng giữ khóa `pthread_mutex_lock(&mtx)` trong lúc gọi đệ quy hoặc trong lúc gọi `pthread_join()` chờ luồng con?",
+    "options": [
+      "Deadlock (tự khóa chết): chính nó hoặc luồng con lại gọi `pthread_mutex_lock(&mtx)` trên cùng mutex đang bị giữ không bao giờ được mở",
+      "Chương trình chạy nhanh gấp đôi",
+      "Mutex tự động mở khóa tạm thời khi gọi đệ quy",
+      "Chỉ làm kết quả sai 1 đơn vị"
+    ],
+    "answer": 0,
+    "explain": "Mutex mặc định của POSIX không có tính đệ quy (non-recursive). Nguyên tắc vàng: chỉ khóa mutex thật ngắn gọn lúc đọc/ghi `memo[]`, lập tức `unlock` TRƯỚC khi gọi đệ quy hay `pthread_join()`."
+  },
+  {
+    "id": "MCQ-109",
+    "chapter": 4,
+    "topicId": "4-6",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Tạo thread Nối tiếp vs Song song",
+    "question": "Xét vòng lặp `for (i = 0; i < 4; i++) { pthread_create(&t[i], ...); pthread_join(t[i], NULL); }`. Đoạn code này chạy 4 luồng theo kiểu nào?",
+    "options": [
+      "Chạy NỐI TIẾP (tuần tự): tạo luồng `i` rồi chờ nó kết thúc hẳn mới tạo luồng `i+1`, không tận dụng được song song",
+      "Chạy SONG SONG cả 4 luồng cùng lúc",
+      "Gây deadlock ngay tại `i = 0`",
+      "Tạo ra $2^4 = 16$ luồng"
+    ],
+    "answer": 0,
+    "explain": "Muốn 4 luồng chạy SONG SONG phải tách thành 2 vòng lặp riêng: vòng 1 gọi `pthread_create` cho tất cả `0..3`, sau đó vòng 2 mới gọi `pthread_join` cho tất cả `0..3`!"
+  },
+  {
+    "id": "MCQ-110",
+    "chapter": 4,
+    "topicId": "4-11",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Hàm Thread-Safe",
+    "question": "Thế nào là một hàm an toàn đa luồng (Thread-safe function) theo Slide APT04?",
+    "options": [
+      "Hàm có thể được gọi đồng thời bởi nhiều luồng mà không gây hỏng dữ liệu hay race condition (không phụ thuộc trạng thái tĩnh dùng chung chưa đồng bộ)",
+      "Hàm có tên bắt đầu bằng `pthread_`",
+      "Hàm không nhận bất kỳ tham số nào",
+      "Hàm chỉ chạy được trên máy tính 1 lõi CPU"
+    ],
+    "answer": 0,
+    "explain": "Ví dụ hàm `strtok()` lưu con trỏ tĩnh nội bộ nên KHÔNG thread-safe (bản an toàn là `strtok_r()`). Hàm chỉ dùng biến cục bộ hoặc có đồng bộ chuẩn là thread-safe."
+  },
+  {
+    "id": "MCQ-111",
+    "chapter": 4,
+    "topicId": "4-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 4 · Rò rỉ tài nguyên khi quên pthread_join",
+    "question": "Nếu một luồng joinable kết thúc mà không có luồng nào gọi `pthread_join()` hoặc `pthread_detach()` lên nó, hậu quả là gì?",
+    "options": [
+      "Tài nguyên của luồng (stack, mã trả về, cấu trúc quản lý) không được thu hồi, tạo ra trạng thái tương đương Zombie ở mức luồng",
+      "Luồng đó tự động chạy lại từ đầu",
+      "Tiến trình bị kernel giết ngay lập tức bằng SIGSEGV",
+      "Không có ảnh hưởng gì"
+    ],
+    "answer": 0,
+    "explain": "Slide APT04: Joining joinable threads là bắt buộc để thu hồi tài nguyên nhân, nếu không sẽ tạo \"thread equivalent of zombie processes\" gây rò rỉ bộ nhớ và cạn giới hạn số luồng."
+  },
+  {
+    "id": "MCQ-112",
+    "chapter": 4,
+    "topicId": "4-10",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 4 · In luân phiên chẵn lẻ bằng Condvar (CR-20)",
+    "question": "Trong bài toán 2 luồng in luân phiên `1 2 3 ... n` (`CR-20`, Luồng 1 in lẻ, Luồng 2 in chẵn) dùng biến chia sẻ `cur = 1`, điều kiện chờ trong vòng `while` của Luồng 1 (in lẻ) là gì?",
+    "options": [
+      "`while (cur <= n && cur % 2 == 0) pthread_cond_wait(&cond, &mtx);`",
+      "`while (cur % 2 == 1) pthread_cond_wait(&cond, &mtx);`",
+      "`if (cur % 2 == 0) sleep(1);`",
+      "`while (cur <= n) pthread_cond_wait(&cond, &mtx);`"
+    ],
+    "answer": 0,
+    "explain": "Luồng lẻ phải đợi khi chưa kết thúc (`cur <= n`) MÀ lượt hiện tại đang là số chẵn (`cur % 2 == 0`). Khi thoát vòng `while`, phải kiểm tra lại `if (cur > n)` để mở khóa và thoát sạch tránh in vượt quá `n`."
+  },
+  {
+    "id": "MCQ-113",
+    "chapter": 5,
+    "topicId": "5-4",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 19",
+    "question": "Theo phương pháp luận thiết kế chương trình song song của Foster, 4 bước thiết kế lần lượt là gì?",
+    "options": [
+      "Partitioning -> Communication -> Agglomeration -> Mapping.",
+      "Partitioning -> Serialization -> Vectorization -> Linking.",
+      "Initializing -> Synchronizing -> Broadcasting -> Joining.",
+      "Memoization -> Tabulation -> Reconstruction -> Backtrack."
+    ],
+    "answer": 0,
+    "explain": "Phương pháp thiết kế song song kinh điển của Foster (PCAM — Slide APT05): **P**artitioning (phân hoạch) → **C**ommunication (xác định giao tiếp) → **A**gglomeration (gộp tác vụ giảm overhead) → **M**apping (ánh xạ lên các bộ xử lý/luồng)."
+  },
+  {
+    "id": "MCQ-114",
+    "chapter": 5,
+    "topicId": "5-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Concurrency vs Parallelism",
+    "question": "Điểm khác biệt cốt lõi giữa Lập trình Đồng thời (Concurrency) và Lập trình Song song (Parallelism) là gì?",
+    "options": [
+      "Parallelism thực thi thật sự đồng thời trên nhiều lõi/CPU; Concurrency cho phép nhiều tác vụ gối nhau theo thời gian (kể cả trên 1 CPU nhờ chuyển ngữ cảnh nhanh)",
+      "Concurrency chỉ chạy trên nhiều máy tính nối mạng; Parallelism chỉ chạy trên 1 lõi CPU",
+      "Hai khái niệm hoàn toàn đồng nghĩa và không có điểm khác biệt",
+      "Concurrency nhanh hơn Parallelism trong mọi bài toán tính toán nặng"
+    ],
+    "answer": 0,
+    "explain": "Slide APT05: Concurrency là quản lý nhiều luồng công việc chồng lấn về thời gian (tạo giả song song trên 1 CPU bằng time slicing), còn Parallelism là thực thi đồng thời thật sự trên nhiều phần tử xử lý."
+  },
+  {
+    "id": "MCQ-115",
+    "chapter": 5,
+    "topicId": "5-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · 3 dạng song song phổ biến",
+    "question": "Mỗi luồng thực hiện CÙNG một phép tính đếm tần suất pixel trên một đoạn dữ liệu ảnh khác nhau (như Histogram song song) thuộc dạng song song nào?",
+    "options": [
+      "Song song dữ liệu (Data parallelism)",
+      "Song song chức năng (Functional parallelism)",
+      "Song song đường ống (Pipeline parallelism)",
+      "Tính toán tuần tự (Serial computing)"
+    ],
+    "answer": 0,
+    "explain": "Slide APT05: Data parallelism — các tác vụ chạy cùng một thuật toán trên các mảnh dữ liệu độc lập (ví dụ dàn nhạc). Functional parallelism — các tác vụ làm vai trò khác nhau (đội bóng 11 người). Pipeline parallelism — dây chuyền nhà máy nhiều công đoạn."
+  },
+  {
+    "id": "MCQ-116",
+    "chapter": 5,
+    "topicId": "5-2",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Phân loại Flynn",
+    "question": "Một bộ xử lý đa lõi (multi-core CPU) hiện đại thực thi nhiều luồng lệnh khác nhau trên các luồng dữ liệu khác nhau thuộc lớp nào trong phân loại Flynn (1972)?",
+    "options": [
+      "MIMD (Multiple Instruction, Multiple Data)",
+      "SISD",
+      "SIMD",
+      "MISD"
+    ],
+    "answer": 0,
+    "explain": "Hệ thống đa lõi / đa xử lý (Shared memory SMP và Distributed memory cluster) thuộc kiến trúc MIMD: nhiều dòng lệnh độc lập cùng thao tác trên nhiều dòng dữ liệu."
+  },
+  {
+    "id": "MCQ-117",
+    "chapter": 5,
+    "topicId": "5-2",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Kiến trúc bộ nhớ UMA vs NUMA",
+    "question": "Trong máy tính bộ nhớ dùng chung (Shared Memory), sự khác nhau giữa UMA và NUMA là gì?",
+    "options": [
+      "UMA: mọi CPU có thời gian truy cập tới mọi vùng RAM như nhau; NUMA: thời gian truy cập bộ nhớ cục bộ gắn với CPU đó nhanh hơn truy cập bộ nhớ gắn ở CPU khác",
+      "UMA không có không gian địa chỉ chung; NUMA có không gian địa chỉ chung",
+      "UMA chỉ dùng cho mạng LAN; NUMA chỉ dùng cho 1 lõi CPU",
+      "NUMA không cần đồng bộ hóa khi truy cập biến chung"
+    ],
+    "answer": 0,
+    "explain": "Slide APT05: Cả UMA (Uniform Memory Access) và NUMA (Non-Uniform Memory Access) đều thuộc kiến trúc Shared Memory (có chung không gian địa chỉ toàn cục), chỉ khác ở độ đồng đều của độ trễ truy cập RAM."
+  },
+  {
+    "id": "MCQ-118",
+    "chapter": 5,
+    "topicId": "5-2",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Shared Memory vs Distributed Memory",
+    "question": "Đặc điểm nào phân biệt máy tính Bộ nhớ phân tán (Distributed Memory) với máy tính Bộ nhớ dùng chung (Shared Memory)?",
+    "options": [
+      "Bộ nhớ phân tán KHÔNG có không gian địa chỉ toàn cục chung; các tiến trình trao đổi dữ liệu tường minh bằng truyền thông điệp (send/receive, ví dụ MPI)",
+      "Bộ nhớ phân tán giao tiếp bằng biến toàn cục và mutex",
+      "Bộ nhớ dùng chung không thể chạy nhiều luồng",
+      "Bộ nhớ phân tán luôn có độ trễ giao tiếp bằng 0"
+    ],
+    "answer": 0,
+    "explain": "Slide APT05: Shared Memory (SMP, multi-core) dùng chung RAM và đồng bộ bằng Pthreads/OpenMP; Distributed Memory (cluster) có RAM riêng từng nút mạng và giao tiếp qua Message Passing (MPI)."
+  },
+  {
+    "id": "MCQ-119",
+    "chapter": 5,
+    "topicId": "5-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Mô hình lập trình song song",
+    "question": "Cặp ghép nào ĐÚNG giữa Mô hình lập trình song song và Công cụ cài đặt tương ứng (Slide APT05)?",
+    "options": [
+      "Threads → POSIX Threads / OpenMP; Message Passing → MPI; Hybrid → MPI + Pthreads / MPI + CUDA",
+      "Threads → MPI; Message Passing → Pthreads",
+      "Message Passing → `pthread_mutex_t`; Shared Memory → TCP Socket",
+      "Hybrid → chỉ chạy tuần tự trên 1 lõi CPU"
+    ],
+    "answer": 0,
+    "explain": "Slide APT05 liệt kê rõ: Threads (Pthreads, OpenMP), Message Passing (MPI), Hybrid (MPI+OpenMP/Pthreads hoặc MPI+CUDA trên các siêu máy tính đa nút có GPU)."
+  },
+  {
+    "id": "MCQ-120",
+    "chapter": 5,
+    "topicId": "5-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Bước Agglomeration trong Foster",
+    "question": "Mục tiêu chính của bước **Agglomeration** (Gộp nhóm tác vụ) trong phương pháp thiết kế Foster là gì?",
+    "options": [
+      "Gộp các tác vụ quá nhỏ lại thành tác vụ lớn hơn hợp lý để giảm chi phí giao tiếp và đồng bộ, đánh đổi một phần độ song song mịn để tăng hiệu năng thực tế",
+      "Chia nhỏ dữ liệu xuống mức từng bit riêng lẻ",
+      "Gán mỗi luồng cố định vào một địa chỉ IP",
+      "Xóa bỏ toàn bộ biến cục bộ của chương trình"
+    ],
+    "answer": 0,
+    "explain": "Nếu phân hoạch quá vụn, chi phí tạo luồng và giao tiếp sẽ lớn hơn thời gian tính toán. Agglomeration gộp tác vụ để tối ưu tỉ lệ tính toán/giao tiếp."
+  },
+  {
+    "id": "MCQ-121",
+    "chapter": 5,
+    "topicId": "5-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Static vs Dynamic Mapping",
+    "question": "So sánh Static Mapping và Dynamic Mapping trong bước ánh xạ (Mapping) của Foster:",
+    "options": [
+      "Static Mapping phân công việc cố định trước khi chạy (ít overhead, phù hợp khối lượng đều); Dynamic Mapping phân việc động trong lúc chạy (cân bằng tải tốt hơn khi công việc không đều)",
+      "Static Mapping chỉ chạy trên 1 lõi; Dynamic Mapping chạy trên nhiều lõi",
+      "Dynamic Mapping không bao giờ cần đồng bộ hàng đợi công việc",
+      "Static Mapping không thể xử lý khi `N` không chia hết cho `T`"
+    ],
+    "answer": 0,
+    "explain": "Với mảng đều (tổng bình phương, tích vô hướng, nhân ma trận), Static Mapping (chia đều `n / T` + phân bổ phần dư `n % T`) cực nhanh và không tốn khóa. Với khối lượng bất định, Dynamic Mapping (work pool) cân bằng tải tốt hơn."
+  },
+  {
+    "id": "MCQ-122",
+    "chapter": 5,
+    "topicId": "5-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Định luật Amdahl",
+    "question": "Theo Định luật Amdahl, với tỉ lệ mã có thể song song hóa là $P$ và số bộ xử lý là $N$, công thức tăng tốc tối đa (Speedup) là gì?",
+    "options": [
+      "$S(N) = \\frac{1}{(1 - P) + \\frac{P}{N}}$",
+      "$S(N) = (1 - P) + P \\cdot N$",
+      "$S(N) = \\frac{N}{1 - P}$",
+      "$S(N) = P \\cdot N$"
+    ],
+    "answer": 0,
+    "explain": "Định luật Amdahl: phần tuần tự $(1 - P)$ không thể rút ngắn; phần song song $P$ giảm còn $P/N$, nên $S(N) = \\frac{1}{(1 - P) + P/N}$. Khi $N \\to \\infty$, $S_{\\max} = \\frac{1}{1 - P}$."
+  },
+  {
+    "id": "MCQ-123",
+    "chapter": 5,
+    "topicId": "5-5",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 5 · Tính toán Định luật Amdahl",
+    "question": "Một chương trình có 20% thời gian chạy là phần tuần tự không thể song song hóa ($P = 0.8$). Theo Định luật Amdahl, dù ta có vô hạn bộ xử lý ($N \\to \\infty$), tốc độ tăng tối đa KHÔNG THỂ vượt quá bao nhiêu lần?",
+    "options": [
+      "5 lần",
+      "20 lần",
+      "80 lần",
+      "Vô hạn lần"
+    ],
+    "answer": 0,
+    "explain": "Phần tuần tự là $1 - P = 0.2$. Khi $N \\to \\infty$, $S_{\\max} = \\frac{1}{1 - P} = \\frac{1}{0.2} = 5$ lần. Đây là minh họa trực tiếp cho 'nút cổ chai tuần tự' trong Slide APT05."
+  },
+  {
+    "id": "MCQ-124",
+    "chapter": 5,
+    "topicId": "5-6",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Định luật Gustafson",
+    "question": "Định luật Gustafson ($S(N) = N - \\alpha(N - 1)$, với $\\alpha$ là tỉ lệ phần tuần tự) đưa ra góc nhìn khác gì so với Định luật Amdahl?",
+    "options": [
+      "Khi tăng số bộ xử lý $N$, ta có thể tăng quy mô bài toán tỉ lệ theo (giữ nguyên thời gian chạy), nhờ đó ảnh hưởng của phần tuần tự giảm dần và đạt tăng tốc quy mô lớn",
+      "Định luật Gustafson khẳng định phần tuần tự không hề tồn tại",
+      "Định luật Gustafson chỉ đúng khi $N = 1$",
+      "Định luật Gustafson chứng minh tăng số CPU luôn làm chương trình chậm đi"
+    ],
+    "answer": 0,
+    "explain": "Amdahl giả định kích thước bài toán cố định (fixed-size speedup), còn Gustafson xét bài toán mở rộng theo số lõi (scaled speedup) — giải thích vì sao siêu máy tính hàng triệu lõi vẫn rất hiệu quả."
+  },
+  {
+    "id": "MCQ-125",
+    "chapter": 5,
+    "topicId": "5-6",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 5 · Phụ thuộc vòng lặp (Loop-carried dependency)",
+    "question": "Vì sao vòng lặp `for (int i = 1; i < N; i++) A[i] = (A[i] + A[i - 1]) / 2;` (Slide APT05) KHÔNG thể trực tiếp chia đều chỉ số `i` cho các luồng chạy song song?",
+    "options": [
+      "Vì tồn tại phụ thuộc dữ liệu giữa các bước lặp (loop-carried dependency): tính `A[i]` cần giá trị MỚI vừa cập nhật của `A[i - 1]`",
+      "Vì phép chia `/ 2` không chạy được trong Pthreads",
+      "Vì mảng `A` nằm ở phân đoạn Text chỉ đọc",
+      "Vì vòng lặp `for` trong C luôn bị khóa bởi mutex"
+    ],
+    "answer": 0,
+    "explain": "Mỗi bước `i` phụ thuộc trực tiếp vào kết quả của bước `i - 1` ngay trước đó. Nếu chạy song song trực tiếp sẽ đọc giá trị cũ của `A[i-1]` và gây race condition làm sai kết quả."
+  },
+  {
+    "id": "MCQ-126",
+    "chapter": 5,
+    "topicId": "5-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · psum_mutex vs psum_array vs psum_local",
+    "question": "Trong ví dụ tính tổng song song ở Slide APT05, thứ tự tốc độ từ CHẬM NHẤT đến NHANH NHẤT của 3 phiên bản là gì?",
+    "options": [
+      "`psum_mutex` (chậm nhất) → `psum_array` → `psum_local` (nhanh nhất)",
+      "`psum_local` (chậm nhất) → `psum_array` → `psum_mutex` (nhanh nhất)",
+      "`psum_array` (chậm nhất) → `psum_mutex` → `psum_local` (nhanh nhất)",
+      "Cả 3 phiên bản có tốc độ bằng nhau"
+    ],
+    "answer": 0,
+    "explain": "`psum_mutex` khóa/mở mutex ở MỌI phần tử gây nghẽn cổ chai cực nặng (thậm chí chậm hơn tuần tự!). `psum_array` bỏ mutex nhưng ghi liên tục vào mảng toàn cục `psum[myid]` (truy cập RAM + nguy cơ false sharing). `psum_local` cộng dồn trong biến cục bộ (thanh ghi CPU) rồi ghi 1 lần duy nhất ra `psum[myid]` nên nhanh nhất!"
+  },
+  {
+    "id": "MCQ-127",
+    "chapter": 5,
+    "topicId": "5-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Phân hoạch tĩnh khi N không chia hết cho T (CR-26)",
+    "question": "Khi phân hoạch tĩnh mảng `n` phần tử cho `T` luồng (`tid = 0..T-1`), công thức chia đều cả phần dư `rem = n % T` (với `base = n / T`) sao cho không bỏ sót, không trùng lặp và xử lý đúng cả khi `T > n` là gì?",
+    "options": [
+      "`start = tid * base + (tid < rem ? tid : rem); len = base + (tid < rem ? 1 : 0); end = start + len;`",
+      "`start = tid * (n / T); end = start + (n / T);`",
+      "`start = 0; end = n;` cho mọi luồng",
+      "`start = tid; end = n - tid;`"
+    ],
+    "answer": 0,
+    "explain": "Các luồng `0 .. rem - 1` mỗi luồng nhận `base + 1` phần tử, các luồng `rem .. T - 1` mỗi luồng nhận `base` phần tử. Nếu `T > n` thì `base = 0, rem = n`: `n` luồng đầu nhận 1 phần tử, các luồng thừa nhận đoạn rỗng (`len = 0`) an toàn tuyệt đối!"
+  },
+  {
+    "id": "MCQ-128",
+    "chapter": 5,
+    "topicId": "5-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Local Histogram + Reduce (CR-28)",
+    "question": "Để tính Histogram 256 mức xám song song cho 1 triệu pixel (`CR-28`), cách thiết kế hiệu quả nhất là gì?",
+    "options": [
+      "Mỗi luồng tạo mảng `local_hist[256] = {0}` riêng để đếm không cần mutex; sau khi `pthread_join()`, luồng chính cộng gộp (Reduce) các `local_hist` vào `hist[256]`",
+      "Khóa một mutex toàn cục ở mỗi pixel trước khi tăng `hist[pixel]++`",
+      "Tạo 1 triệu luồng, mỗi luồng xử lý đúng 1 pixel",
+      "Không dùng mảng cục bộ và cũng không dùng mutex, cứ tăng thẳng `hist[pixel]++`"
+    ],
+    "answer": 0,
+    "explain": "Kỹ thuật Map–Reduce cục bộ loại bỏ hoàn toàn xung đột khóa trong vòng lặp 1 triệu phần tử và tránh race condition."
+  },
+  {
+    "id": "MCQ-129",
+    "chapter": 5,
+    "topicId": "5-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Early Stopping song song (CR-29)",
+    "question": "Trong bài toán Tìm kiếm song song có dừng sớm (Early Stopping — Lab 5 Bài 3, `CR-29`), vai trò của cờ dùng chung `found` là gì?",
+    "options": [
+      "Ngay khi 1 luồng tìm thấy phần tử đích, nó bật `found = 1` (có đồng bộ) và lưu chỉ số; các luồng khác kiểm tra `found` định kỳ và thoát vòng lặp sớm thay vì duyệt hết đoạn còn lại",
+      "Ép mọi luồng luôn phải duyệt hết 100% mảng trước khi dừng",
+      "Khóa mọi luồng ngay từ đầu cho đến khi luồng 0 chạy xong",
+      "Đếm tổng số lần `target` xuất hiện trong mảng"
+    ],
+    "answer": 0,
+    "explain": "Cơ chế Early Stopping giúp tiết kiệm lượng lớn phép so sánh khi phần tử cần tìm xuất hiện sớm ở một luồng bất kỳ, đồng thời bảo vệ cập nhật `found`/`found_idx` bằng mutex tránh data race."
+  },
+  {
+    "id": "MCQ-130",
+    "chapter": 5,
+    "topicId": "5-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Các nút cổ chai thực tế ngoài Amdahl",
+    "question": "Ngoài tỉ lệ mã tuần tự $(1 - P)$ trong Định luật Amdahl, hai nguyên nhân thực tế nào thường làm giảm tốc độ tăng tốc (speedup) của chương trình song song?",
+    "options": [
+      "Mất cân bằng tải (Load imbalance) và tranh chấp tài nguyên/đồng bộ (Resource contention & Synchronization overhead)",
+      "Đặt tên biến quá dài và viết nhiều chú thích trong mã nguồn",
+      "Dùng kiểu `long long` thay cho `int`",
+      "Biên dịch với cờ `-Wall`"
+    ],
+    "answer": 0,
+    "explain": "Slide APT05 lưu ý: Định luật Amdahl lý thuyết chưa tính tới load imbalance (luồng xong sớm phải đợi luồng nặng nhất) và resource contention (tranh chấp mutex, bus bộ nhớ, cache)."
+  },
+  {
+    "id": "MCQ-131",
+    "chapter": 5,
+    "topicId": "5-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Domain vs Functional Decomposition",
+    "question": "Trong bước Partitioning của Foster, Domain Decomposition khác Functional Decomposition ở điểm nào?",
+    "options": [
+      "Domain Decomposition chia theo dữ liệu (mỗi tác vụ xử lý một mảnh dữ liệu); Functional Decomposition chia theo chức năng/công việc (mỗi tác vụ làm một khâu khác nhau)",
+      "Domain Decomposition chỉ dùng cho mạng internet; Functional Decomposition chỉ dùng cho lập trình hàm",
+      "Hai khái niệm là một",
+      "Domain Decomposition không thể kết hợp với Pthreads"
+    ],
+    "answer": 0,
+    "explain": "Slide APT05: Domain decomposition phân rã miền dữ liệu (mảng, ma trận, ảnh), còn Functional decomposition phân rã theo tác vụ chức năng (ví dụ 1 luồng đọc dữ liệu, 1 luồng xử lý, 1 luồng hiển thị)."
+  },
+  {
+    "id": "MCQ-132",
+    "chapter": 5,
+    "topicId": "5-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 5 · Trách nhiệm của lập trình viên",
+    "question": "Trong mô hình lập trình Threads (Pthreads) và Message Passing (MPI), ai chịu trách nhiệm xác định phần việc nào chạy song song và xử lý đồng bộ/giao tiếp?",
+    "options": [
+      "Lập trình viên phải tự thiết kế phân hoạch, đồng bộ hoặc truyền thông điệp tường minh (tự động song song hóa của trình biên dịch hiện vẫn rất hạn chế)",
+      "Hệ điều hành tự động biến mọi vòng lặp C tuần tự thành đa luồng hoàn hảo",
+      "Trình liên kết (Linker) tự thêm mutex vào mọi biến",
+      "Không cần ai làm vì CPU tự chia mã nguồn C"
+    ],
+    "answer": 0,
+    "explain": "Slide APT05: Automatic parallelization of serial programs có thành công rất hạn chế; lập trình viên chịu trách nhiệm chính trong việc phát hiện tính song song, phân hoạch, đồng bộ và cân bằng tải."
+  },
+  {
+    "id": "MCQ-133",
+    "chapter": 6,
+    "topicId": "6-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · 3 vấn đề Cache khi nhân ma trận song song",
+    "question": "Theo Slide APT06, phiên bản nhân ma trận song song ngây thơ (`i-j-k`) gặp 3 vấn đề nghiêm trọng nào liên quan đến phân cấp bộ nhớ?",
+    "options": [
+      "Cache inefficiency (hàng A và cột B vượt dung lượng cache), Poor spatial locality (duyệt ma trận B theo cột), và False sharing",
+      "Tràn stack, thiếu đĩa cứng, và lỗi cú pháp con trỏ",
+      "Thiếu biến toàn cục, không có `fork()`, và tràn `pipe()`",
+      "Không thể tính trên ma trận vuông kích thước chẵn"
+    ],
+    "answer": 0,
+    "explain": "Slide APT06 nêu đích danh 3 vấn đề: Cache inefficiency, Poor spatial locality (vì C lưu mảng 2D theo row-major nên truy cập `B[k][j]` nhảy bước `N` phần tử gây cache miss liên tục), và False sharing."
+  },
+  {
+    "id": "MCQ-134",
+    "chapter": 6,
+    "topicId": "6-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Bản chất False Sharing",
+    "question": "Hiện tượng **False Sharing** (chia sẻ giả) trong lập trình đa luồng là gì?",
+    "options": [
+      "Nhiều luồng trên các lõi CPU khác nhau cập nhật các biến ĐỘC LẬP nhưng lại nằm chung trong cùng một dòng cache (cache line, thường 64 byte), gây vô hiệu hóa cache liên tục và giảm tốc độ nặng nề",
+      "Hai luồng cùng sửa chung một biến toàn cục mà quên dùng mutex",
+      "Một luồng đọc dữ liệu từ ổ cứng thay vì RAM",
+      "Hai tiến trình chia sẻ chung một tệp trên đĩa"
+    ],
+    "answer": 0,
+    "explain": "Dù logic không chia sẻ biến (ví dụ `shared_cnt[0]++` và `shared_cnt[1]++` là 2 phần tử riêng), chúng nằm sát nhau trong cùng 1 cache line 64 byte → giao thức nhất quán cache (cache coherence) phải đẩy đi đẩy lại cache line giữa các lõi!"
+  },
+  {
+    "id": "MCQ-135",
+    "chapter": 6,
+    "topicId": "6-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Kỹ thuật chống False Sharing",
+    "question": "Hai cách khắc phục hiệu quả hiện tượng False Sharing giữa các luồng (Slide APT06) là gì?",
+    "options": [
+      "Tính vào biến cục bộ rồi ghi 1 lần khi xong, HOẶC thêm đệm (Padding) kích thước `CACHE_LINE_SIZE = 64` byte để mỗi phần tử nằm trên một cache line riêng",
+      "Khóa thêm nhiều mutex bên trong vòng lặp",
+      "Dùng kiểu `char` thay cho `int` để các biến nằm sát nhau hơn nữa",
+      "Tắt bộ nhớ đệm L1 Cache của CPU"
+    ],
+    "answer": 0,
+    "explain": "Slide APT06 minh họa `typedef struct { int value; char padding[64 - sizeof(int)]; } padded_int;` giúp mỗi luồng sở hữu trọn 1 cache line 64 byte riêng biệt."
+  },
+  {
+    "id": "MCQ-136",
+    "chapter": 6,
+    "topicId": "6-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Cache Blocking (Tiling)",
+    "question": "Ý tưởng cốt lõi của kỹ thuật **Cache Blocking (Tiling)** khi nhân hai ma trận lớn $N \\times N$ (`CR-32`, Slide APT06) là gì?",
+    "options": [
+      "Chia ma trận thành các khối con kích thước `B_tile x B_tile` đủ nhỏ để nằm gọn trong bộ nhớ Cache L1/L2, xử lý trọn từng khối để tái sử dụng dữ liệu tối đa trước khi bị đẩy khỏi Cache",
+      "Giảm độ phức tạp thuật toán từ $O(N^3)$ xuống $O(N^2)$",
+      "Lưu ma trận ra ổ đĩa cứng theo từng tệp nhỏ",
+      "Chỉ nhân các phần tử nằm trên đường chéo chính"
+    ],
+    "answer": 0,
+    "explain": "Cache Blocking vẫn giữ số phép nhân là $O(N^3)$ nhưng tăng mạnh tỉ lệ trúng cache (cache hit rate) nhờ tận dụng tính cục bộ thời gian và không gian trong từng khối `BLOCK_SIZE` (thường 32 hoặc 64 cho L1 32KB)."
+  },
+  {
+    "id": "MCQ-137",
+    "chapter": 6,
+    "topicId": "6-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Loop Interchange trong nhân ma trận",
+    "question": "Trong ngôn ngữ C (lưu ma trận 2D theo hàng — row-major), vì sao đổi thứ tự 3 vòng lặp nhân ma trận từ `i-j-k` sang `i-k-j` lại giúp tăng tốc độ đáng kể?",
+    "options": [
+      "Ở vòng trong cùng theo `j`, cả `C[i][j]` và `B[k][j]` đều truy cập liên tiếp liền kề trong bộ nhớ (stride = 1), tối đa hóa spatial locality và tận dụng trọn cache line",
+      "Vì vòng `i-k-j` thực hiện ít phép nhân hơn một nửa so với `i-j-k`",
+      "Vì trình biên dịch GCC không hỗ trợ vòng `i-j-k`",
+      "Vì `A[i][k]` không cần truy cập nữa"
+    ],
+    "answer": 0,
+    "explain": "Trong `i-j-k`, vòng trong cùng thay đổi `k` khiến `B[k][j]` nhảy bước `N` phần tử mỗi lượt (cache miss dày đặc). Đổi sang `i-k-j`: `A[i][k]` giữ cố định trong thanh ghi, còn `B[k][j]` và `C[i][j]` quét liên tiếp theo hàng!"
+  },
+  {
+    "id": "MCQ-138",
+    "chapter": 6,
+    "topicId": "6-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Nhân ma trận song song theo hàng (CR-30)",
+    "question": "Khi nhân ma trận $C = A \\times B$ song song bằng cách chia các hàng của $C$ cho `T` luồng (`CR-30`, Lab 5 Bài 4), vì sao KHÔNG cần dùng `pthread_mutex_t` trong quá trình tính `C[i][j]`?",
+    "options": [
+      "Vì `A` và `B` chỉ được đọc (read-only), còn mỗi luồng chỉ ghi vào dải hàng `C[i][...]` riêng biệt không giao nhau với bất kỳ luồng nào khác",
+      "Vì mảng 2 chiều trong C tự động có khóa mutex",
+      "Vì nhân ma trận không có phép cộng",
+      "Vì các luồng luôn chạy nối tiếp nhau"
+    ],
+    "answer": 0,
+    "explain": "Data race chỉ xảy ra khi có ít nhất 1 thao tác GHI đồng thời với thao tác đọc/ghi khác trên CÙNG ô nhớ. Đọc đồng thời `A, B` và ghi vào các vùng tách rời của `C` là 100% an toàn không cần khóa."
+  },
+  {
+    "id": "MCQ-139",
+    "chapter": 6,
+    "topicId": "6-2",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Độ phức tạp nhân ma trận & Strassen",
+    "question": "Độ phức tạp tính toán của thuật toán nhân ma trận $N \\times N$ chuẩn và thuật toán Strassen lần lượt là gì?",
+    "options": [
+      "$O(N^3)$ và $O(N^{\\log_2 7}) \\approx O(N^{2.81})$",
+      "$O(N^2)$ và $O(N \\log N)$",
+      "$O(N^3)$ và $O(N^2)$",
+      "$O(2^N)$ và $O(N^3)$"
+    ],
+    "answer": 0,
+    "explain": "Slide APT06: nhân ma trận chuẩn tốn $O(N^3)$ (kể cả khi chia 4 khối con $C_{11}, C_{12}, C_{21}, C_{22}$ dùng 8 phép nhân con vẫn là $O(N^3)$). Strassen giảm từ 8 xuống 7 phép nhân ma trận con nên đạt $O(N^{\\log_2 7}) \\approx O(N^{2.81})$."
+  },
+  {
+    "id": "MCQ-140",
+    "chapter": 6,
+    "topicId": "6-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Phân cấp bộ nhớ (Memory Hierarchy)",
+    "question": "Sắp xếp các tầng bộ nhớ sau theo thứ tự TỐC ĐỘ TRUY CẬP giảm dần (từ nhanh nhất đến chậm nhất theo Slide APT06):",
+    "options": [
+      "Thanh ghi (Registers) → L1 Cache → L2 Cache → RAM (DRAM) → Ổ đĩa (Disk)",
+      "L1 Cache → Thanh ghi → RAM → L2 Cache → Ổ đĩa",
+      "RAM → L1 Cache → L2 Cache → Thanh ghi → Ổ đĩa",
+      "Ổ đĩa → RAM → L2 Cache → L1 Cache → Thanh ghi"
+    ],
+    "answer": 0,
+    "explain": "Theo Slide APT06: Registers (~0.5 cycle) → L1 Cache (~1s cycles) → L2 Cache (~10s cycles) → Main Memory DRAM (~100s cycles) → Secondary Disk (~10.000s+ cycles)."
+  },
+  {
+    "id": "MCQ-141",
+    "chapter": 6,
+    "topicId": "6-6",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Ngưỡng tuần tự trong Parallel Quicksort",
+    "question": "Trong thuật toán Parallel Quicksort (`CR-31`, Lab 5 Bài 5, Slide APT06), vì sao với các phân đoạn nhỏ ($\\le \\text{threshold}$) ta phải chuyển sang Quicksort TUẦN TỰ thay vì tiếp tục gọi `pthread_create()`?",
+    "options": [
+      "Vì chi phí tạo, lập lịch và thu hồi luồng (`pthread_create`/`pthread_join`) sẽ lớn hơn nhiều lần so với thời gian sắp xếp đoạn nhỏ, đồng thời tránh tạo hàng chục nghìn luồng làm cạn tài nguyên hệ thống",
+      "Vì Quicksort không thể sắp xếp mảng nhỏ hơn 100 phần tử",
+      "Vì `pthread_create()` bị lỗi nếu mảng chứa số âm",
+      "Vì phân đoạn nhỏ không thể chọn được pivot"
+    ],
+    "answer": 0,
+    "explain": "Cả ngưỡng kích thước `threshold` và giới hạn độ sâu `max_depth` đều nhằm giới hạn số lượng luồng sinh ra (tối đa $\\le 2^{\\text{max\\_depth}}$) để chi phí quản lý luồng không lấn át lợi ích song song."
+  },
+  {
+    "id": "MCQ-142",
+    "chapter": 6,
+    "topicId": "6-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Luồng thực thi Parallel Quicksort",
+    "question": "Trong Parallel Quicksort, sau khi phân hoạch (partition) đoạn `[L, R]` quanh phần tử chốt `pivot` thành 2 đoạn con trái và phải, điều gì cho phép ta sắp xếp 2 đoạn con đó SONG SONG không cần mutex?",
+    "options": [
+      "Hai đoạn con nằm trên hai vùng chỉ số hoàn toàn tách rời (không chồng lấn) trong mảng nên hai luồng không bao giờ đọc/ghi cùng một phần tử",
+      "Mỗi luồng sao chép toàn bộ mảng sang một tiến trình mới bằng `fork()`",
+      "Hàm `partition` tự động khóa mutex cho cả hai đoạn",
+      "Phần tử `pivot` làm rào cản phần cứng ngăn hai lõi CPU gặp nhau"
+    ],
+    "answer": 0,
+    "explain": "Phân hoạch chia mảng thành 2 tập chỉ số rời nhau `[L..p-1]` và `[p+1..R]`, thỏa mãn hoàn hảo điều kiện độc lập dữ liệu của mô hình Chia để trị song song."
+  },
+  {
+    "id": "MCQ-143",
+    "chapter": 6,
+    "topicId": "6-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Độ sâu max_depth trong CR-31",
+    "question": "Trong bài `CR-31` (Parallel Quicksort với `max_depth = 3`), nếu tại mỗi tầng đệ quy thỏa mãn `depth < max_depth` ta sinh 1 luồng con xử lý nhánh trái và luồng hiện tại tự xử lý nhánh phải, tổng số luồng hoạt động đồng thời tối đa là bao nhiêu?",
+    "options": [
+      "8 luồng ($2^3$)",
+      "3 luồng",
+      "6 luồng",
+      "100.000 luồng"
+    ],
+    "answer": 0,
+    "explain": "Cây nhị phân độ sâu `max_depth = 3` có tối đa $2^3 = 8$ lá chạy song song đồng thời (luồng chính + 7 luồng con sinh thêm), rất vừa vặn với CPU 8 lõi!"
+  },
+  {
+    "id": "MCQ-144",
+    "chapter": 6,
+    "topicId": "6-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Xử lý biên khi N không chia hết cho B_tile",
+    "question": "Trong vòng lặp Cache Blocking (`for (int jj = 0; jj < N; jj += B_tile)`), điều kiện biên đúng của vòng lặp con bên trong là gì để không bị truy cập tràn mảng khi `N` không chia hết cho `B_tile`?",
+    "options": [
+      "`for (int j = jj; j < jj + B_tile && j < N; j++)`",
+      "`for (int j = jj; j < jj + B_tile; j++)`",
+      "`for (int j = 0; j < B_tile; j++)`",
+      "`for (int j = jj; j <= N; j++)`"
+    ],
+    "answer": 0,
+    "explain": "Khối cuối cùng ở biên ma trận có thể có kích thước nhỏ hơn `B_tile`. Điều kiện kép `j < jj + B_tile && j < N` (tương tự cho `i` và `k`) đảm bảo không bao giờ truy cập vượt `N - 1`."
+  },
+  {
+    "id": "MCQ-145",
+    "chapter": 6,
+    "topicId": "6-3",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Spatial Locality vs Temporal Locality",
+    "question": "Hai nguyên lý cục bộ mà bộ nhớ Cache khai thác gồm Spatial Locality và Temporal Locality. Phát biểu nào mô tả đúng cả hai?",
+    "options": [
+      "Temporal Locality: dữ liệu vừa truy cập có khả năng cao được truy cập lại sớm; Spatial Locality: dữ liệu ở địa chỉ lân cận ô nhớ vừa truy cập có khả năng cao sắp được truy cập",
+      "Temporal Locality chỉ có ở ổ đĩa SSD; Spatial Locality chỉ có ở mạng LAN",
+      "Spatial Locality nghĩa là không nên dùng mảng liên tiếp",
+      "Hai nguyên lý này không liên quan gì đến việc tối ưu vòng lặp"
+    ],
+    "answer": 0,
+    "explain": "Loop interchange (`i-k-j`) khai thác mạnh Spatial Locality (duyệt mảng liền kề), còn Cache Blocking (Tiling) khai thác cả Temporal Locality (tái sử dụng nhiều lần khối đang nằm trong L1 Cache)."
+  },
+  {
+    "id": "MCQ-146",
+    "chapter": 6,
+    "topicId": "6-8",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Hiệu năng Parallel Quicksort (Slide APT06)",
+    "question": "Trong thực nghiệm Parallel Quicksort sắp xếp $2^{27}$ số ngẫu nhiên ở Slide APT06, điều gì xảy ra nếu ta chọn `serial fraction` (ngưỡng tuần tự) quá NHỎ hoặc quá LỚN?",
+    "options": [
+      "Quá nhỏ → sinh quá nhiều task/luồng gây tốn overhead; quá lớn → thiếu độ song song (phần tuần tự lớn) làm giảm speedup; cần chọn điểm cân bằng ở giữa",
+      "Càng nhỏ tốc độ càng tăng vô hạn",
+      "Càng lớn tốc độ càng nhanh hơn",
+      "Ngưỡng tuần tự không ảnh hưởng tới tốc độ chạy"
+    ],
+    "answer": 0,
+    "explain": "Slide APT06 cho thấy đường cong speedup đạt đỉnh (6.84x) ở ngưỡng cân bằng giữa độ song song và chi phí quản lý luồng."
+  },
+  {
+    "id": "MCQ-147",
+    "chapter": 6,
+    "topicId": "6-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Giải phóng tham số truyền cho luồng trong Quicksort",
+    "question": "Trong hàm `sort_thread(void *vargp)` của Parallel Quicksort (Slide APT06), nếu luồng cha cấp phát động `SortArg *arg = malloc(sizeof(SortArg))` trước `pthread_create()`, ta cần đảm bảo điều gì để không bị rò rỉ bộ nhớ (memory leak)?",
+    "options": [
+      "Đọc hết các trường từ `arg` rồi gọi `free(arg)` (hoặc cấp phát `SortArg` trên stack của cha rồi gọi `pthread_join()` trước khi cha thoát khỏi scope)",
+      "Không bao giờ được gọi `free(arg)` trong đa luồng",
+      "Gọi `free(arg)` ngay TRƯỚC khi gọi `pthread_create()`",
+      "Dùng `close(arg)` để giải phóng"
+    ],
+    "answer": 0,
+    "explain": "Nếu gọi `pthread_join()` ngay trong cùng hàm trước khi return (như mẫu đơn giản của `CR-31`), truyền `&left_arg` nằm trên stack của cha là gọn nhất và không cần `malloc/free`! Nếu dùng `malloc` thì bắt buộc `free` sau khi dùng xong."
+  },
+  {
+    "id": "MCQ-148",
+    "chapter": 6,
+    "topicId": "6-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Tràn kiểu int khi nhân ma trận (CR-30)",
+    "question": "Cho ma trận $A$ ($100 \\times 100$) và $B$ ($100 \\times 100$) với mỗi phần tử trong $[-1000, 1000]$. Giá trị cực đại của một phần tử $C[i][j]$ là bao nhiêu và nên dùng kiểu dữ liệu nào?",
+    "options": [
+      "$100 \\times 10^6 = 10^8$ (với $K$ lớn hơn dễ vượt $2 \\times 10^9$ của `int`, nên dùng `long long` theo đúng yêu cầu chuẩn của `CR-30` và `CR-32`)",
+      "Tối đa 1000 nên chỉ cần kiểu `short`",
+      "Tối đa 255 nên chỉ cần `unsigned char`",
+      "Phải dùng kiểu `float`"
+    ],
+    "answer": 0,
+    "explain": "Khi tính tích vô hướng hay nhân ma trận, tích `A[i][k] * B[k][j]` nên ép kiểu `(long long)A[i][k] * B[k][j]` trước khi cộng vào `long long sum` để tuyệt đối không bao giờ tràn 32-bit `int`."
+  },
+  {
+    "id": "MCQ-149",
+    "chapter": 6,
+    "topicId": "6-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Kích thước Cache Line phổ biến",
+    "question": "Trên phần lớn kiến trúc CPU x86-64 / ARM64 hiện đại (Slide APT06), kích thước chuẩn của một dòng đệm (Cache Line) là bao nhiêu byte?",
+    "options": [
+      "64 byte",
+      "4 byte",
+      "8 byte",
+      "4096 byte"
+    ],
+    "answer": 0,
+    "explain": "Một cache line chuẩn là **64 byte** (chứa được 16 số `int` 4-byte hoặc 8 số `long long` 8-byte). (Còn 4096 byte = 4 KB là kích thước 1 trang bộ nhớ ảo — Page Size.)"
+  },
+  {
+    "id": "MCQ-150",
+    "chapter": 6,
+    "topicId": "6-6",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 6 · Trường hợp xấu nhất của Quicksort",
+    "question": "Nếu mảng đầu vào đã được sắp xếp sẵn tăng dần và Quicksort luôn chọn phần tử cuối làm pivot mà không chọn pivot giữa/ngẫu nhiên, độ phức tạp thời gian của Quicksort suy biến thành bao nhiêu?",
+    "options": [
+      "$O(n^2)$",
+      "$O(n \\log n)$",
+      "$O(n)$",
+      "$O(\\log n)$"
+    ],
+    "answer": 0,
+    "explain": "Nếu mảng đã sắp xếp sẵn (rất hay có trong test ẩn!), chọn pivot đầu/cuối làm phân hoạch cực lệch ($0$ và $n-1$) gây $O(n^2)$ và tràn stack đệ quy. Chọn **pivot ở giữa `a[(L + R) / 2]`** (hoặc median-of-three) giúp chạy $O(n \\log n)$ cực ổn định!"
+  },
+  {
+    "id": "MCQ-151",
+    "chapter": 7,
+    "topicId": "7-3",
+    "tag": "real-exam",
+    "type": "concept",
+    "source": "Đề thi thật UET · Câu 20",
+    "question": "Phương pháp Quy hoạch động (Dynamic Programming) phát huy hiệu quả khi bài toán thỏa mãn hai tính chất nào?",
+    "options": [
+      "Vét cạn toàn bộ không gian nghiệm (Exhaustive search) và chia để trị độc lập (Divide and conquer).",
+      "Phân hoạch dữ liệu tĩnh (Static domain decomposition) và truyền thông điệp (Message-passing model).",
+      "Bài toán con gối nhau (Overlapping subproblems) và cấu trúc con tối ưu (Optimal substructure).",
+      "Bài toán con độc lập (Independent subproblems) và tính chất chọn tham lam (Greedy-choice property)."
+    ],
+    "answer": 2,
+    "explain": "Slide APT07 nhấn mạnh 2 điều kiện cốt lõi để áp dụng DP: (1) **Overlapping subproblems** (các bài toán con lặp đi lặp lại nên lưu bảng nhớ sẽ tránh tính lại) và (2) **Optimal substructure** (nghiệm tối ưu bài toán lớn ghép được từ nghiệm tối ưu bài toán con)."
+  },
+  {
+    "id": "MCQ-152",
+    "chapter": 7,
+    "topicId": "7-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Divide & Conquer vs Dynamic Programming",
+    "question": "Sự khác biệt bản chất nhất giữa Chia để trị (Divide & Conquer như Merge Sort) và Quy hoạch động (Dynamic Programming) là gì?",
+    "options": [
+      "Chia để trị giải các bài toán con ĐỘC LẬP (không lặp lại); Quy hoạch động giải các bài toán con GỐI NHAU (lặp lại nhiều lần) bằng cách lưu trữ kết quả trung gian để tái sử dụng",
+      "Chia để trị luôn nhanh hơn Quy hoạch động",
+      "Quy hoạch động không bao giờ dùng được đệ quy",
+      "Chia để trị luôn tốn $O(2^n)$ thời gian"
+    ],
+    "answer": 0,
+    "explain": "Slide APT07: Merge Sort/Quicksort chia thành các mảng con không giao nhau (independent subproblems). Fibonacci/Rod Cutting/LCS lặp đi lặp lại cùng trạng thái con nên DP lưu kết quả giảm từ hàm mũ xuống đa thức."
+  },
+  {
+    "id": "MCQ-153",
+    "chapter": 7,
+    "topicId": "7-4",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Bài toán KHÔNG có Optimal Substructure",
+    "question": "Theo Slide APT07, bài toán nào dưới đây KHÔNG có tính chất cấu trúc con tối ưu (Optimal Substructure)?",
+    "options": [
+      "Tìm đường đi đơn dài nhất (Longest simple path) trên đồ thị có chu trình (và các bài toán lý thuyết trò chơi như cờ vua)",
+      "Tìm đường đi ngắn nhất từ một đỉnh (Single-source shortest path) với trọng số dương",
+      "Chuỗi con chung dài nhất (LCS)",
+      "Bài toán cái túi 0/1 (0/1 Knapsack)"
+    ],
+    "answer": 0,
+    "explain": "Slide APT07 liệt kê rõ: Shortest path, LCS, Knapsack CÓ optimal substructure; còn Longest simple path (do ràng buộc không được đi qua đỉnh trùng lặp khiến hai đoạn con phụ thuộc nhau) và cờ vua/poker KHÔNG có."
+  },
+  {
+    "id": "MCQ-154",
+    "chapter": 7,
+    "topicId": "7-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Memoization vs Tabulation",
+    "question": "So sánh hai cách cài đặt Quy hoạch động: Memoization (Top-Down) và Tabulation (Bottom-Up):",
+    "options": [
+      "Memoization dùng đệ quy từ bài toán lớn đi xuống và chỉ tính trạng thái nào cần dùng (tốn stack đệ quy); Tabulation dùng vòng lặp đi từ trường hợp cơ sở lên bài toán lớn (không tốn stack đệ quy)",
+      "Memoization dùng vòng lặp; Tabulation dùng đệ quy",
+      "Tabulation có độ phức tạp $O(2^n)$ còn Memoization là $O(n)$",
+      "Memoization không cần mảng lưu kết quả trung gian"
+    ],
+    "answer": 0,
+    "explain": "Slide APT07: Memoization (Top-Down) đi từ trên xuống kèm bảng `memo[]` khởi tạo `-1`; Tabulation (Bottom-Up) điền bảng tuần tự từ base cases lên `dp[n]`."
+  },
+  {
+    "id": "MCQ-155",
+    "chapter": 7,
+    "topicId": "7-2",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Độ phức tạp Fibonacci",
+    "question": "Độ phức tạp thời gian của thuật toán tính $F(n)$ bằng đệ quy thuần (brute force) và bằng DP Memoization/Tabulation lần lượt là bao nhiêu?",
+    "options": [
+      "$O(2^n)$ (chính xác hơn $O(\\phi^n)$) và $O(n)$",
+      "$O(n^2)$ và $O(\\log n)$",
+      "$O(n)$ và $O(1)$",
+      "$O(n!)$ và $O(n^2)$"
+    ],
+    "answer": 0,
+    "explain": "Đệ quy thuần tính lặp lại các nhánh con vô số lần dẫn tới thời gian hàm mũ $O(2^n)$ (tính `fib(45)` đã rất lâu). Với DP, mỗi trạng thái `0..n` chỉ tính đúng 1 lần → $O(n)$."
+  },
+  {
+    "id": "MCQ-156",
+    "chapter": 7,
+    "topicId": "7-6",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Giới hạn kiểu long long cho Fibonacci (CR-41)",
+    "question": "Số Fibonacci thứ $n$ lớn nhất vẫn lưu vừa không tràn trong kiểu `long long` có dấu 64-bit (giá trị tối đa $\\approx 9.22 \\times 10^{18}$) là tại $n$ bằng bao nhiêu?",
+    "options": [
+      "$n = 92$ ($F(92) = 7540113804746346429$)",
+      "$n = 40$",
+      "$n = 50$",
+      "$n = 100$"
+    ],
+    "answer": 0,
+    "explain": "$F(92) \\approx 7.54 \\times 10^{18} < 2^{63} - 1$, còn $F(93) \\approx 1.22 \\times 10^{19}$ đã vượt `LLONG_MAX`. Đó là lý do ràng buộc của `CR-41` là `0 <= n <= 92`."
+  },
+  {
+    "id": "MCQ-157",
+    "chapter": 7,
+    "topicId": "7-7",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Công thức truy hồi Rod Cutting",
+    "question": "Trong bài toán Cắt thanh gỗ chiều dài $n$ với bảng giá $p[1..n]$ (Slide APT07), hệ thức truy hồi tính doanh thu tối đa $r_n$ dựa trên lát cắt đầu tiên dài $i$ (đoạn trái dài $i$ bán nguyên, đoạn phải dài $n-i$ cắt tối ưu tiếp) là gì?",
+    "options": [
+      "$r_n = \\max_{1 \\le i \\le n} (p_i + r_{n - i})$, với $r_0 = 0$",
+      "$r_n = \\min_{1 \\le i \\le n} (p_i + r_{n - i})$, với $r_0 = 0$",
+      "$r_n = p_n + r_{n - 1}$",
+      "$r_n = \\max(p_1, p_2, \\dots, p_n)$"
+    ],
+    "answer": 0,
+    "explain": "Slide APT07: cố định đoạn đầu không cắt thêm có giá $p[i]$ và tối ưu phần còn lại dài $n - i$ bằng $r[n - i]$. Độ phức tạp của DP Rod Cutting là $O(n^2)$ (giảm từ $O(2^{n-1})$ vét cạn)."
+  },
+  {
+    "id": "MCQ-158",
+    "chapter": 7,
+    "topicId": "7-9",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 7 · Bẫy truy vết Rod Cutting (Slide APT07 & Đề cũ)",
+    "question": "Khi cài Extended Rod Cutting kèm truy vết mảng `s[j]` (`while (n > 0) { printf(\"%d \", s[n]); n -= s[n]; }`), điều gì xảy ra nếu ta viết `p[i] + r[j - i]` đúng chuẩn so với viết sai thành `r[i] + r[j - i]`?",
+    "options": [
+      "Dùng `p[i] + r[j - i]` đảm bảo `s[j] = i` là một đoạn NGUYÊN không cần cắt tiếp nên vòng `while` truy vết ra đúng đủ các đoạn; còn dùng `r[i] + r[j - i]` có thể làm `s[j]` là đoạn ghép chưa cắt hết khiến vòng `while` bỏ sót vết cắt!",
+      "Hai cách viết luôn cho mảng `s[]` giống hệt nhau",
+      "Dùng `r[i] + r[j - i]` nhanh hơn về độ phức tạp $O(n)$",
+      "Dùng `p[i] + r[j - i]` không tính được trường hợp để nguyên thanh gỗ"
+    ],
+    "answer": 0,
+    "explain": "Đây là bẫy cực tinh vi từng xuất hiện trong lời giải đề cũ! Với `i = j`, `p[j] + r[0] = p[j]` đã bao hàm luôn trường hợp không cắt thanh gỗ, đồng thời bảo đảm `s[j]` luôn là độ dài một miếng bán trực tiếp."
+  },
+  {
+    "id": "MCQ-159",
+    "chapter": 7,
+    "topicId": "7-9",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 7 · Truy vết Rod Cutting (Slide APT07 & CR-39)",
+    "question": "Cho bảng giá $p[1..8] = [1, 5, 8, 9, 10, 17, 17, 20]$ và quy ước cập nhật nghiêm ngặt `>` (ưu tiên đoạn đầu nhỏ nhất khi hòa). Với thanh gỗ dài $n = 8$, doanh thu tối đa và dãy các đoạn cắt truy vết được lần lượt là gì?",
+    "options": [
+      "22 và `2 6`",
+      "20 và `8`",
+      "22 và `3 5`",
+      "21 và `1 7`"
+    ],
+    "answer": 0,
+    "explain": "Cắt thành 2 đoạn dài `2` (giá 5) và `6` (giá 17) cho tổng doanh thu `5 + 17 = 22` (cao hơn để nguyên dài 8 chỉ được 20). Khi duyệt `i = 1..8`, `i = 2` đạt `5 + r[6] = 22` trước `i = 6` nên với dấu `>`, `s[8] = 2`, tiếp theo `s[6] = 6` → in `2 6`."
+  },
+  {
+    "id": "MCQ-160",
+    "chapter": 7,
+    "topicId": "7-12",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 7 · Leo cầu thang (CR-33)",
+    "question": "Bài toán leo cầu thang (`CR-33`): từ bậc 0 (chi phí 0), mỗi bước lên 1 hoặc 2 bậc, chi phí các bậc $1..5$ là `[10, 15, 20, 5, 10]`. Chi phí nhỏ nhất để đặt chân tới ĐÚNG bậc 5 là bao nhiêu?",
+    "options": [
+      "30 (`0 → 2 (15) → 4 (5) → 5 (10)`)",
+      "25",
+      "35",
+      "40"
+    ],
+    "answer": 0,
+    "explain": "`dp[0]=0`, `dp[1]=10`, `dp[2]=15+min(0,10)=15`, `dp[3]=20+min(10,15)=30`, `dp[4]=5+min(15,30)=20`, `dp[5]=10+min(30,20)=30`."
+  },
+  {
+    "id": "MCQ-161",
+    "chapter": 7,
+    "topicId": "7-12",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Đếm đường đi trên lưới có vật cản (CR-35)",
+    "question": "Trong bài toán đếm số đường đi từ `(1, 1)` đến `(M, N)` chỉ đi sang phải hoặc xuống dưới (`CR-35`), công thức chuyển trạng thái tại ô trống `(i, j)` và trường hợp biên quan trọng cần kiểm tra là gì?",
+    "options": [
+      "`dp[i][j] = (dp[i-1][j] + dp[i][j-1]) % 1000000007` (ô có vật cản đặt `dp[i][j] = 0`); đặc biệt kiểm tra nếu ô `(1,1)` hoặc `(M,N)` có vật cản thì kết quả là `0`",
+      "`dp[i][j] = dp[i-1][j-1] + 1`",
+      "Chỉ cần lấy modulo `1000000007` một lần duy nhất ở lúc `printf`",
+      "Ô vật cản đặt `dp[i][j] = -1`"
+    ],
+    "answer": 0,
+    "explain": "Số đường đi tăng theo hệ số nhị thức rất nhanh nên PHẢI lấy `% 1000000007` ở mọi phép cộng để không tràn `int`/`long long`, và phải gán `0` tại mọi ô có vật cản (kể cả ô xuất phát `(1,1)`)."
+  },
+  {
+    "id": "MCQ-162",
+    "chapter": 7,
+    "topicId": "7-12",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 7 · Coin Change: Vì sao Tham lam sai? (CR-36)",
+    "question": "Với các mệnh giá đồng xu `[1, 5, 7]` và số tiền cần đổi $S = 11$, thuật toán Tham lam (luôn chọn đồng xu lớn nhất trước) cho kết quả bao nhiêu đồng, và Quy hoạch động cho kết quả tối ưu bao nhiêu đồng?",
+    "options": [
+      "Tham lam: 5 đồng (`7+1+1+1+1`); DP tối ưu: 3 đồng (`5+5+1`)",
+      "Cả Tham lam và DP đều cho 3 đồng",
+      "Tham lam: 2 đồng; DP: 3 đồng",
+      "Không thể đổi được số tiền 11"
+    ],
+    "answer": 0,
+    "explain": "Tham lam chọn ngay `7`, còn `4` phải dùng bốn đồng `1` (tổng 5 đồng). DP xét mọi mệnh giá `dp[x] = min(dp[x], dp[x - c] + 1)` tìm ra `5 + 5 + 1 = 11` chỉ tốn **3 đồng**!"
+  },
+  {
+    "id": "MCQ-163",
+    "chapter": 7,
+    "topicId": "7-12",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Bẫy tràn INF trong Coin Change",
+    "question": "Khi cài đặt Coin Change (`CR-36`), nếu khởi tạo `dp[x] = INT_MAX` rồi viết `dp[x] = min(dp[x], dp[x - c] + 1)` mà không kiểm tra `dp[x - c] != INT_MAX`, lỗi nghiêm trọng nào xảy ra?",
+    "options": [
+      "Tràn số nguyên có dấu (Signed integer overflow): `INT_MAX + 1` biến thành `INT_MIN` (số âm cực lớn), khiến `min()` chọn nhầm giá trị âm và làm sai toàn bộ bảng DP",
+      "Không có lỗi vì `INT_MAX + 1` vẫn bằng `INT_MAX`",
+      "Trình biên dịch tự đổi `INT_MAX` sang vô cực toán học",
+      "Chỉ làm chậm chương trình một chút"
+    ],
+    "answer": 0,
+    "explain": "Cách an toàn và gọn nhất là đặt `const int INF = 1e9;` (lớn hơn hẳn $S_{\\max} = 10^5$ nhưng cộng 1 không bao giờ tràn `int`) hoặc kiểm tra `if (dp[x - c] < INF)`."
+  },
+  {
+    "id": "MCQ-164",
+    "chapter": 7,
+    "topicId": "7-11",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · 0/1 Knapsack 1D duyệt ngược vs duyệt xuôi (CR-37)",
+    "question": "Khi tối ưu bài toán Balo 0/1 (`0/1 Knapsack`) bằng mảng 1 chiều `dp[0..W]`, tại sao với mỗi đồ vật `(w, v)` ta BẮT BUỘC phải duyệt vòng trọng lượng `j` NGƯỢC từ `W` về `w`?",
+    "options": [
+      "Để đảm bảo `dp[j - w]` là giá trị của tầng TRƯỚC (chưa chọn vật hiện tại), nhờ đó mỗi đồ vật chỉ được chọn tối đa 1 lần; nếu duyệt xuôi từ `w` lên `W` sẽ trở thành Unbounded Knapsack (chọn 1 vật nhiều lần)!",
+      "Vì mảng C chỉ cho phép duyệt từ cuối về đầu",
+      "Để tiết kiệm gấp đôi thời gian tính toán",
+      "Duyệt xuôi hay duyệt ngược đều cho kết quả giống hệt nhau"
+    ],
+    "answer": 0,
+    "explain": "Đây là điểm phân biệt kinh điển giữa **0/1 Knapsack** (duyệt ngược `for (int j = W; j >= w; j--)`) và **Unbounded Knapsack** (duyệt xuôi `for (int j = w; j <= W; j++)`)."
+  },
+  {
+    "id": "MCQ-165",
+    "chapter": 7,
+    "topicId": "7-11",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Song song hóa 0/1 Knapsack theo tầng trọng lượng (CR-46)",
+    "question": "Trong bài `CR-46` (song song hóa DP 0/1 Knapsack bằng `T` luồng), vì sao ta dùng 2 mảng `dp_prev[0..W]` và `dp_cur[0..W]` tách biệt thay vì sửa tại chỗ trên 1 mảng `dp[]`?",
+    "options": [
+      "Vì ở hàng `i`, mọi ô `dp_cur[w]` chỉ đọc từ hàng trước `dp_prev[w]` và `dp_prev[w - w_i]` (chỉ đọc) nên cả `W + 1` trạng thái hoàn toàn độc lập để `T` luồng tính song song không race condition",
+      "Vì C không cho phép sửa mảng 1 chiều trong đa luồng",
+      "Vì 2 mảng làm giảm độ phức tạp từ $O(nW)$ xuống $O(n)$",
+      "Để không cần đồng bộ giữa hàng `i` và hàng `i + 1`"
+    ],
+    "answer": 0,
+    "explain": "Tách `dp_prev` (read-only) và `dp_cur` (mỗi luồng ghi dải `[L, R]` riêng) triệt tiêu hoàn toàn phụ thuộc bên trong 1 hàng. Xong hàng `i`, đồng bộ (join/barrier) rồi hoán đổi con trỏ `dp_prev ↔ dp_cur` sang vật `i + 1`."
+  },
+  {
+    "id": "MCQ-166",
+    "chapter": 7,
+    "topicId": "7-11",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Công thức chuyển trạng thái LCS (CR-38)",
+    "question": "Trong bài toán Chuỗi con chung dài nhất (LCS) của hai chuỗi $X[0..m-1]$ và $Y[0..n-1]$, công thức tính `dp[i][j]` (độ dài LCS của `i` ký tự đầu của $X$ và `j` ký tự đầu của $Y$) là gì?",
+    "options": [
+      "Nếu `X[i-1] == Y[j-1]` thì `dp[i][j] = dp[i-1][j-1] + 1`; ngược lại `dp[i][j] = max(dp[i-1][j], dp[i][j-1])`",
+      "Nếu `X[i-1] == Y[j-1]` thì `dp[i][j] = dp[i-1][j-1] + 1`; ngược lại `dp[i][j] = 0`",
+      "`dp[i][j] = dp[i-1][j] + dp[i][j-1]`",
+      "`dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + 1`"
+    ],
+    "answer": 0,
+    "explain": "LCS (Longest Common **Subsequence**) không yêu cầu các ký tự phải nằm liên tiếp (khác với Longest Common Substring gán `0` khi khác nhau), nên khi `X[i-1] != Y[j-1]` ta kế thừa `max(dp[i-1][j], dp[i][j-1])`."
+  },
+  {
+    "id": "MCQ-167",
+    "chapter": 7,
+    "topicId": "7-11",
+    "tag": "extended",
+    "type": "trace",
+    "source": "Chương 7 · Truy vết LCS chuẩn (CR-38)",
+    "question": "Cho `X = \"ACDBE\"` và `Y = \"ABCDE\"`. Theo quy tắc truy vết chuẩn của `CR-38` (từ `(m, n)`: khớp thì lấy ký tự và đi chéo; khác nhau thì `dp[i-1][j] > dp[i][j-1]` đi lên `i--`, ngược lại đi trái `j--`), độ dài và chuỗi LCS thu được là gì?",
+    "options": [
+      "Độ dài 4, chuỗi `\"ACDE\"`",
+      "Độ dài 3, chuỗi `\"ACE\"`",
+      "Độ dài 5, chuỗi `\"ABCDE\"`",
+      "Độ dài 4, chuỗi `\"ABDE\"`"
+    ],
+    "answer": 0,
+    "explain": "Hai chuỗi có 2 LCS độ dài 4 là `\"ACDE\"` và `\"ACBE\"` (không có `\"ABDE\"` vì `'B'` đứng sau `'D'` trong `X`). Theo quy tắc tại `(3,4)` (`D` vs `D` khớp, `(2,3)` `C` vs `C` khớp, `(1,1)` `A` vs `A` khớp), truy vết chuẩn trả về `\"ACDE\"`."
+  },
+  {
+    "id": "MCQ-168",
+    "chapter": 7,
+    "topicId": "7-12",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Weighted Interval Scheduling (CR-40)",
+    "question": "Trong bài toán Lập lịch công việc có trọng số không chồng lấn (`CR-40`), các bước chuẩn để đạt độ phức tạp $O(n \\log n)$ là gì?",
+    "options": [
+      "Sắp xếp công việc tăng dần theo thời điểm kết thúc $f_i$ (`qsort`), dùng tìm kiếm nhị phân tìm công việc $p(i)$ gần nhất có $f_{p(i)} \\le s_i$, rồi tính `dp[i] = max(dp[i-1], profit[i] + dp[p(i)])`",
+      "Sắp xếp giảm dần theo lợi nhuận $p_i$ rồi chọn tham lam mọi công việc không chồng lấn",
+      "Sắp xếp tăng dần theo thời điểm bắt đầu $s_i$ rồi cộng tất cả lợi nhuận",
+      "Dùng đệ quy vét cạn $2^n$ tập con"
+    ],
+    "answer": 0,
+    "explain": "Khi sắp theo $f_i$ tăng dần, tập các công việc tương thích với công việc `i` luôn là một đoạn tiền tố `1..p(i)` nên tìm được $p(i)$ bằng Binary Search trong $O(\\log n)$, tổng cộng $O(n \\log n)$."
+  },
+  {
+    "id": "MCQ-169",
+    "chapter": 7,
+    "topicId": "7-5",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Quy trình 4 bước Quy hoạch động (Slide APT07)",
+    "question": "Theo Slide APT07, 4 bước tư duy chuẩn khi thiết kế một thuật toán Quy hoạch động lần lượt là gì?",
+    "options": [
+      "1) Nhận diện bài toán con gối nhau → 2) Định nghĩa cấu trúc con tối ưu (hệ thức truy hồi) → 3) Thiết kế cấu trúc dữ liệu (mảng/bảng) lưu nghiệm con → 4) Điền bảng và trích xuất nghiệm cuối",
+      "1) Viết `fork()` → 2) Tạo `pipe()` → 3) Gọi `dup2()` → 4) Gọi `waitpid()`",
+      "1) Sắp xếp mảng → 2) Chọn phần tử lớn nhất → 3) Dừng ngay → 4) Không lưu bảng",
+      "1) Cấp phát `mmap()` → 2) Khóa mutex → 3) Đếm histogram → 4) Giải phóng"
+    ],
+    "answer": 0,
+    "explain": "Đó là quy trình 4 bước chuẩn trong Slide APT07 giúp chuyển hóa mọi bài toán tối ưu/đếm thành công thức DP rõ ràng."
+  },
+  {
+    "id": "MCQ-170",
+    "chapter": 7,
+    "topicId": "7-1",
+    "tag": "extended",
+    "type": "concept",
+    "source": "Chương 7 · Nguồn gốc tên gọi & ứng dụng DP",
+    "question": "Thuật toán nào sau đây là ứng dụng kinh điển của Quy hoạch động được nhắc tới trong Slide APT07?",
+    "options": [
+      "Tiện ích `diff` của Unix (so sánh tệp), Bellman–Ford–Moore (đường đi ngắn nhất), Needleman–Wunsch / Smith–Waterman (gióng hàng gen), và Viterbi (HMM)",
+      "Thuật toán sắp xếp nhanh Quicksort",
+      "Thuật toán tìm kiếm nhị phân Binary Search",
+      "Lời gọi hệ thống `lseek()`"
+    ],
+    "answer": 0,
+    "explain": "Slide APT07 liệt kê các ứng dụng DP nổi tiếng: Unix `diff` (dựa trên LCS), Bellman–Ford–Moore, CYK parsing, Seam carving, Needleman–Wunsch/Smith–Waterman và Viterbi."
+  }
+]

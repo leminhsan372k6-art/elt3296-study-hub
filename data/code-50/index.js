@@ -1,0 +1,43 @@
+import { PART1_FILE_QUESTIONS } from './part1-file.js';
+import { PART2_PROCESS_QUESTIONS } from './part2-process.js';
+import { PART3_THREAD_QUESTIONS } from './part3-thread.js';
+import { PART4_PARALLEL_QUESTIONS } from './part4-parallel.js';
+import { PART5_DP_QUESTIONS } from './part5-dp.js';
+import { PART6_INTEGRATED_QUESTIONS } from './part6-integrated.js';
+
+export { gradeSubmission } from './grader.js';
+
+export const OFFICIAL_SEB_50 = [
+  ...PART1_FILE_QUESTIONS,
+  ...PART2_PROCESS_QUESTIONS,
+  ...PART3_THREAD_QUESTIONS,
+  ...PART4_PARALLEL_QUESTIONS,
+  ...PART5_DP_QUESTIONS,
+  ...PART6_INTEGRATED_QUESTIONS,
+];
+
+export const SEB_PARTS = [
+  { id: 'all', label: 'Tất cả 50 câu' },
+  { id: 'File', label: 'Phần 1 · File (01–08)' },
+  { id: 'Process', label: 'Phần 2 · Process (09–16)' },
+  { id: 'Thread', label: 'Phần 3 · Thread (17–24)' },
+  { id: 'Song song', label: 'Phần 4 · Song song (25–32)' },
+  { id: 'Quy hoạch động', label: 'Phần 5 · DP (33–40)' },
+  { id: 'Tổng hợp', label: 'Phần 6 · Tổng hợp (41–50)' },
+];
+
+export const TOPIC_TO_SEB_QUESTIONS = {};
+for (const q of OFFICIAL_SEB_50) {
+  for (const rt of q.relatedTopics || []) {
+    if (!TOPIC_TO_SEB_QUESTIONS[rt.id]) TOPIC_TO_SEB_QUESTIONS[rt.id] = [];
+    if (!TOPIC_TO_SEB_QUESTIONS[rt.id].some((x) => x.id === q.id)) {
+      TOPIC_TO_SEB_QUESTIONS[rt.id].push({
+        id: q.id,
+        num: q.num,
+        title: q.title,
+        difficulty: q.difficulty,
+        part: q.part,
+      });
+    }
+  }
+}

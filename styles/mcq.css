@@ -1,0 +1,311 @@
+/* MCQ Practice & Real Exam Simulator (170+ Questions) */
+.mcq-shell {
+  display: grid;
+  gap: 16px;
+}
+
+.mcq-hero {
+  background: var(--surface);
+  border: 1px solid var(--bd);
+  border-radius: 18px;
+  padding: 22px 26px;
+  box-shadow: var(--shadow-card);
+}
+
+.mcq-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.mcq-mode-bar {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 11px;
+  background: var(--surface-sub);
+  border: 1px solid var(--bd);
+  flex-wrap: wrap;
+}
+
+.mcq-mode-btn {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--mut);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mcq-mode-btn.active {
+  background: var(--fg);
+  color: var(--surface);
+}
+
+.mcq-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bd);
+}
+
+.mcq-exam-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 18px;
+  align-items: start;
+}
+
+.mcq-exam-grid.single-col {
+  grid-template-columns: minmax(0, 960px);
+  justify-content: center;
+}
+
+.mcq-list {
+  display: grid;
+  gap: 14px;
+}
+
+.mcq-card {
+  background: var(--surface);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow-card);
+  scroll-margin-top: 84px;
+}
+
+.mcq-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  font-family: var(--font-ui);
+  font-size: 12.2px;
+}
+
+.mcq-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 11.4px;
+  font-weight: 650;
+  background: var(--surface-sub);
+  color: var(--mut);
+  border: 1px solid var(--bd);
+}
+
+.pill-tag.real {
+  background: var(--ink-ok-soft);
+  color: var(--ink-ok);
+  border-color: transparent;
+}
+
+.pill-tag.ch {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: transparent;
+}
+
+.flag-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--bd);
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mut);
+  cursor: pointer;
+}
+
+.flag-btn.flagged {
+  background: var(--ink-warn-soft);
+  border-color: var(--ink-flag);
+  color: var(--ink-flag);
+}
+
+.mcq-question-text {
+  font-size: 17px;
+  line-height: 1.58;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 12px;
+}
+
+.mcq-question-text code, .mcq-opt code, .mcq-explain code {
+  font-size: 0.87em;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--surface-sub);
+}
+
+.mcq-code-block {
+  margin: 0 0 14px;
+  padding: 13px 16px;
+  border-radius: 11px;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-size: 13.2px;
+  line-height: 1.6;
+  overflow-x: auto;
+  border: 1px solid var(--code-bd);
+}
+
+.mcq-opts {
+  display: grid;
+  gap: 8px;
+}
+
+.mcq-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  border-radius: 11px;
+  border: 1px solid var(--bd-strong);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 15.4px;
+  line-height: 1.5;
+  transition: all 0.14s ease;
+}
+
+.mcq-opt:hover {
+  border-color: var(--accent);
+  background: var(--surface-sub);
+}
+
+.mcq-opt.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+.mcq-opt.correct {
+  border-color: var(--ink-ok);
+  background: var(--ink-ok-soft);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.mcq-opt.wrong {
+  border-color: var(--ink-err);
+  background: var(--ink-err-soft);
+}
+
+.mcq-letter {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  min-width: 22px;
+  color: var(--accent-strong);
+}
+
+.mcq-explain {
+  margin-top: 12px;
+  padding: 13px 15px;
+  border-radius: 11px;
+  background: var(--surface-sub);
+  border-left: 3px solid var(--ink-ok);
+  font-size: 14.8px;
+  line-height: 1.62;
+  color: var(--fg-body);
+}
+
+/* Sticky Moodle-style Exam Panel */
+.exam-panel {
+  position: sticky;
+  top: 72px;
+  background: var(--surface);
+  border: 1px solid var(--bd);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-ui);
+}
+
+.exam-timer {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px;
+  border-radius: 11px;
+  background: var(--surface-sub);
+  border: 1px solid var(--bd);
+  margin: 10px 0 14px;
+}
+
+.exam-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.exam-nav-cell {
+  position: relative;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--bd-strong);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 12.2px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.exam-nav-cell.answered { background: var(--accent-soft); border-color: var(--accent); }
+.exam-nav-cell.is-ok { background: var(--ink-ok-soft); border-color: var(--ink-ok); color: var(--ink-ok); }
+.exam-nav-cell.is-err { background: var(--ink-err-soft); border-color: var(--ink-err); color: var(--ink-err); }
+.exam-nav-cell.flagged::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-flag);
+}
+
+.score-summary-banner {
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: var(--ink-ok-soft);
+  border: 1px solid var(--ink-ok);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: var(--font-ui);
+}
+
+@media (max-width: 980px) {
+  .mcq-exam-grid { grid-template-columns: 1fr; }
+  .exam-panel { position: static; }
+}
