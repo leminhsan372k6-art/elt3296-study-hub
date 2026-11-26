@@ -1,6 +1,7 @@
-// Real Linux GCC C11 Compiler & Test-Case Judge (Runs directly from GitHub Pages via Wandbox / Judge0 CE CORS API)
+// Fast Single-Compile Linux GCC C11 Judge (Compiles ONCE, executes all Sample + Hidden tests via fork/waitpid in 1 HTTP call!)
 
 function toByteArray(spec) {
+  if (!spec) return [];
   if (Array.isArray(spec.bytes)) return spec.bytes;
   if (typeof spec.text === 'string') return [...new TextEncoder().encode(spec.text)];
   return [];
@@ -11,100 +12,131 @@ function escapeCString(str) {
 }
 
 /**
- * Append a transparent C constructor/destructor AT THE BOTTOM of the student's code
- * so GCC line numbers for any compile error match the student's editor 1-to-1!
+ * Append a transparent batch test harness AT THE BOTTOM of the student's code.
+ * - Because it is appended AFTER the student's code, GCC compile error line numbers match the editor 1-to-1.
+ * - Compiles ONCE instead of N times, running every test case inside an isolated fork() + chdir() sandbox!
  */
-function instrumentCode(studentCode, tc) {
-  const needsSetup = Boolean(tc.setup && (tc.setup.dirs?.length || tc.setup.files?.length));
-  const needsCheck = Boolean(tc.checkFile);
-  if (!needsSetup && !needsCheck) return studentCode;
-
-  const lines = [
+function buildBatchSource(studentCode, testCases) {
+  const L = [
     '',
-    '/* === SANDBOX TEST HARNESS (AUTO-APPENDED AFTER STUDENT CODE) === */',
+    '/* === ELT3296 SINGLE-COMPILE BATCH SANDBOX HARNESS === */',
     '#include <fcntl.h>',
     '#include <unistd.h>',
     '#include <sys/stat.h>',
+    '#include <sys/wait.h>',
     '#include <stdio.h>',
+    '#include <stdlib.h>',
+    '#include <string.h>',
+    '',
+    'static void __elt_write_file(const char *path, const unsigned char *data, size_t len, int mode) {',
+    '  int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, mode ? mode : 0644);',
+    '  if (fd >= 0) {',
+    '    size_t off = 0;',
+    '    while (off < len) {',
+    '      ssize_t w = write(fd, data + off, len - off);',
+    '      if (w <= 0) break;',
+    '      off += (size_t)w;',
+    '    }',
+    '    close(fd);',
+    '    if (mode) chmod(path, mode);',
+    '  }',
+    '}',
+    '',
+    '__attribute__((constructor)) static void __elt_batch_runner(void) {',
+    '  if (getenv("__ELT_CHILD_RUN")) return;',
+    '  setenv("__ELT_CHILD_RUN", "1", 1);',
+    '  char __base[1024];',
+    '  if (!getcwd(__base, sizeof(__base))) strcpy(__base, ".");',
   ];
 
-  if (needsSetup) {
-    lines.push('__attribute__((constructor)) static void __elt_setup(void) {');
-    for (const d of tc.setup.dirs || []) {
-      lines.push(`  mkdir("${escapeCString(d)}", 0755);`);
-    }
-    (tc.setup.files || []).forEach((f, idx) => {
-      const bytes = toByteArray(f);
-      const mode = f.mode ? `0${f.mode.toString(8)}` : '0644';
-      lines.push(`  {`);
-      lines.push(`    int __fd = open("${escapeCString(f.path)}", O_WRONLY | O_CREAT | O_TRUNC, ${mode});`);
-      if (bytes.length > 0) {
-        lines.push(`    unsigned char __d${idx}[] = {${bytes.join(',')}};`);
-        lines.push(`    if (__fd >= 0) { ssize_t __w = write(__fd, __d${idx}, ${bytes.length}); (void)__w; }`);
-      }
-      lines.push(`    if (__fd >= 0) close(__fd);`);
-      if (f.mode) {
-        lines.push(`    chmod("${escapeCString(f.path)}", ${mode});`);
-      }
-      lines.push(`  }`);
-    });
-    lines.push('}');
-  }
+  testCases.forEach((tc, idx) => {
+    const dirName = `__elt_tc_${idx}`;
+    const stdinBytes = toByteArray({ text: tc.stdin || '' });
+    L.push(`  {`);
+    L.push(`    chdir(__base);`);
+    L.push(`    mkdir("${dirName}", 0755);`);
+    L.push(`    chdir("${dirName}");`);
 
-  if (needsCheck) {
-    const expBytes = toByteArray(tc.checkFile);
-    lines.push('__attribute__((destructor)) static void __elt_verify_file(void) {');
-    lines.push(`  int __fd = open("${escapeCString(tc.checkFile.path)}", O_RDONLY);`);
-    lines.push('  if (__fd < 0) { fprintf(stderr, "\\n__ELT_FILE_FAIL__:missing\\n"); return; }');
-    lines.push('  struct stat __st; fstat(__fd, &__st);');
-    lines.push(`  if ((long long)__st.st_size != ${expBytes.length}) { close(__fd); fprintf(stderr, "\\n__ELT_FILE_FAIL__:size=%lld_expected=${expBytes.length}\\n", (long long)__st.st_size); return; }`);
-    if (expBytes.length > 0) {
-      lines.push(`  unsigned char __exp[] = {${expBytes.join(',')}};`);
-      lines.push(`  unsigned char __got[${expBytes.length}];`);
-      lines.push(`  ssize_t __n = read(__fd, __got, ${expBytes.length});`);
-      lines.push(`  int __ok = (__n == ${expBytes.length});`);
-      lines.push(`  for (int __i = 0; __ok && __i < ${expBytes.length}; __i++) if (__got[__i] != __exp[__i]) __ok = 0;`);
-      lines.push('  close(__fd);');
-      lines.push('  fprintf(stderr, __ok ? "\\n__ELT_FILE_OK__\\n" : "\\n__ELT_FILE_FAIL__:content_mismatch\\n");');
+    if (tc.setup?.dirs?.length) {
+      for (const d of tc.setup.dirs) {
+        L.push(`    mkdir("${escapeCString(d)}", 0755);`);
+      }
+    }
+    if (tc.setup?.files?.length) {
+      tc.setup.files.forEach((f, fIdx) => {
+        const b = toByteArray(f);
+        const mode = f.mode ? `0${f.mode.toString(8)}` : '0';
+        if (b.length > 0) {
+          L.push(`    static const unsigned char __sf_${idx}_${fIdx}[] = {${b.join(',')}};`);
+          L.push(`    __elt_write_file("${escapeCString(f.path)}", __sf_${idx}_${fIdx}, ${b.length}, ${mode});`);
+        } else {
+          L.push(`    __elt_write_file("${escapeCString(f.path)}", (const unsigned char*)"", 0, ${mode});`);
+        }
+      });
+    }
+
+    if (stdinBytes.length > 0) {
+      L.push(`    static const unsigned char __in_${idx}[] = {${stdinBytes.join(',')}};`);
+      L.push(`    __elt_write_file("__elt_in.tmp", __in_${idx}, ${stdinBytes.length}, 0644);`);
     } else {
-      lines.push('  close(__fd);');
-      lines.push('  fprintf(stderr, "\\n__ELT_FILE_OK__\\n");');
+      L.push(`    __elt_write_file("__elt_in.tmp", (const unsigned char*)"", 0, 0644);`);
     }
-    lines.push('}');
-  }
 
-  return `${studentCode}\n${lines.join('\n')}\n`;
-}
+    L.push(`    int __op[2]; pipe(__op);`);
+    L.push(`    fflush(stdout); fflush(stderr);`);
+    L.push(`    pid_t __pid = fork();`);
+    L.push(`    if (__pid == 0) {`);
+    L.push(`      int __ifd = open("__elt_in.tmp", O_RDONLY);`);
+    L.push(`      if (__ifd >= 0) { dup2(__ifd, STDIN_FILENO); close(__ifd); }`);
+    L.push(`      dup2(__op[1], STDOUT_FILENO);`);
+    L.push(`      close(__op[0]); close(__op[1]);`);
+    L.push(`      alarm(4);`);
+    L.push(`      return;`);
+    L.push(`    }`);
+    L.push(`    close(__op[1]);`);
+    L.push(`    printf("__ELT_TC_START_%d__\\n", ${idx});`);
+    L.push(`    fflush(stdout);`);
+    L.push(`    char __rb[4096]; ssize_t __rn;`);
+    L.push(`    while ((__rn = read(__op[0], __rb, sizeof(__rb))) > 0) {`);
+    L.push(`      ssize_t __wo = 0; while (__wo < __rn) { ssize_t __ww = write(STDOUT_FILENO, __rb + __wo, (size_t)(__rn - __wo)); if (__ww <= 0) break; __wo += __ww; }`);
+    L.push(`    }`);
+    L.push(`    close(__op[0]);`);
+    L.push(`    int __st = 0; waitpid(__pid, &__st, 0);`);
+    L.push(`    int __ec = WIFEXITED(__st) ? WEXITSTATUS(__st) : -1;`);
+    L.push(`    int __sg = WIFSIGNALED(__st) ? WTERMSIG(__st) : 0;`);
 
-async function runViaWandbox(source, stdin) {
-  const res = await fetch('https://wandbox.org/api/compile.json', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      compiler: 'gcc-head-c',
-      code: source,
-      stdin: stdin || '',
-      'compiler-option-raw': '-O2\n-std=gnu11\n-pthread\n-lm',
-    }),
-    signal: AbortSignal.timeout(18000),
+    if (tc.checkFile) {
+      const expB = toByteArray(tc.checkFile);
+      L.push(`    int __fok = 0; char __fmsg[64] = "missing";`);
+      L.push(`    int __cfd = open("${escapeCString(tc.checkFile.path)}", O_RDONLY);`);
+      L.push(`    if (__cfd >= 0) {`);
+      L.push(`      struct stat __cst; fstat(__cfd, &__cst);`);
+      L.push(`      if ((long long)__cst.st_size != ${expB.length}) {`);
+      L.push(`        snprintf(__fmsg, sizeof(__fmsg), "size=%lld_expected=${expB.length}", (long long)__cst.st_size);`);
+      L.push(`      } else {`);
+      if (expB.length > 0) {
+        L.push(`        static const unsigned char __cexp_${idx}[] = {${expB.join(',')}};`);
+        L.push(`        unsigned char __cgot[${expB.length}];`);
+        L.push(`        ssize_t __cn = read(__cfd, __cgot, ${expB.length});`);
+        L.push(`        if (__cn == ${expB.length} && memcmp(__cgot, __cexp_${idx}, ${expB.length}) == 0) { __fok = 1; strcpy(__fmsg, "ok"); }`);
+        L.push(`        else strcpy(__fmsg, "content_mismatch");`);
+      } else {
+        L.push(`        __fok = 1; strcpy(__fmsg, "ok");`);
+      }
+      L.push(`      }`);
+      L.push(`      close(__cfd);`);
+      L.push(`    }`);
+      L.push(`    printf("\\n__ELT_TC_END_%d__:%d:%d:%d:%s\\n", ${idx}, __ec, __sg, __fok, __fmsg);`);
+    } else {
+      L.push(`    printf("\\n__ELT_TC_END_%d__:%d:%d:1:ok\\n", ${idx}, __ec, __sg);`);
+    }
+    L.push(`    fflush(stdout);`);
+    L.push(`  }`);
   });
-  if (!res.ok) throw new Error(`Wandbox HTTP ${res.status}`);
-  const data = await res.json();
-  const compileErr = (data.compiler_error || '').trim();
-  const exitStatus = data.status;
-  const sig = data.signal || '';
 
-  if (compileErr && (exitStatus === undefined || exitStatus === null || exitStatus === '' || exitStatus !== '0') && !data.program_output && !data.program_error) {
-    return { engine: 'Wandbox GCC', compileError: compileErr, stdout: '', stderr: '', exitCode: 1, signal: '' };
-  }
-  return {
-    engine: 'Wandbox GCC',
-    compileError: compileErr && /error:/i.test(compileErr) ? compileErr : '',
-    stdout: data.program_output || '',
-    stderr: data.program_error || '',
-    exitCode: Number(exitStatus ?? 0),
-    signal: sig,
-  };
+  L.push('  _exit(0);');
+  L.push('}');
+  return `${studentCode}\n${L.join('\n')}\n`;
 }
 
 function toBase64Utf8(str) {
@@ -122,48 +154,75 @@ function fromBase64Utf8(b64) {
   return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
 }
 
-async function runViaJudge0(source, stdin) {
+async function runViaWandbox(source, signal) {
+  const res = await fetch('https://wandbox.org/api/compile.json', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      compiler: 'gcc-head-c',
+      code: source,
+      stdin: '',
+      'compiler-option-raw': '-O0\n-std=gnu11\n-pthread\n-lm',
+    }),
+    signal: signal || AbortSignal.timeout(10000),
+  });
+  if (!res.ok) throw new Error(`Wandbox HTTP ${res.status}`);
+  const data = await res.json();
+  const compileErr = (data.compiler_error || '').trim();
+  const exitStatus = data.status;
+
+  if (compileErr && (!data.program_output || /error:/i.test(compileErr))) {
+    return { engine: 'Wandbox GCC', compileError: compileErr, stdout: '', stderr: '' };
+  }
+  return {
+    engine: 'Wandbox GCC',
+    compileError: '',
+    stdout: data.program_output || '',
+    stderr: data.program_error || '',
+    exitCode: Number(exitStatus ?? 0),
+  };
+}
+
+async function runViaJudge0(source, signal) {
   const res = await fetch('https://ce.judge0.com/submissions/?base64_encoded=true&wait=true', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       source_code: toBase64Utf8(source),
       language_id: 50,
-      stdin: toBase64Utf8(stdin || ''),
-      compiler_options: '-O2 -std=gnu11 -pthread -lm',
+      stdin: '',
+      compiler_options: '-O0 -std=gnu11 -pthread -lm',
     }),
-    signal: AbortSignal.timeout(18000),
+    signal: signal || AbortSignal.timeout(10000),
   });
   if (!res.ok) throw new Error(`Judge0 HTTP ${res.status}`);
   const data = await res.json();
   const compileOut = fromBase64Utf8(data.compile_output);
-  const stdout = fromBase64Utf8(data.stdout);
-  const stderr = fromBase64Utf8(data.stderr);
   if (data.status?.id === 6) {
-    return { engine: 'Judge0 GCC', compileError: compileOut || 'Compilation Error', stdout: '', stderr: '', exitCode: 1, signal: '' };
+    return { engine: 'Judge0 GCC', compileError: compileOut || 'Compilation Error', stdout: '', stderr: '' };
   }
   return {
     engine: 'Judge0 GCC',
     compileError: '',
-    stdout,
-    stderr,
+    stdout: fromBase64Utf8(data.stdout),
+    stderr: fromBase64Utf8(data.stderr),
     exitCode: data.status?.id === 3 ? 0 : 1,
-    signal: data.status?.id > 6 ? data.status.description : '',
   };
 }
 
-async function compileAndRunOne(source, stdin, preferJudge0 = false) {
-  if (preferJudge0) {
-    try {
-      return await runViaJudge0(source, stdin);
-    } catch {
-      return await runViaWandbox(source, stdin);
-    }
-  }
+async function compileAndRunBatch(source) {
+  // Hedged parallel race: Judge0 CE & Wandbox race in parallel; fastest server wins immediately and cancels the slower request!
+  const ac1 = new AbortController();
+  const ac2 = new AbortController();
+  const timer = setTimeout(() => { ac1.abort(); ac2.abort(); }, 12000);
   try {
-    return await runViaWandbox(source, stdin);
-  } catch {
-    return await runViaJudge0(source, stdin);
+    const winner = await Promise.any([
+      runViaJudge0(source, ac1.signal).then((r) => { ac2.abort(); return r; }),
+      runViaWandbox(source, ac2.signal).then((r) => { ac1.abort(); return r; }),
+    ]);
+    return winner;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -176,68 +235,80 @@ function normalizeOut(s) {
     .trim();
 }
 
+function signalLabel(sig) {
+  if (sig === 14) return 'TIME LIMIT EXCEEDED (SIGALRM)';
+  if (sig === 11) return 'SEGMENTATION FAULT (SIGSEGV)';
+  if (sig === 9) return 'KILLED (SIGKILL)';
+  if (sig === 6) return 'ABORTED (SIGABRT)';
+  if (sig === 8) return 'FLOATING POINT ERROR (SIGFPE)';
+  return sig ? `SIGNAL ${sig}` : '';
+}
+
 /**
- * Compile and run student's C11 code against ALL test cases (Sample + Hidden) on real Linux GCC.
+ * Compile ONCE and run student's C11 code against ALL test cases (Sample + Hidden) in a single HTTP round-trip!
  */
 export async function runRealTestSuite(studentCode, testCases, onProgress) {
-  const results = [];
-  let engineName = 'Wandbox GCC';
-  let preferJudge0 = false;
+  if (onProgress) onProgress(1, testCases.length, `Biên dịch 1 lần & chạy đồng loạt ${testCases.length} test case…`);
 
-  for (let i = 0; i < testCases.length; i++) {
-    const tc = testCases[i];
-    if (onProgress) onProgress(i + 1, testCases.length, tc.name);
+  const batchSource = buildBatchSource(studentCode, testCases);
+  const run = await compileAndRunBatch(batchSource);
 
-    const instrumented = instrumentCode(studentCode, tc);
-    const run = await compileAndRunOne(instrumented, tc.stdin, preferJudge0);
-    engineName = run.engine;
-    if (engineName === 'Judge0 GCC') preferJudge0 = true;
+  if (run.compileError) {
+    return {
+      engine: run.engine,
+      compileError: run.compileError,
+      passed: 0,
+      total: testCases.length,
+      results: [],
+    };
+  }
 
-    if (run.compileError) {
-      return {
-        engine: engineName,
-        compileError: run.compileError,
-        passed: 0,
-        total: testCases.length,
-        results: [],
-      };
-    }
-
-    const actual = normalizeOut(run.stdout);
-    const expected = normalizeOut(tc.expected);
-    const stdoutMatch = actual === expected;
-
+  const rawOut = run.stdout || '';
+  const results = testCases.map((tc, idx) => {
+    const startTag = `__ELT_TC_START_${idx}__\n`;
+    const endRe = new RegExp(`\\n__ELT_TC_END_${idx}__:(-?\\d+):(\\d+):(\\d+):([^\\n]*)`);
+    const sPos = rawOut.indexOf(startTag);
+    let actualRaw = '';
+    let exitCode = 1;
+    let sigNum = 0;
     let fileOk = true;
     let fileFailReason = '';
-    if (tc.checkFile) {
-      if (run.stderr.includes('__ELT_FILE_OK__')) {
-        fileOk = true;
-      } else {
-        fileOk = false;
-        const m = run.stderr.match(/__ELT_FILE_FAIL__:([^\n]+)/);
-        fileFailReason = m ? m[1] : 'Tệp đích chưa khớp nội dung/kích thước yêu cầu';
+
+    if (sPos !== -1) {
+      const afterStart = rawOut.slice(sPos + startTag.length);
+      const m = afterStart.match(endRe);
+      if (m) {
+        actualRaw = afterStart.slice(0, m.index);
+        exitCode = Number(m[1]);
+        sigNum = Number(m[2]);
+        fileOk = m[3] === '1';
+        fileFailReason = fileOk ? '' : m[4] || 'Tệp đích chưa khớp';
       }
     }
 
-    const crashed = Boolean(run.signal) || run.exitCode !== 0;
+    const actual = normalizeOut(actualRaw);
+    const expected = normalizeOut(tc.expected);
+    const stdoutMatch = actual === expected;
+    const sigText = signalLabel(sigNum);
+    const crashed = sigNum !== 0 || exitCode !== 0;
     const ok = !crashed && stdoutMatch && fileOk;
 
-    results.push({
+    return {
       name: tc.name,
       hidden: Boolean(tc.hidden),
       ok,
-      status: crashed ? 'RUNTIME ERROR' : ok ? 'PASS' : !stdoutMatch ? 'SAI STDOUT' : 'SAI TỆP ĐÍCH',
+      status: sigNum === 14 ? 'QUÁ THỜI GIAN' : crashed ? 'RUNTIME ERROR' : ok ? 'PASS' : !stdoutMatch ? 'SAI STDOUT' : 'SAI TỆP ĐÍCH',
       stdin: tc.stdin,
       expected,
       actual,
       fileFailReason,
-      signal: run.signal,
+      signal: sigText,
       hint: tc.hint || '',
-    });
-  }
+    };
+  });
 
   return {
-    engine: engineName,
+    engine: run.engine,
     compileError: '',
     passed: results.filter((r) => r.ok).length,
     total: results.length,
