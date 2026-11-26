@@ -65,6 +65,7 @@ export function attachIdeEditor(ed, gutterEl, cursorEl, onChange, onRun) {
   ed.addEventListener('keyup', syncGutterAndCursor);
 
   ed.addEventListener('keydown', (e) => {
+    if (e.isComposing) return;
     const val = ed.value;
     const s = ed.selectionStart;
     const end = ed.selectionEnd;

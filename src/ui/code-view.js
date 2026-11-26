@@ -1,6 +1,6 @@
 import { esc, formatInlineCode, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
 import { renderLatexInElement } from '../core/latex.js';
-import { attachIdeEditor } from '../core/code-editor-ide.js?v=8';
+import { attachIdeEditor } from '../core/code-editor-ide.js?v=9';
 import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=7';
 import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=7';
 import { runRealTestSuite } from '../core/c-runner.js?v=7';
