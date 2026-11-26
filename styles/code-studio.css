@@ -279,21 +279,57 @@
   color: #e9d7bf;
 }
 
+.editor-ide-wrap {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  background: #0d0f14;
+  overflow: hidden;
+}
+
+.editor-gutter {
+  width: 46px;
+  flex-shrink: 0;
+  padding: 16px 10px 16px 0;
+  background: #10131a;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  color: #556075;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+  text-align: right;
+  overflow: hidden;
+  user-select: none;
+}
+
+.eg-ln {
+  height: 1.65em;
+}
+
+.eg-ln.is-active {
+  color: #e2b887;
+  font-weight: 700;
+}
+
 .code-editor-area {
   width: 100%;
   flex: 1;
   height: 100%;
   min-height: 100%;
-  padding: 16px 18px;
+  padding: 16px 18px 16px 14px;
   border: none;
   outline: none;
   resize: none;
+  overflow: auto;
+  overscroll-behavior: contain;
   background: #0d0f14;
   color: #f0f4fa;
   font-family: var(--font-mono);
   font-size: 13.5px;
   line-height: 1.65;
   tab-size: 4;
+  white-space: pre;
 }
 
 .code-editor-area::placeholder {

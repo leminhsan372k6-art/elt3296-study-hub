@@ -4,7 +4,7 @@ import { TOPICS, ORDERED_TOPIC_IDS } from '../data/book/chapters-data.js';
 import { renderTopBar, renderBookSidebar, renderSearchModal } from './ui/shell.js';
 import { renderEbookView, bindEbookView, stepBookPage } from './ui/ebook-view.js';
 import { renderMcqView, bindMcqView, startMcqForChapter, jumpToMcqById } from './ui/mcq-view.js';
-import { renderCodeView, bindCodeView } from './ui/code-view.js?v=7';
+import { renderCodeView, bindCodeView } from './ui/code-view.js?v=8';
 import { renderExtrasView, bindExtrasView } from './ui/extras-view.js';
 
 function isTypingTarget(el) {
@@ -43,6 +43,7 @@ async function boot() {
     const keepPaneScroll = nextCodeKey === lastCodeKey && state.activeTab === 'code';
     const prevLeftScroll = keepPaneScroll ? (document.getElementById('paneLeftScroll')?.scrollTop ?? 0) : 0;
     const prevRightScroll = keepPaneScroll ? (document.querySelector('.code-scroll-body')?.scrollTop ?? 0) : 0;
+    const prevEdScroll = keepPaneScroll ? (document.getElementById('codePracticeInput')?.scrollTop ?? 0) : 0;
     const prevSolScroll = keepPaneScroll ? (document.querySelector('.code-numbered')?.scrollTop ?? 0) : 0;
     lastCodeKey = nextCodeKey;
 
@@ -76,6 +77,12 @@ async function boot() {
         if (leftEl) leftEl.scrollTop = prevLeftScroll;
         const rightEl = document.querySelector('.code-scroll-body');
         if (rightEl) rightEl.scrollTop = prevRightScroll;
+        const edEl = document.getElementById('codePracticeInput');
+        if (edEl) {
+          edEl.scrollTop = prevEdScroll;
+          const gut = document.getElementById('codeEditorGutter');
+          if (gut) gut.scrollTop = prevEdScroll;
+        }
         const solEl = document.querySelector('.code-numbered');
         if (solEl) solEl.scrollTop = prevSolScroll;
       }

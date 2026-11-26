@@ -1,5 +1,6 @@
 import { esc, formatInlineCode, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
 import { renderLatexInElement } from '../core/latex.js';
+import { attachIdeEditor } from '../core/code-editor-ide.js?v=8';
 import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=7';
 import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=7';
 import { runRealTestSuite } from '../core/c-runner.js?v=7';
@@ -470,7 +471,10 @@ export function renderCodeView(state) {
             <div class="code-scroll-body">
               ${
                 state.sebMode === 'practice'
-                  ? `<textarea class="code-editor-area" id="codePracticeInput" spellcheck="false" placeholder="// Khung trống hoàn toàn — hãy tự gõ lại toàn bộ #include, hàm main() và lời giải C11 ở đây để ghi nhớ chắc chắn!&#10;// Bấm Alt+A (hoặc F2) bất cứ lúc nào để đảo sang Đáp án chuẩn bên phải.&#10;// Bấm Alt+E (hoặc nút 'Mở giải thích code' cạnh chữ Dễ) để xem giải thích 4 tầng ngay bên trái!&#10;// Bấm Ctrl+Enter để biên dịch GCC thật &amp; chấm test ẩn (kết quả hiện ở cuối trang).">${esc(draftVal)}</textarea>`
+                  ? `<div class="editor-ide-wrap">
+                       <div class="editor-gutter" id="codeEditorGutter" aria-hidden="true"><div class="eg-ln is-active">1</div></div>
+                       <textarea class="code-editor-area" id="codePracticeInput" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" wrap="off" placeholder="// Khung trống chuẩn IDE — tự động thụt lề khi Enter, tự đóng cặp { } ( ) [ ] &quot; &quot;, Tab / Shift+Tab, Ctrl+/ comment!&#10;// Bấm Alt+A (hoặc F2) để đảo sang Đáp án chuẩn · Alt+E để mở Giải thích Ý tưởng &amp; từng dòng lệnh bên trái.&#10;// Bấm Ctrl+Enter để biên dịch GCC thật &amp; chấm test ẩn (~1 giây).">${esc(draftVal)}</textarea>
+                     </div>`
                   : `<div class="code-numbered">
                       ${solLines
                         .map(
@@ -482,7 +486,10 @@ export function renderCodeView(state) {
             </div>
 
             <div class="code-win-foot">
-              <span>Biên dịch Sandbox: <code style="color:#e5eaf2">${esc(spec.compileFlags || 'gcc -O2 -Wall -Wextra -std=c11 -pthread')}</code></span>
+              <span style="display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap">
+                ${state.sebMode === 'practice' ? `<span class="mono" id="codeCursorPos" style="color:#cbd5e1;font-weight:600">Dòng 1, Cột 1</span><span>·</span>` : ''}
+                <span>Sandbox: <code style="color:#e5eaf2">${esc(spec.compileFlags || 'gcc -O2 -Wall -Wextra -std=c11 -pthread')}</code></span>
+              </span>
               ${(() => {
                 const rr = state.sebRealRuns?.[activeQ.id];
                 if (state.sebRunningId === activeQ.id) {
@@ -705,22 +712,15 @@ export function bindCodeView(state, persist, rerender) {
 
   const ed = document.getElementById('codePracticeInput');
   if (ed) {
-    ed.addEventListener('input', () => {
-      state.codeDrafts[activeQ.id] = ed.value;
-      persist();
-    });
-    ed.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        runRealCompiler();
-      } else if (e.key === 'Tab') {
-        e.preventDefault();
-        const s = ed.selectionStart, end = ed.selectionEnd;
-        ed.value = ed.value.slice(0, s) + '    ' + ed.value.slice(end);
-        ed.selectionStart = ed.selectionEnd = s + 4;
-        state.codeDrafts[activeQ.id] = ed.value;
+    attachIdeEditor(
+      ed,
+      document.getElementById('codeEditorGutter'),
+      document.getElementById('codeCursorPos'),
+      (val) => {
+        state.codeDrafts[activeQ.id] = val;
         persist();
-      }
-    });
+      },
+      runRealCompiler
+    );
   }
 }
