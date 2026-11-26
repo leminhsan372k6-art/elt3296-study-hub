@@ -17,4 +17,4 @@ Web tĩnh thuần (**0 `node_modules`**, không cần bước build, chạy tr�
 ## Mở trực tiếp trên GitHub Pages
 
 Vào **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` / `/ (root)` → Save**.
-Trang web sẽ hoạt động ngay tại: `https://lmsang372k6-spec.github.io/elt3296-study-hub/`
+Trang web sẽ hoạt động ngay tại: `https://leminhsan372k6-art.github.io/elt3296-study-hub/`
