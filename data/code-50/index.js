@@ -1,9 +1,9 @@
-import { PART1_FILE_QUESTIONS } from './part1-file.js';
-import { PART2_PROCESS_QUESTIONS } from './part2-process.js?v=3';
-import { PART3_THREAD_QUESTIONS } from './part3-thread.js';
-import { PART4_PARALLEL_QUESTIONS } from './part4-parallel.js';
-import { PART5_DP_QUESTIONS } from './part5-dp.js';
-import { PART6_INTEGRATED_QUESTIONS } from './part6-integrated.js';
+import { PART1_FILE_QUESTIONS } from './part1-file.js?v=7';
+import { PART2_PROCESS_QUESTIONS } from './part2-process.js?v=7';
+import { PART3_THREAD_QUESTIONS } from './part3-thread.js?v=7';
+import { PART4_PARALLEL_QUESTIONS } from './part4-parallel.js?v=7';
+import { PART5_DP_QUESTIONS } from './part5-dp.js?v=7';
+import { PART6_INTEGRATED_QUESTIONS } from './part6-integrated.js?v=7';
 
 export { gradeSubmission } from './grader.js';
 

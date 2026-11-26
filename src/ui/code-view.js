@@ -1,7 +1,8 @@
-import { esc, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
-import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=3';
-import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=3';
-import { runRealTestSuite } from '../core/c-runner.js?v=3';
+import { esc, formatInlineCode, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
+import { renderLatexInElement } from '../core/latex.js';
+import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=7';
+import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=7';
+import { runRealTestSuite } from '../core/c-runner.js?v=7';
 
 const DIFFICULTIES = ['all', 'Dễ', 'Trung bình', 'Khó'];
 
@@ -201,13 +202,14 @@ function renderGradeBox(state, q) {
 function renderDetailGuideInline(q) {
   const g = q.detailGuide;
   if (!g) return '';
+  const idea = g.idea || null;
 
   return `
-    <div style="display:grid;gap:18px;margin-top:8px">
+    <div class="academic-guide">
       <!-- Tầng 1 -->
-      <div>
-        <h3 class="guide-block-title"><span class="guide-num">1</span> Bản chất &amp; Thuộc Chương / Bài học nào</h3>
-        <p style="margin:0;font-size:15.2px;line-height:1.68;color:var(--fg-body)">${esc(g.origin)}</p>
+      <section class="guide-section">
+        <h3 class="guide-block-title"><span class="guide-num">1</span> Bản chất &amp; Nguồn Kiến Thức</h3>
+        <p class="guide-prose">${formatInlineCode(g.origin)}</p>
         ${
           q.relatedTopics?.length
             ? `<div class="chip-wrap">
@@ -217,11 +219,48 @@ function renderDetailGuideInline(q) {
               </div>`
             : ''
         }
-      </div>
+      </section>
 
-      <!-- Tầng 2 -->
-      <div>
-        <h3 class="guide-block-title"><span class="guide-num">2</span> Giải thích Chi tiết Từng Dòng Lệnh &amp; Hàm Sử Dụng</h3>
+      ${
+        idea
+          ? `<!-- Tầng 2: Ý tưởng cốt lõi cho người mới / mất gốc -->
+      <section class="guide-section">
+        <h3 class="guide-block-title"><span class="guide-num">2</span> Ý Tưởng Cốt Lõi &amp; Tư Duy Giải Bài</h3>
+        <div class="idea-card">
+          <div class="idea-summary-label">Bức tranh tổng thể</div>
+          <p class="guide-prose" style="margin:0 0 12px">${formatInlineCode(idea.summary)}</p>
+
+          ${
+            Array.isArray(idea.steps) && idea.steps.length
+              ? `<div class="idea-summary-label">Các bước tư duy từ đầu đến cuối</div>
+                 <ol class="idea-step-list">
+                   ${idea.steps.map((st) => `<li>${formatInlineCode(st)}</li>`).join('')}
+                 </ol>`
+              : ''
+          }
+
+          ${
+            idea.whyThisWay
+              ? `<div class="idea-why-box">
+                   <div class="idea-why-head">💡 Tại sao phải làm theo cách này?</div>
+                   <div class="guide-prose" style="margin:0;font-size:14.4px">${formatInlineCode(idea.whyThisWay)}</div>
+                 </div>`
+              : ''
+          }
+
+          ${
+            idea.complexity
+              ? `<div class="idea-meta-bar">⏱ ${formatInlineCode(idea.complexity)}</div>`
+              : ''
+          }
+        </div>
+      </section>`
+          : ''
+      }
+
+      <!-- Tầng 3: Giải phẫu mã lệnh -->
+      <section class="guide-section">
+        <h3 class="guide-block-title"><span class="guide-num">${idea ? '3' : '2'}</span> Giải Phẫu Chi Tiết Từng Khối Mã Lệnh (Từ Dòng 1 Đến Hết)</h3>
         <div class="line-explain-list">
           ${(g.lineByLine || [])
             .map(
@@ -229,18 +268,19 @@ function renderDetailGuideInline(q) {
             <div class="line-explain-row">
               <div class="line-explain-top">
                 <span class="line-badge">${esc(row.lines)}</span>
-                <span class="line-cmd">${esc(row.code)}</span>
+                ${row.title ? `<span class="line-explain-title">${esc(row.title)}</span>` : ''}
               </div>
-              <div style="font-size:14.6px;line-height:1.62;color:var(--fg-body)">${esc(row.explain)}</div>
+              <pre class="line-code-strip"><code>${highlightCodeSnippet(row.code || '')}</code></pre>
+              <div class="guide-prose" style="font-size:14.5px;margin:0">${formatInlineCode(row.explain)}</div>
             </div>`
             )
             .join('')}
         </div>
-      </div>
+      </section>
 
-      <!-- Tầng 3 -->
-      <div>
-        <h3 class="guide-block-title"><span class="guide-num">3</span> Bảng Bảo Đảm Toàn Bộ Test Case &amp; Trường Hợp Biên</h3>
+      <!-- Tầng 4: Test Case & Biên -->
+      <section class="guide-section">
+        <h3 class="guide-block-title"><span class="guide-num">${idea ? '4' : '3'}</span> Kiểm Chứng Test Case &amp; Trường Hợp Biên</h3>
         <div style="overflow-x:auto">
           <table class="tc-table">
             <thead>
@@ -257,22 +297,22 @@ function renderDetailGuideInline(q) {
                 <tr>
                   <td><b>${esc(tc.name)}</b></td>
                   <td><code>${esc(tc.caseDesc)}</code></td>
-                  <td>${esc(tc.howHandled)}</td>
+                  <td>${formatInlineCode(tc.howHandled)}</td>
                 </tr>`
                 )
                 .join('')}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <!-- Tầng 4 -->
-      <div>
-        <h3 class="guide-block-title"><span class="guide-num">4</span> Công Thức Nhớ Nhanh Vào Phòng Thi SEB</h3>
+      <!-- Tầng 5: Khung sườn phòng thi -->
+      <section class="guide-section">
+        <h3 class="guide-block-title"><span class="guide-num">${idea ? '5' : '4'}</span> Khung Sườn Nhớ Nhanh Vào Phòng Thi SEB</h3>
         <ol class="recipe-list">
-          ${(g.examRecipe || []).map((step) => `<li>${esc(step)}</li>`).join('')}
+          ${(g.examRecipe || []).map((step) => `<li>${formatInlineCode(step)}</li>`).join('')}
         </ol>
-      </div>
+      </section>
     </div>
   `;
 }
@@ -388,8 +428,8 @@ export function renderCodeView(state) {
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
             <span class="mono" style="font-size:12.8px;font-weight:700;padding:3px 10px;border-radius:7px;background:var(--fg);color:var(--surface)">${esc(activeQ.id)}</span>
             <span class="diff-pill ${diffClass(activeQ.difficulty)}">${esc(activeQ.difficulty)}</span>
-            <button type="button" class="left-explain-toggle ${state.sebLeftView === 'explain' ? 'is-open' : ''}" id="btnToggleLeftExplain" title="Bật/tắt Giải thích code 4 tầng ngay bên trái để vừa xem giải thích vừa đối chiếu code bên phải (Alt + E)">
-              ${state.sebLeftView === 'explain' ? '📄 Đóng giải thích · Xem Đề bài' : '📘 Mở giải thích code (4 tầng)'}
+            <button type="button" class="left-explain-toggle ${state.sebLeftView === 'explain' ? 'is-open' : ''}" id="btnToggleLeftExplain" title="Bật/tắt Giải thích chuẩn học thuật (Ý tưởng + Chi tiết từng dòng lệnh) ngay bên trái để vừa đọc vừa đối chiếu code (Alt + E)">
+              ${state.sebLeftView === 'explain' ? '📄 Đóng giải thích · Xem Đề bài' : '📘 Mở giải thích (Ý tưởng & Code)'}
             </button>
           </div>
 
@@ -471,6 +511,9 @@ export function renderCodeView(state) {
 }
 
 export function bindCodeView(state, persist, rerender) {
+  if (state.sebLeftView === 'explain') {
+    renderLatexInElement(document.getElementById('paneLeftScroll'));
+  }
   const filtered = getFiltered(state);
   const pool = filtered.length ? filtered : OFFICIAL_SEB_50;
   const activeQ = pool.find((q) => q.id === state.sebSelectedId) || pool[0];
