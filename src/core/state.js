@@ -35,6 +35,9 @@ export function createAppState(defaultTopicId = '1-1') {
     codeDrafts: saved.codeDrafts && typeof saved.codeDrafts === 'object' ? saved.codeDrafts : {},
     sebScores: saved.sebScores && typeof saved.sebScores === 'object' ? saved.sebScores : {},
     sebLastReports: {},
+    sebRealRuns: {},
+    sebRunningId: null,
+    sebRunStatus: '',
     solvedCodeIds: new Set(Array.isArray(saved.solvedCodeIds) ? saved.solvedCodeIds : []),
 
     // MCQ state (persisted wrong questions for focused review)

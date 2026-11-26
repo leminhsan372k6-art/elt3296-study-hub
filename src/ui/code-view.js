@@ -1,5 +1,7 @@
 import { esc, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
 import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js';
+import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js';
+import { runRealTestSuite } from '../core/c-runner.js';
 
 const DIFFICULTIES = ['all', 'Dễ', 'Trung bình', 'Khó'];
 
@@ -29,63 +31,144 @@ function getCellClass(state, id) {
 
 function renderGradeBox(state, q) {
   const rep = state.sebLastReports?.[q.id];
+  const realRun = state.sebRealRuns?.[q.id];
+  const isRunning = state.sebRunningId === q.id;
+  const tcList = REAL_TEST_CASES[q.id] || [];
+  const hiddenCnt = tcList.filter((t) => t.hidden).length;
   const prev = state.sebScores?.[q.id];
 
-  if (!rep) {
+  if (isRunning) {
     return `
-      <div class="grade-box">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-          <strong style="font-size:13.6px;color:#f8fafc">Trình Chấm Mô Phỏng Moodle CodeRunner (5 Tiêu chí · Thang 10.0)</strong>
-          ${
-            prev
-              ? `<span style="font-size:12px;color:#4cc38a;font-weight:700">Điểm gần nhất: ${Number(prev.score10).toFixed(1)} / 10.0</span>`
-              : `<span style="font-size:12px;color:#94a3b8">Bấm Ctrl + Enter để chấm nhanh · Alt + A hoặc F2 để xem Đáp án</span>`
-          }
-        </div>
-        <div style="font-size:12.6px;color:#94a3b8;margin-top:6px;line-height:1.55">
-          Khung gõ cố tình để <b>trống 100%</b> không gợi ý sẵn để bạn rèn trí nhớ từ trang trắng giống phòng thi SEB.
+      <div class="grade-box" id="gradeResultBox">
+        <div style="font-size:13.6px;font-weight:700;color:#fbbf24">⏳ ${esc(state.sebRunStatus || 'Đang biên dịch GCC Linux & chạy test ẩn…')}</div>
+        <div style="font-size:12.2px;color:#94a3b8;margin-top:4px">
+          Mã nguồn của bạn đang được biên dịch thật bằng <code>gcc -O2 -std=c11 -pthread</code> trên máy chủ Linux và chạy lần lượt ${tcList.length} test case (gồm ${hiddenCnt} test ẩn).
         </div>
       </div>
     `;
   }
 
-  return `
-    <div class="grade-box" id="gradeResultBox">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-        <div>
-          <div style="font-size:11.2px;color:#94a3b8;text-transform:uppercase">Kết quả chấm · ${esc(q.id)}</div>
-          <div style="font-size:14.6px;font-weight:700;color:#fff">${esc(rep.badge)}</div>
+  if (!rep && !realRun) {
+    return `
+      <div class="grade-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <strong style="font-size:13.4px;color:#f8fafc">Trình Biên Dịch GCC Thật + ${tcList.length} Test Case (${hiddenCnt} Test Ẩn)</strong>
+          ${
+            prev
+              ? `<span style="font-size:12px;color:#4cc38a;font-weight:700">Điểm gần nhất: ${Number(prev.score10).toFixed(1)} / 10.0</span>`
+              : `<span style="font-size:12px;color:#94a3b8">Ctrl + Enter: Biên dịch GCC &amp; Chạy test ẩn</span>`
+          }
         </div>
-        <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;padding:4px 12px;border-radius:9px;background:${rep.score10 >= 9 ? 'rgba(76,195,138,0.2)' : rep.score10 >= 7 ? 'rgba(240,171,76,0.2)' : 'rgba(240,106,106,0.2)'};color:${rep.score10 >= 9 ? '#4cc38a' : rep.score10 >= 7 ? '#f0ab4c' : '#f06a6a'}">
-          ${rep.score10.toFixed(1)} / 10.0
+        <div style="font-size:12.4px;color:#94a3b8;margin-top:5px;line-height:1.55">
+          Bấm <b>▶ Biên dịch &amp; Chấm Test ẩn</b> để biên dịch C thật trên Linux (<code>gcc -std=c11 -pthread</code>), tự tạo tệp sandbox và kiểm tra chi tiết từng test case bạn còn thiếu!
         </div>
       </div>
-      <p style="margin:8px 0;font-size:13px;color:#cbd5e1;line-height:1.55">${esc(rep.summary)}</p>
-      ${
-        rep.criteria?.length
-          ? rep.criteria
+    `;
+  }
+
+  let realHtml = '';
+  if (realRun) {
+    if (realRun.networkError) {
+      realHtml = `
+        <div class="tc-run-row is-fail" style="margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:#f06a6a">⚠ Không kết nối được máy chủ biên dịch GCC (${esc(realRun.networkError)})</div>
+          <div style="font-size:12.2px;color:#cbd5e1;margin-top:3px">Hệ thống vẫn hiển thị kết quả Kiểm tra tĩnh 5 tiêu chí bên dưới. Hãy kiểm tra kết nối mạng rồi thử lại.</div>
+        </div>
+      `;
+    } else if (realRun.compileError) {
+      realHtml = `
+        <div class="tc-run-row is-fail" style="margin-bottom:10px">
+          <div style="font-size:13.4px;font-weight:700;color:#f06a6a">🔴 Lỗi Biên Dịch GCC (Compile Error · ${esc(realRun.engine)})</div>
+          <pre class="gcc-err-pre">${esc(realRun.compileError)}</pre>
+        </div>
+      `;
+    } else {
+      const allPass = realRun.passed === realRun.total && realRun.total > 0;
+      const missingNames = realRun.results.filter((r) => !r.ok).map((r) => r.name);
+      realHtml = `
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:11.2px;color:#94a3b8;text-transform:uppercase">Biên dịch &amp; Chạy thật · ${esc(realRun.engine)}</div>
+              <div style="font-size:14.8px;font-weight:700;color:${allPass ? '#4cc38a' : '#f0ab4c'}">
+                ${allPass ? '✅ PASS 100% TẤT CẢ TEST MẪU & TEST ẨN!' : `⚠ Đạt ${realRun.passed}/${realRun.total} Test Case — Còn thiếu ${realRun.total - realRun.passed} test`}
+              </div>
+            </div>
+            <div style="font-family:var(--font-mono);font-size:16px;font-weight:700;padding:4px 11px;border-radius:8px;background:${allPass ? 'rgba(76,195,138,0.2)' : 'rgba(240,171,76,0.2)'};color:${allPass ? '#4cc38a' : '#f0ab4c'}">
+              ${realRun.passed} / ${realRun.total} PASS
+            </div>
+          </div>
+
+          ${
+            missingNames.length
+              ? `<div style="margin-top:6px;font-size:12.4px;color:#fecaca"><b>Test còn sai/thiếu:</b> ${missingNames.map((n) => esc(n)).join(' · ')}</div>`
+              : ''
+          }
+
+          <div class="tc-run-list">
+            ${realRun.results
               .map(
-                (c) => `
-              <div class="grade-crit">
-                <div style="display:flex;justify-content:space-between;font-size:12.6px;font-weight:650">
-                  <span style="color:#f1f5f9">${esc(c.name)}</span>
-                  <span style="color:${c.status === 'ok' ? '#4cc38a' : c.status === 'warn' ? '#f0ab4c' : '#f06a6a'}">
-                    ${c.status === 'ok' ? '✓' : c.status === 'warn' ? '⚠' : '✕'} ${c.score.toFixed(2)}/${c.max.toFixed(1)}đ
-                  </span>
+                (r) => `
+              <div class="tc-run-row ${r.ok ? 'is-pass' : 'is-fail'}">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.8px;font-weight:650">
+                  <span style="color:#f1f5f9">${r.ok ? '✅' : '❌'} ${esc(r.name)} ${r.hidden ? '<span style="font-size:11px;color:#94a3b8;font-weight:500">(Ẩn)</span>' : ''}</span>
+                  <span style="font-family:var(--font-mono);font-size:11.6px;color:${r.ok ? '#4cc38a' : '#f06a6a'}">${esc(r.status)}${r.signal ? ` (${esc(r.signal)})` : ''}</span>
                 </div>
-                <div style="font-size:12.2px;color:#94a3b8;margin-top:3px">${esc(c.detail)}</div>
+                ${
+                  !r.ok
+                    ? `${r.hint ? `<div style="font-size:12.2px;color:#fde68a;margin-top:4px">💡 Gợi ý sửa: ${esc(r.hint)}</div>` : ''}
+                       ${r.fileFailReason ? `<div style="font-size:12.2px;color:#fca5a5;margin-top:4px">📁 Kiểm tra tệp đích: ${esc(r.fileFailReason)}</div>` : ''}
+                       <div class="tc-diff-grid">
+                         <div>
+                           <div style="font-size:11px;color:#94a3b8;margin-bottom:2px">Kỳ vọng (Expected)</div>
+                           <div class="tc-diff-box">${esc(r.expected || '(rỗng)')}</div>
+                         </div>
+                         <div>
+                           <div style="font-size:11px;color:#94a3b8;margin-bottom:2px">Chương trình in ra (Actual)</div>
+                           <div class="tc-diff-box">${esc(r.actual || '(không in gì)')}</div>
+                         </div>
+                       </div>`
+                    : ''
+                }
               </div>`
               )
-              .join('')
-          : `<ul style="margin:6px 0 0;padding-left:18px;font-size:12.6px;color:#cbd5e1">
-              ${(rep.feedback || []).map((f) => `<li>${esc(f)}</li>`).join('')}
-            </ul>`
-      }
-      <div style="display:flex;justify-content:flex-end;margin-top:10px">
-        <button type="button" class="win-btn" data-seb-mode="solution">Đảo sang Đáp án chuẩn &amp; Giải thích 4 tầng (Alt+A) →</button>
-      </div>
-    </div>
-  `;
+              .join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  let staticHtml = '';
+  if (rep) {
+    staticHtml = `
+      <details ${!realRun ? 'open' : ''} style="margin-top:6px">
+        <summary style="cursor:pointer;font-size:12.6px;font-weight:650;color:#cbd5e1">
+          Kiểm tra tĩnh Precheck (API bắt buộc &amp; Hàm cấm): <b style="color:${rep.score10 >= 9 ? '#4cc38a' : '#f0ab4c'}">${rep.score10.toFixed(1)} / 10.0</b> — ${esc(rep.badge)}
+        </summary>
+        ${
+          rep.criteria?.length
+            ? rep.criteria
+                .map(
+                  (c) => `
+                <div class="grade-crit">
+                  <div style="display:flex;justify-content:space-between;font-size:12.2px;font-weight:650">
+                    <span style="color:#f1f5f9">${esc(c.name)}</span>
+                    <span style="color:${c.status === 'ok' ? '#4cc38a' : c.status === 'warn' ? '#f0ab4c' : '#f06a6a'}">
+                      ${c.status === 'ok' ? '✓' : c.status === 'warn' ? '⚠' : '✕'} ${c.score.toFixed(2)}/${c.max.toFixed(1)}đ
+                    </span>
+                  </div>
+                  <div style="font-size:11.8px;color:#94a3b8;margin-top:2px">${esc(c.detail)}</div>
+                </div>`
+                )
+                .join('')
+            : ''
+        }
+      </details>
+    `;
+  }
+
+  return `<div class="grade-box" id="gradeResultBox">${realHtml}${staticHtml}</div>`;
 }
 
 function renderDetailGuideInline(q) {
@@ -301,7 +384,8 @@ export function renderCodeView(state) {
                   state.sebMode === 'practice'
                     ? `<button type="button" class="win-btn" id="btnClearEditor" title="Xóa trắng khung để gõ lại từ đầu">Xóa trắng</button>
                        <button type="button" class="win-btn" id="btnCopyEditor">Chép</button>
-                       <button type="button" class="win-btn grade" id="btnGradeCode">▶ Chấm điểm</button>`
+                       <button type="button" class="win-btn" id="btnStaticCheck" title="Kiểm tra nhanh API bắt buộc & hàm cấm (không cần mạng)">Kiểm tra tĩnh</button>
+                       <button type="button" class="win-btn grade" id="btnRunRealGcc" ${state.sebRunningId === activeQ.id ? 'disabled' : ''}>${state.sebRunningId === activeQ.id ? '⏳ Đang chạy GCC…' : '▶ Biên dịch & Chấm Test ẩn'}</button>`
                     : `<button type="button" class="win-btn" id="btnCopyEditor">Sao chép Code</button>
                        <button type="button" class="win-btn" data-seb-mode="practice">← Quay lại tự gõ</button>`
                 }
@@ -422,23 +506,77 @@ export function bindCodeView(state, persist, rerender) {
     rerender();
   });
 
-  const runGrade = () => {
+  const runStaticOnly = () => {
     const ed = document.getElementById('codePracticeInput');
     const code = ed ? ed.value : state.codeDrafts[activeQ.id] ?? '';
     state.codeDrafts[activeQ.id] = code;
     const rep = gradeSubmission(activeQ, code);
     state.sebLastReports[activeQ.id] = rep;
     state.sebScores[activeQ.id] = { score10: rep.score10, tier: rep.tier };
-    if (rep.tier === 'mastered') state.solvedCodeIds.add(activeQ.id);
     persist();
     rerender();
   };
 
-  document.getElementById('btnGradeCode')?.addEventListener('click', runGrade);
+  const runRealCompiler = async () => {
+    if (state.sebRunningId) return;
+    const ed = document.getElementById('codePracticeInput');
+    const code = ed ? ed.value : state.codeDrafts[activeQ.id] ?? '';
+    state.codeDrafts[activeQ.id] = code;
+
+    const rep = gradeSubmission(activeQ, code);
+    state.sebLastReports[activeQ.id] = rep;
+
+    if (!code.trim()) {
+      delete state.sebRealRuns[activeQ.id];
+      persist();
+      rerender();
+      return;
+    }
+
+    const tcList = REAL_TEST_CASES[activeQ.id] || [];
+    state.sebRunningId = activeQ.id;
+    state.sebRunStatus = `Đang biên dịch GCC Linux cho ${activeQ.id}…`;
+    rerender();
+
+    try {
+      const realRes = await runRealTestSuite(code, tcList, (idx, total, name) => {
+        state.sebRunStatus = `Đang chạy Test ${idx}/${total}: ${name}…`;
+        const box = document.getElementById('gradeResultBox');
+        if (box) {
+          const firstDiv = box.querySelector('div');
+          if (firstDiv) firstDiv.textContent = `⏳ ${state.sebRunStatus}`;
+        }
+      });
+      state.sebRealRuns[activeQ.id] = realRes;
+
+      if (!realRes.compileError && realRes.total > 0) {
+        const ratio = realRes.passed / realRes.total;
+        const staticPenalty = rep.criteria?.[1]?.score === 0 ? 0.35 : 1.0;
+        const finalScore = Number((10 * ratio * staticPenalty).toFixed(1));
+        const tier = ratio === 1 && staticPenalty === 1 ? 'mastered' : ratio >= 0.7 ? 'good' : 'fail';
+        state.sebScores[activeQ.id] = { score10: finalScore, tier };
+        if (tier === 'mastered') state.solvedCodeIds.add(activeQ.id);
+      } else {
+        state.sebScores[activeQ.id] = { score10: 0, tier: 'fail' };
+      }
+    } catch (err) {
+      state.sebRealRuns[activeQ.id] = { networkError: err?.message || 'Timeout' };
+    } finally {
+      state.sebRunningId = null;
+      state.sebRunStatus = '';
+      persist();
+      rerender();
+      document.getElementById('gradeResultBox')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  };
+
+  document.getElementById('btnStaticCheck')?.addEventListener('click', runStaticOnly);
+  document.getElementById('btnRunRealGcc')?.addEventListener('click', runRealCompiler);
 
   document.getElementById('btnClearEditor')?.addEventListener('click', () => {
     state.codeDrafts[activeQ.id] = '';
     delete state.sebLastReports[activeQ.id];
+    delete state.sebRealRuns[activeQ.id];
     persist();
     rerender();
   });
@@ -474,7 +612,7 @@ export function bindCodeView(state, persist, rerender) {
     ed.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        runGrade();
+        runRealCompiler();
       } else if (e.key === 'Tab') {
         e.preventDefault();
         const s = ed.selectionStart, end = ed.selectionEnd;
