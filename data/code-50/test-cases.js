@@ -44,7 +44,8 @@ export const REAL_TEST_CASES = {
     { name: 'Test ẩn 2: Tệp 0 byte quyền 0600', hidden: true, setup: { files: [{ path: 'm3_z.txt', text: '', mode: 0o600 }] }, stdin: 'm3_z.txt\n', expected: 'REG 0 600', hint: 'Tệp rỗng vẫn là REG với size 0.' },
     { name: 'Test ẩn 3: Quyền có số 0 ở đầu (0077 → bắt buộc in 077)', hidden: true, setup: { files: [{ path: 'm3_lead.txt', text: 'X', mode: 0o077 }] }, stdin: 'm3_lead.txt\n', expected: 'REG 1 077', hint: 'Phải dùng định dạng %03o (không dùng %o vì sẽ mất số 0 đầu thành 77!).' },
     { name: 'Test ẩn 4: Tệp lớn 10000 byte quyền 0755', hidden: true, setup: { files: [{ path: 'm3_big.bin', repeatText: '1234567890', repeatCount: 1000, mode: 0o755 }] }, stdin: 'm3_big.bin\n', expected: 'REG 10000 755', hint: 'In st.st_size bằng kiểu (long long) với %lld.' },
-    { name: 'Test ẩn 5: Đường dẫn không tồn tại (-1)', hidden: true, stdin: 'nope03.bin\n', expected: '-1', hint: 'Nếu stat() == -1 thì chỉ in -1.' },
+    { name: 'Test ẩn 5: Đường dẫn là THƯ MỤC (S_ISDIR → DIR)', hidden: true, setup: { dirs: ['sub_dir03'] }, stdin: 'sub_dir03\n', expected: 'DIR <size> 755', expectedRegex: '^DIR \\d+ 755$', hint: 'Bắt buộc phân nhánh S_ISDIR(st.st_mode) để in DIR thay vì luôn in REG!' },
+    { name: 'Test ẩn 6: Đường dẫn không tồn tại (-1)', hidden: true, stdin: 'nope03.bin\n', expected: '-1', hint: 'Nếu stat() == -1 thì chỉ in -1.' },
   ],
 
   'CR-04': [
@@ -54,6 +55,7 @@ export const REAL_TEST_CASES = {
     { name: 'Test ẩn 3: offset + max > size (đọc đuôi tệp nhị phân có \\0)', hidden: true, setup: { files: [{ path: 's4b.bin', bytes: [10, 20, 0, 30, 40, 0] }] }, stdin: 's4b.bin d4b.bin 2 100\n', expected: '4', checkFile: { path: 'd4b.bin', bytes: [0, 30, 40, 0] }, hint: 'Dừng khi read() gặp EOF, không được đọc/ghi thừa rác.' },
     { name: 'Test ẩn 4: Trích đoạn lớn 5000 byte vượt buffer 4KB', hidden: true, setup: { files: [{ path: 's4big.txt', repeatText: 'ABCD', repeatCount: 2500 }] }, stdin: 's4big.txt d4big.txt 400 5000\n', expected: '5000', checkFile: { path: 'd4big.txt', repeatText: 'ABCD', repeatCount: 1250 }, hint: 'Giới hạn số byte đọc mỗi lượt bằng min(sizeof(buf), remaining).' },
     { name: 'Test ẩn 5: offset âm (-3) → in -1', hidden: true, setup: { files: [{ path: 's4n.txt', text: 'ABC' }] }, stdin: 's4n.txt d4n.txt -3 2\n', expected: '-1', hint: 'Kiểm tra if (offset < 0) in -1 trước khi mở đích.' },
+    { name: 'Test ẩn 6: Tệp nguồn không tồn tại (-1)', hidden: true, stdin: 'missing4.txt d4x.txt 0 5\n', expected: '-1', hint: 'Nếu open(src, O_RDONLY) < 0 → in -1 ngay.' },
   ],
 
   'CR-05': [
@@ -335,8 +337,9 @@ export const REAL_TEST_CASES = {
     { name: 'Test ẩn 1: Ô xuất phát (1,1) bị chặn', hidden: true, stdin: '2 2\n1 0\n0 0\n', expected: '0', hint: 'Kiểm tra grid[1][1] == 1 → in 0 ngay.' },
     { name: 'Test ẩn 2: Ô đích (M,N) bị chặn', hidden: true, stdin: '2 2\n0 0\n0 1\n', expected: '0', hint: 'Kiểm tra grid[M][N] == 1 → kết quả phải là 0.' },
     { name: 'Test ẩn 3: Lưới 1x1 trống', hidden: true, stdin: '1 1\n0\n', expected: '1', hint: 'dp[1][1] = 1.' },
-    { name: 'Test ẩn 4: Hàng rào vật cản cắt đứt hoàn toàn đường đi', hidden: true, stdin: '3 3\n0 0 1\n0 1 0\n1 0 0\n', expected: '0', hint: 'Đường chéo vật cản chặn hết lối đi → 0.' },
-    { name: 'Test ẩn 5: Lưới 20x20 trống (C(38,19) > 2^31 → kiểm tra modulo 10^9+7)', hidden: true, stdin: `20 20\n${Array(20).fill(Array(20).fill(0).join(' ')).join('\n')}\n`, expected: '345263555', hint: 'C(38,19) = 35,345,263,800 % 1000000007 = 345263555 → phải lấy % 1000000007 ở mọi phép cộng!' },
+    { name: 'Test ẩn 4: Vật cản ở hàng 1 & cột 1 (bẫy khởi tạo biên = 1 hết)', hidden: true, stdin: '3 4\n0 1 0 0\n0 0 0 0\n1 0 0 0\n', expected: '3', hint: 'Ô (1,2) bị chặn nên (1,3),(1,4) KHÔNG được gán dp=1; ô (3,1) bị chặn nên không đi qua nó!' },
+    { name: 'Test ẩn 5: Hàng rào vật cản cắt đứt hoàn toàn đường đi', hidden: true, stdin: '3 3\n0 0 1\n0 1 0\n1 0 0\n', expected: '0', hint: 'Đường chéo vật cản chặn hết lối đi → 0.' },
+    { name: 'Test ẩn 6: Lưới 20x20 trống (C(38,19) > 2^31 → kiểm tra modulo 10^9+7)', hidden: true, stdin: `20 20\n${Array(20).fill(Array(20).fill(0).join(' ')).join('\n')}\n`, expected: '345263555', hint: 'C(38,19) = 35,345,263,800 % 1000000007 = 345263555 → phải lấy % 1000000007 ở mọi phép cộng!' },
   ],
 
   'CR-36': [

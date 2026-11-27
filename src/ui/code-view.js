@@ -4,8 +4,8 @@ import { attachIdeEditor } from '../core/code-editor-ide.js?v=12';
 import { formatSavedTime, formatSavedClock } from '../core/storage.js';
 import { getCodePartProgress, snapshotCompletions, notifyNewCompletions } from '../core/progress.js?v=11';
 import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=11';
-import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=13';
-import { runRealTestSuite } from '../core/c-runner.js?v=13';
+import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=14';
+import { runRealTestSuite } from '../core/c-runner.js?v=14';
 
 const DIFFICULTIES = ['all', 'Dễ', 'Trung bình', 'Khó'];
 

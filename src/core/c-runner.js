@@ -347,7 +347,7 @@ export async function runRealTestSuite(studentCode, testCases, onProgress) {
 
     const actual = normalizeOut(actualRaw);
     const expected = normalizeOut(tc.expected);
-    const stdoutMatch = actual === expected;
+    const stdoutMatch = tc.expectedRegex ? new RegExp(tc.expectedRegex).test(actual) : actual === expected;
     const sigText = signalLabel(sigNum);
     const crashed = sigNum !== 0 || exitCode !== 0;
     const ok = !crashed && stdoutMatch && fileOk;
