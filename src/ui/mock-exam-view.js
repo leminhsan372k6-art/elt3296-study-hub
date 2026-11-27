@@ -2,11 +2,11 @@
 import { esc, formatInlineCode, highlightCodeSnippet, shuffleArray, scrollTopInstant } from '../core/dom.js?v=12';
 import { renderLatexInElement } from '../core/latex.js';
 import { attachIdeEditor } from '../core/code-editor-ide.js?v=12';
-import { runRealTestSuite } from '../core/c-runner.js?v=7';
+import { runRealTestSuite } from '../core/c-runner.js?v=13';
 import { formatSavedTime } from '../core/storage.js';
 import { snapshotCompletions, notifyNewCompletions } from '../core/progress.js?v=11';
 import { OFFICIAL_SEB_40, gradeSubmission } from '../../data/code-50/index.js?v=11';
-import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=11';
+import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=13';
 
 const CH_NAMES = {
   1: 'Ch.1 Linux & Shell',

@@ -25,7 +25,7 @@ function normalizeRealRuns(raw) {
       passed: Number(v.passed || 0),
       total: Number(v.total || 0),
       results: Array.isArray(v.results)
-        ? v.results.slice(0, 10).map((r) => ({
+        ? v.results.slice(0, 12).map((r) => ({
             name: r.name || '',
             hidden: Boolean(r.hidden),
             ok: Boolean(r.ok),

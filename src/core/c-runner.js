@@ -4,6 +4,14 @@ function toByteArray(spec) {
   if (!spec) return [];
   if (Array.isArray(spec.bytes)) return spec.bytes;
   if (typeof spec.text === 'string') return [...new TextEncoder().encode(spec.text)];
+  if (typeof spec.repeatText === 'string' && spec.repeatCount > 0) {
+    const unit = [...new TextEncoder().encode(spec.repeatText)];
+    const out = new Array(unit.length * spec.repeatCount);
+    for (let r = 0; r < spec.repeatCount; r++) {
+      for (let j = 0; j < unit.length; j++) out[r * unit.length + j] = unit[j];
+    }
+    return out;
+  }
   return [];
 }
 
@@ -42,6 +50,39 @@ function buildBatchSource(studentCode, testCases) {
     '  }',
     '}',
     '',
+    'static void __elt_write_repeat(const char *path, const unsigned char *unit, size_t ulen, int count, int mode) {',
+    '  int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, mode ? mode : 0644);',
+    '  if (fd >= 0) {',
+    '    for (int r = 0; r < count; r++) {',
+    '      size_t off = 0;',
+    '      while (off < ulen) {',
+    '        ssize_t w = write(fd, unit + off, ulen - off);',
+    '        if (w <= 0) break;',
+    '        off += (size_t)w;',
+    '      }',
+    '    }',
+    '    close(fd);',
+    '    if (mode) chmod(path, mode);',
+    '  }',
+    '}',
+    '',
+    'static int __elt_check_repeat(int fd, const unsigned char *unit, size_t ulen, int count) {',
+    '  unsigned char *buf = (unsigned char*)malloc(ulen ? ulen : 1);',
+    '  if (!buf) return 0;',
+    '  int ok = 1;',
+    '  for (int r = 0; r < count && ok; r++) {',
+    '    size_t got = 0;',
+    '    while (got < ulen) {',
+    '      ssize_t n = read(fd, buf + got, ulen - got);',
+    '      if (n <= 0) { ok = 0; break; }',
+    '      got += (size_t)n;',
+    '    }',
+    '    if (ok && memcmp(buf, unit, ulen) != 0) ok = 0;',
+    '  }',
+    '  free(buf);',
+    '  return ok;',
+    '}',
+    '',
     '__attribute__((constructor)) static void __elt_batch_runner(void) {',
     '  if (getenv("__ELT_CHILD_RUN")) return;',
     '  setenv("__ELT_CHILD_RUN", "1", 1);',
@@ -64,13 +105,19 @@ function buildBatchSource(studentCode, testCases) {
     }
     if (tc.setup?.files?.length) {
       tc.setup.files.forEach((f, fIdx) => {
-        const b = toByteArray(f);
         const mode = f.mode ? `0${f.mode.toString(8)}` : '0';
-        if (b.length > 0) {
-          L.push(`    static const unsigned char __sf_${idx}_${fIdx}[] = {${b.join(',')}};`);
-          L.push(`    __elt_write_file("${escapeCString(f.path)}", __sf_${idx}_${fIdx}, ${b.length}, ${mode});`);
+        if ((typeof f.repeatText === 'string' || Array.isArray(f.repeatBytes)) && f.repeatCount > 0) {
+          const unit = Array.isArray(f.repeatBytes) ? f.repeatBytes : [...new TextEncoder().encode(f.repeatText)];
+          L.push(`    static const unsigned char __sfu_${idx}_${fIdx}[] = {${unit.join(',')}};`);
+          L.push(`    __elt_write_repeat("${escapeCString(f.path)}", __sfu_${idx}_${fIdx}, ${unit.length}, ${f.repeatCount}, ${mode});`);
         } else {
-          L.push(`    __elt_write_file("${escapeCString(f.path)}", (const unsigned char*)"", 0, ${mode});`);
+          const b = toByteArray(f);
+          if (b.length > 0) {
+            L.push(`    static const unsigned char __sf_${idx}_${fIdx}[] = {${b.join(',')}};`);
+            L.push(`    __elt_write_file("${escapeCString(f.path)}", __sf_${idx}_${fIdx}, ${b.length}, ${mode});`);
+          } else {
+            L.push(`    __elt_write_file("${escapeCString(f.path)}", (const unsigned char*)"", 0, ${mode});`);
+          }
         }
       });
     }
@@ -106,20 +153,29 @@ function buildBatchSource(studentCode, testCases) {
     L.push(`    int __sg = WIFSIGNALED(__st) ? WTERMSIG(__st) : 0;`);
 
     if (tc.checkFile) {
-      const expB = toByteArray(tc.checkFile);
+      const cf = tc.checkFile;
+      const isRep = (typeof cf.repeatText === 'string' || Array.isArray(cf.repeatBytes)) && cf.repeatCount > 0;
+      const unitB = isRep ? (Array.isArray(cf.repeatBytes) ? cf.repeatBytes : [...new TextEncoder().encode(cf.repeatText)]) : [];
+      const expB = isRep ? [] : toByteArray(cf);
+      const totalLen = isRep ? unitB.length * cf.repeatCount : expB.length;
       L.push(`    int __fok = 0; char __fmsg[64] = "missing";`);
-      L.push(`    int __cfd = open("${escapeCString(tc.checkFile.path)}", O_RDONLY);`);
+      L.push(`    int __cfd = open("${escapeCString(cf.path)}", O_RDONLY);`);
       L.push(`    if (__cfd >= 0) {`);
       L.push(`      struct stat __cst; fstat(__cfd, &__cst);`);
-      L.push(`      if ((long long)__cst.st_size != ${expB.length}) {`);
-      L.push(`        snprintf(__fmsg, sizeof(__fmsg), "size=%lld_expected=${expB.length}", (long long)__cst.st_size);`);
+      L.push(`      if ((long long)__cst.st_size != ${totalLen}) {`);
+      L.push(`        snprintf(__fmsg, sizeof(__fmsg), "size=%lld_expected=${totalLen}", (long long)__cst.st_size);`);
       L.push(`      } else {`);
-      if (expB.length > 0) {
-        L.push(`        static const unsigned char __cexp_${idx}[] = {${expB.join(',')}};`);
-        L.push(`        unsigned char __cgot[${expB.length}];`);
-        L.push(`        ssize_t __cn = read(__cfd, __cgot, ${expB.length});`);
-        L.push(`        if (__cn == ${expB.length} && memcmp(__cgot, __cexp_${idx}, ${expB.length}) == 0) { __fok = 1; strcpy(__fmsg, "ok"); }`);
+      if (isRep) {
+        L.push(`        static const unsigned char __cexp_u_${idx}[] = {${unitB.join(',')}};`);
+        L.push(`        if (__elt_check_repeat(__cfd, __cexp_u_${idx}, ${unitB.length}, ${cf.repeatCount})) { __fok = 1; strcpy(__fmsg, "ok"); }`);
         L.push(`        else strcpy(__fmsg, "content_mismatch");`);
+      } else if (expB.length > 0) {
+        L.push(`        static const unsigned char __cexp_${idx}[] = {${expB.join(',')}};`);
+        L.push(`        unsigned char *__cgot = (unsigned char*)malloc(${expB.length});`);
+        L.push(`        size_t __got = 0; while (__cgot && __got < ${expB.length}) { ssize_t __cn = read(__cfd, __cgot + __got, ${expB.length} - __got); if (__cn <= 0) break; __got += (size_t)__cn; }`);
+        L.push(`        if (__cgot && __got == ${expB.length} && memcmp(__cgot, __cexp_${idx}, ${expB.length}) == 0) { __fok = 1; strcpy(__fmsg, "ok"); }`);
+        L.push(`        else strcpy(__fmsg, "content_mismatch");`);
+        L.push(`        free(__cgot);`);
       } else {
         L.push(`        __fok = 1; strcpy(__fmsg, "ok");`);
       }
