@@ -143,13 +143,16 @@ button, input, select, textarea {
 .katex .mord.text { font-family: var(--font-latex); }
 .math-display-block { margin: 14px 0; overflow-x: auto; padding: 4px 0; }
 
-/* Syntax Highlighting Tokens */
-.kc-kw { color: #ff7b72; font-weight: 600; }
-.kc-ty { color: #79c0ff; }
-.kc-fn { color: #d2a8ff; }
-.kc-nu { color: #79c0ff; }
-.kc-st { color: #a5d6ff; }
-.kc-cm { color: #7c879a; font-style: italic; }
+/* Syntax Highlighting Tokens — VS Code / One Dark Pro Dev Palette */
+.kc-pp { color: #c678dd; font-weight: 600; }
+.kc-hd { color: #98c379; }
+.kc-kw { color: #c678dd; font-weight: 600; }
+.kc-ty { color: #e5c07b; }
+.kc-fn { color: #61afef; }
+.kc-nu { color: #d19a66; }
+.kc-st { color: #98c379; }
+.kc-op { color: #56b6c2; }
+.kc-cm { color: #6c7689; font-style: italic; }
 
 /* Scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }

@@ -1,7 +1,8 @@
 // Lightweight Pure-JS IDE Behavior for <textarea> (Zero dependencies, 0 node_modules)
-// Supports: synced line-number gutter, active line highlight, smart Enter auto-indent,
-// auto-close brackets/quotes + skip-over, auto-outdent '}', Tab/Shift+Tab multi-line indent,
-// smart Backspace, Ctrl+/ comment toggle, and Ctrl+Z undo preservation.
+// Supports: real-time VS Code syntax highlighting overlay, active line highlight bar,
+// synced line-number gutter, smart Enter auto-indent, auto-close brackets/quotes + skip-over,
+// auto-outdent '}', Tab/Shift+Tab multi-line indent, smart Backspace, Ctrl+/ comment toggle, Ctrl+S & Ctrl+Z.
+import { highlightCodeSnippet } from './dom.js?v=12';
 
 const OPEN_TO_CLOSE = { '{': '}', '(': ')', '[': ']', '"': '"', "'": "'" };
 const CLOSERS = new Set(['}', ')', ']', '"', "'"]);
@@ -24,8 +25,26 @@ function replaceRange(ed, start, end, text, selStart = start + text.length, selE
 export function attachIdeEditor(ed, gutterEl, cursorEl, onChange, onRun, onSave) {
   if (!ed) return;
 
+  const stageEl = ed.closest('.editor-stage');
+  const hlCodeEl = stageEl?.querySelector('.editor-highlight-code') || null;
+  const hlPreEl = stageEl?.querySelector('.editor-highlight-layer') || null;
+  const activeLineBar = stageEl?.querySelector('.editor-active-line') || null;
+
   let lastLineCount = -1;
   let lastActiveLine = -1;
+  let lastHighlightedValue = null;
+
+  const syncScrollOnly = () => {
+    if (gutterEl) gutterEl.scrollTop = ed.scrollTop;
+    if (hlPreEl) {
+      hlPreEl.scrollTop = ed.scrollTop;
+      hlPreEl.scrollLeft = ed.scrollLeft;
+    }
+    if (activeLineBar && lastActiveLine >= 1) {
+      const linePx = parseFloat(getComputedStyle(ed).lineHeight) || 22.275;
+      activeLineBar.style.transform = `translateY(${Math.round((lastActiveLine - 1) * linePx - ed.scrollTop)}px)`;
+    }
+  };
 
   const syncGutterAndCursor = () => {
     const val = ed.value;
@@ -36,6 +55,12 @@ export function attachIdeEditor(ed, gutterEl, cursorEl, onChange, onRun, onSave)
     const col = pos - lastNl;
 
     if (cursorEl) cursorEl.textContent = `Dòng ${activeLine}, Cột ${col}`;
+
+    if (hlCodeEl && val !== lastHighlightedValue) {
+      // Append trailing newline+space so last empty line aligns 1:1 with textarea scrollHeight
+      hlCodeEl.innerHTML = val ? `${highlightCodeSnippet(val)}\n ` : '';
+      lastHighlightedValue = val;
+    }
 
     if (gutterEl) {
       const lineCount = Math.max(val.split('\n').length, 1);
@@ -48,13 +73,13 @@ export function attachIdeEditor(ed, gutterEl, cursorEl, onChange, onRun, onSave)
         lastLineCount = lineCount;
         lastActiveLine = activeLine;
       }
-      gutterEl.scrollTop = ed.scrollTop;
+    } else {
+      lastActiveLine = activeLine;
     }
+    syncScrollOnly();
   };
 
-  ed.addEventListener('scroll', () => {
-    if (gutterEl) gutterEl.scrollTop = ed.scrollTop;
-  });
+  ed.addEventListener('scroll', syncScrollOnly);
 
   ed.addEventListener('input', () => {
     syncGutterAndCursor();

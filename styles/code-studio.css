@@ -789,3 +789,98 @@
   border-color: rgba(240, 106, 106, 0.5);
   color: #fecaca;
 }
+
+/* Dev IDE Window Dots, File Pill & Live Syntax-Highlighted Editor Overlay */
+.dev-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dev-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dev-dots .dd-r { background: #ff5f56; }
+.dev-dots .dd-y { background: #ffbd2e; }
+.dev-dots .dd-g { background: #27c93f; }
+
+.dev-file-pill {
+  font-family: var(--font-mono);
+  font-size: 11.8px;
+  font-weight: 600;
+  color: #93c5fd;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(97, 175, 239, 0.12);
+  border: 1px solid rgba(97, 175, 239, 0.25);
+}
+
+.editor-stage {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: #0d0f14;
+  overflow: hidden;
+}
+
+.editor-active-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 16px;
+  height: 22.275px;
+  background: rgba(97, 175, 239, 0.08);
+  border-top: 1px solid rgba(97, 175, 239, 0.1);
+  border-bottom: 1px solid rgba(97, 175, 239, 0.1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.editor-highlight-layer {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 16px 18px 16px 14px;
+  border: none;
+  background: transparent;
+  color: #abb2bf;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+  tab-size: 4;
+  white-space: pre;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+/* Keep exact character width parity between highlight layer and textarea across every font */
+.editor-highlight-layer span {
+  font-weight: 400 !important;
+  font-style: normal !important;
+}
+
+.code-editor-area.is-live-color {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  caret-color: #61afef;
+}
+
+.code-editor-area.is-live-color::placeholder {
+  color: #5c677d;
+  -webkit-text-fill-color: #5c677d;
+}
+
+.code-editor-area.is-live-color::selection {
+  background: rgba(97, 175, 239, 0.3);
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}

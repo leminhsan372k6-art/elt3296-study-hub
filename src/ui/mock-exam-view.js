@@ -1,7 +1,7 @@
 // Full 90-Minute Realistic Final Exam Simulator: Part I (20 MCQs · 4.0đ) + Part II (3 Code Problems: Easy/Medium/Hard · 6.0đ)
-import { esc, formatInlineCode, highlightCodeSnippet, shuffleArray, scrollTopInstant } from '../core/dom.js';
+import { esc, formatInlineCode, highlightCodeSnippet, shuffleArray, scrollTopInstant } from '../core/dom.js?v=12';
 import { renderLatexInElement } from '../core/latex.js';
-import { attachIdeEditor } from '../core/code-editor-ide.js?v=10';
+import { attachIdeEditor } from '../core/code-editor-ide.js?v=12';
 import { runRealTestSuite } from '../core/c-runner.js?v=7';
 import { formatSavedTime } from '../core/storage.js';
 import { snapshotCompletions, notifyNewCompletions } from '../core/progress.js?v=11';
@@ -673,7 +673,11 @@ function renderCodePart(idx) {
                 rightView === 'editor'
                   ? `<div class="editor-ide-wrap">
                        <div class="editor-gutter" id="mockEditorGutter" aria-hidden="true"><div class="eg-ln is-active">1</div></div>
-                       <textarea class="code-editor-area" id="mockCodeInput" spellcheck="false" autocomplete="off" wrap="off" ${submitted ? 'readonly' : ''} placeholder="// Gõ lời giải C11 cho ${esc(q.id)} (${esc(q.difficulty)}) tại đây...&#10;// Chuyển qua lại Phần I / Code 1 / Code 2 / Code 3 KHÔNG bị mất bài!&#10;// Bấm Ctrl+Enter để chạy thử GCC Linux ngay trong phòng thi.">${esc(draft)}</textarea>
+                       <div class="editor-stage">
+                         <div class="editor-active-line" aria-hidden="true"></div>
+                         <pre class="editor-highlight-layer" aria-hidden="true"><code class="editor-highlight-code"></code></pre>
+                         <textarea class="code-editor-area is-live-color" id="mockCodeInput" spellcheck="false" autocomplete="off" wrap="off" ${submitted ? 'readonly' : ''} placeholder="// Gõ lời giải C11 cho ${esc(q.id)} (${esc(q.difficulty)}) tại đây (tô màu cú pháp trực tiếp)...&#10;// Chuyển qua lại Phần I / Code 1 / Code 2 / Code 3 KHÔNG bị mất bài!&#10;// Bấm Ctrl+Enter để chạy thử GCC Linux ngay trong phòng thi.">${esc(draft)}</textarea>
+                       </div>
                      </div>`
                   : `<div class="code-numbered">
                        ${solLines.map((ln, i) => `<div class="code-ln"><span class="code-ln-num">${i + 1}</span><span class="code-ln-src">${highlightCodeSnippet(ln)}</span></div>`).join('')}

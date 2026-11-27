@@ -5,8 +5,8 @@ import { TOPICS, ORDERED_TOPIC_IDS } from '../data/book/chapters-data.js';
 import { renderTopBar, renderBookSidebar, renderSearchModal, renderVaultModal } from './ui/shell.js?v=11';
 import { renderEbookView, bindEbookView, stepBookPage, clearAutoReadTimer } from './ui/ebook-view.js?v=11';
 import { renderMcqView, bindMcqView, startMcqForChapter, startMcqForTopic, jumpToMcqById, openSavedMcqExam } from './ui/mcq-view.js?v=11';
-import { renderCodeView, bindCodeView } from './ui/code-view.js?v=11';
-import { renderMockExamView, bindMockExamView, openSavedFullMockExam } from './ui/mock-exam-view.js?v=11';
+import { renderCodeView, bindCodeView } from './ui/code-view.js?v=12';
+import { renderMockExamView, bindMockExamView, openSavedFullMockExam } from './ui/mock-exam-view.js?v=12';
 import { renderExtrasView, bindExtrasView } from './ui/extras-view.js';
 
 function isTypingTarget(el) {

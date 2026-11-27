@@ -1,6 +1,6 @@
-import { esc, formatInlineCode, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
+import { esc, formatInlineCode, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js?v=12';
 import { renderLatexInElement } from '../core/latex.js';
-import { attachIdeEditor } from '../core/code-editor-ide.js?v=10';
+import { attachIdeEditor } from '../core/code-editor-ide.js?v=12';
 import { formatSavedTime, formatSavedClock } from '../core/storage.js';
 import { getCodePartProgress, snapshotCompletions, notifyNewCompletions } from '../core/progress.js?v=11';
 import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=11';
@@ -513,9 +513,13 @@ export function renderCodeView(state) {
         <div class="pane-code">
           <div class="code-window">
             <div class="code-win-bar">
-              <div class="win-tabs" role="tablist">
-                <button type="button" class="win-tab ${state.sebMode === 'practice' ? 'active' : ''}" data-seb-mode="practice">✍ Tự viết Code</button>
-                <button type="button" class="win-tab ${state.sebMode === 'solution' ? 'active' : ''}" data-seb-mode="solution">📖 Đáp án chuẩn</button>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <div class="dev-dots" aria-hidden="true"><span class="dd-r"></span><span class="dd-y"></span><span class="dd-g"></span></div>
+                <span class="dev-file-pill">main.c</span>
+                <div class="win-tabs" role="tablist">
+                  <button type="button" class="win-tab ${state.sebMode === 'practice' ? 'active' : ''}" data-seb-mode="practice">✍ Tự viết Code</button>
+                  <button type="button" class="win-tab ${state.sebMode === 'solution' ? 'active' : ''}" data-seb-mode="solution">📖 Đáp án chuẩn</button>
+                </div>
               </div>
 
               <div class="win-actions">
@@ -544,7 +548,11 @@ export function renderCodeView(state) {
                 state.sebMode === 'practice'
                   ? `<div class="editor-ide-wrap">
                        <div class="editor-gutter" id="codeEditorGutter" aria-hidden="true"><div class="eg-ln is-active">1</div></div>
-                       <textarea class="code-editor-area" id="codePracticeInput" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" wrap="off" placeholder="// Khung trống chuẩn IDE — tự động thụt lề khi Enter, tự đóng cặp { } ( ) [ ] &quot; &quot;, Tab / Shift+Tab, Ctrl+/ comment!&#10;// Bấm Alt+A (hoặc F2) để đảo sang Đáp án chuẩn · Alt+E để mở Giải thích Ý tưởng &amp; từng dòng lệnh bên trái.&#10;// Bấm Ctrl+Enter để biên dịch GCC thật &amp; chấm test ẩn (~1 giây).">${esc(draftVal)}</textarea>
+                       <div class="editor-stage">
+                         <div class="editor-active-line" aria-hidden="true"></div>
+                         <pre class="editor-highlight-layer" aria-hidden="true"><code class="editor-highlight-code"></code></pre>
+                         <textarea class="code-editor-area is-live-color" id="codePracticeInput" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" wrap="off" placeholder="// Khung trống chuẩn IDE — tô màu cú pháp C trực tiếp, tự thụt lề Enter, tự đóng ngoặc, Tab/Shift+Tab, Ctrl+/!&#10;// Bấm Alt+A (hoặc F2) để đảo sang Đáp án chuẩn · Alt+E để mở Giải thích Ý tưởng &amp; từng dòng lệnh bên trái.&#10;// Bấm Ctrl+S để lưu bản nộp · Ctrl+Enter để biên dịch GCC thật &amp; chấm test ẩn (~1 giây).">${esc(draftVal)}</textarea>
+                       </div>
                      </div>`
                   : `<div class="code-numbered">
                       ${solLines
