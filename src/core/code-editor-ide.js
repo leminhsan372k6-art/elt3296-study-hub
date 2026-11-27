@@ -21,7 +21,7 @@ function replaceRange(ed, start, end, text, selStart = start + text.length, selE
   ed.setSelectionRange(selStart, selEnd);
 }
 
-export function attachIdeEditor(ed, gutterEl, cursorEl, onChange, onRun) {
+export function attachIdeEditor(ed, gutterEl, cursorEl, onChange, onRun, onSave) {
   if (!ed) return;
 
   let lastLineCount = -1;
@@ -69,6 +69,13 @@ export function attachIdeEditor(ed, gutterEl, cursorEl, onChange, onRun) {
     const val = ed.value;
     const s = ed.selectionStart;
     const end = ed.selectionEnd;
+
+    // Ctrl + S -> Save explicit code snapshot (prevent browser Save Page dialog)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      if (onSave) onSave();
+      return;
+    }
 
     // Ctrl + Enter -> Compile & Run Hidden Tests
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {

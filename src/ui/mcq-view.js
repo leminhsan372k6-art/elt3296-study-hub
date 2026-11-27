@@ -1,4 +1,5 @@
 import { esc, formatInlineCode, highlightCodeSnippet, shuffleArray, scrollTopInstant } from '../core/dom.js';
+import { formatSavedTime } from '../core/storage.js';
 import { renderLatexInElement } from '../core/latex.js';
 
 const CH_NAMES = {
@@ -12,16 +13,17 @@ const CH_NAMES = {
 };
 
 const mcqSession = {
-  mode: 'practice', // 'practice' | 'exam' | 'wrong'
+  mode: 'practice', // 'practice' | 'exam' | 'wrong' | 'history'
   chapterFilter: 'all', // 'all' | '1'..'7'
   tagFilter: 'all', // 'all' | 'real-exam' | 'extended'
   practiceList: [],
-  practicePicks: {},
+  wrongPicks: {},
   // Exam 20-question simulator state
   examQuestions: [],
   examPicks: {},
   examFlags: new Set(),
   examSubmitted: false,
+  examReviewingRecord: null,
   examSecondsLeft: 30 * 60,
   timerId: null,
 };
@@ -70,6 +72,77 @@ export function jumpToMcqById(bank, id, chapterNum) {
   rebuildPracticeList(bank, id);
 }
 
+export function openSavedMcqExam(record) {
+  if (!record || !Array.isArray(record.items)) return;
+  stopExamTimer();
+  mcqSession.mode = 'exam';
+  mcqSession.examQuestions = record.items.map((it) => ({
+    id: it.id,
+    chapter: it.chapter,
+    tag: it.tag || '',
+    source: it.source || it.id,
+    topicId: it.topicId || '',
+    question: it.question,
+    code: it.code || '',
+    options: it.options,
+    answer: it.answer,
+    explain: it.explain,
+  }));
+  mcqSession.examPicks = {};
+  record.items.forEach((it, idx) => {
+    if (typeof it.picked === 'number') mcqSession.examPicks[idx] = it.picked;
+  });
+  mcqSession.examFlags = new Set();
+  mcqSession.examSubmitted = true;
+  mcqSession.examReviewingRecord = record;
+  mcqSession.examSecondsLeft = Math.max(0, 30 * 60 - (record.elapsedSec || 0));
+}
+
+function recordSubmittedExam(state) {
+  if (mcqSession.examReviewingRecord) return;
+  const qs = mcqSession.examQuestions;
+  if (!qs.length) return;
+  let correct = 0;
+  const items = qs.map((q, idx) => {
+    const picked = mcqSession.examPicks[idx];
+    if (picked === q.answer) {
+      correct++;
+      state.mcqMasteredIds.add(q.id);
+      state.wrongMcqIds.delete(q.id);
+    } else {
+      state.wrongMcqIds.add(q.id);
+    }
+    return {
+      id: q.id,
+      chapter: q.chapter,
+      tag: q.tag || '',
+      source: q.source || q.id,
+      topicId: q.topicId || '',
+      question: q.question,
+      code: q.code || '',
+      options: q.options,
+      answer: q.answer,
+      picked: typeof picked === 'number' ? picked : null,
+      explain: q.explain,
+    };
+  });
+  const total = qs.length;
+  const entry = {
+    id: `exam-${Date.now()}`,
+    submittedAt: Date.now(),
+    correct,
+    total,
+    score10: Number(((correct / Math.max(1, total)) * 10).toFixed(2)),
+    score4: Number(((correct / Math.max(1, total)) * 4).toFixed(2)),
+    elapsedSec: Math.max(0, 30 * 60 - mcqSession.examSecondsLeft),
+    items,
+  };
+  if (!Array.isArray(state.mcqExamHistory)) state.mcqExamHistory = [];
+  state.mcqExamHistory.unshift(entry);
+  if (state.mcqExamHistory.length > 30) state.mcqExamHistory.length = 30;
+  mcqSession.examReviewingRecord = entry;
+}
+
 function rebuildPracticeList(bank, pinId = null) {
   let list = bank.filter((q) => {
     const okCh = mcqSession.chapterFilter === 'all' || String(q.chapter) === mcqSession.chapterFilter;
@@ -84,16 +157,16 @@ function rebuildPracticeList(bank, pinId = null) {
     }
   }
   mcqSession.practiceList = list;
-  mcqSession.practicePicks = {};
 }
 
-function startNewExam(bank, rerender) {
+function startNewExam(bank, state, persist, rerender) {
   stopExamTimer();
   mcqSession.mode = 'exam';
   mcqSession.examQuestions = buildRealistic20Exam(bank);
   mcqSession.examPicks = {};
   mcqSession.examFlags = new Set();
   mcqSession.examSubmitted = false;
+  mcqSession.examReviewingRecord = null;
   mcqSession.examSecondsLeft = 30 * 60;
   mcqSession.timerId = setInterval(() => {
     if (mcqSession.mode !== 'exam' || mcqSession.examSubmitted) {
@@ -106,6 +179,8 @@ function startNewExam(bank, rerender) {
     if (mcqSession.examSecondsLeft <= 0) {
       mcqSession.examSubmitted = true;
       stopExamTimer();
+      recordSubmittedExam(state);
+      persist();
       rerender();
     }
   }, 1000);
@@ -268,6 +343,41 @@ export function renderMcqView(state, bank) {
         </aside>
       </div>
     `;
+  } else if (mcqSession.mode === 'history') {
+    const exams = Array.isArray(state.mcqExamHistory) ? state.mcqExamHistory : [];
+    bodyHtml = `
+      <div class="mcq-exam-grid single-col">
+        <div class="mcq-list">
+          ${
+            exams.length === 0
+              ? `<div class="mcq-card" style="text-align:center;padding:42px 24px">
+                  <div style="font-size:20px;font-weight:700;margin-bottom:6px">Chưa có bài thi thử nào được lưu.</div>
+                  <div style="color:var(--mut);font-family:var(--font-ui);font-size:14px;margin-bottom:14px">
+                    Mỗi khi bạn nộp bài ở chế độ <b>Thi thử Đề thật (20 câu)</b>, kết quả &amp; toàn bộ đáp án bạn đã chọn sẽ tự động lưu bền vững trên máy để xem lại bất cứ lúc nào.
+                  </div>
+                  <button type="button" class="btn primary" data-mcq-mode="exam">Bắt đầu Thi thử 20 câu ngay →</button>
+                </div>`
+              : exams
+                  .map(
+                    (ex, i) => `
+                  <article class="mcq-card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+                    <div>
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <span class="pill-tag ch">Lượt #${exams.length - i}</span>
+                        <strong style="font-size:16px">Đúng ${ex.correct} / ${ex.total} câu · ${Number(ex.score10).toFixed(1)} / 10 điểm (Hệ 4: ${Number(ex.score4).toFixed(2)}/4.00)</strong>
+                      </div>
+                      <div style="font-family:var(--font-ui);font-size:13px;color:var(--mut);margin-top:5px">
+                        Nộp lúc <b>${esc(formatSavedTime(ex.submittedAt))}</b> · Thời gian làm: ${Math.floor((ex.elapsedSec || 0) / 60)} phút ${String((ex.elapsedSec || 0) % 60).padStart(2, '0')} giây
+                      </div>
+                    </div>
+                    <button type="button" class="btn primary" data-review-exam-id="${esc(ex.id)}">📖 Xem lại bài làm →</button>
+                  </article>`
+                  )
+                  .join('')
+          }
+        </div>
+      </div>
+    `;
   } else if (mcqSession.mode === 'wrong') {
     bodyHtml = `
       <div class="mcq-exam-grid single-col">
@@ -288,8 +398,8 @@ export function renderMcqView(state, bank) {
                 wrongList
                   .map((q, idx) =>
                     renderQuestionCard(q, idx, wrongList.length, {
-                      picked: mcqSession.practicePicks[q.id],
-                      reveal: typeof mcqSession.practicePicks[q.id] === 'number',
+                      picked: mcqSession.wrongPicks[q.id],
+                      reveal: typeof mcqSession.wrongPicks[q.id] === 'number',
                       isExam: false,
                       flagged: false,
                     })
@@ -301,6 +411,7 @@ export function renderMcqView(state, bank) {
     `;
   } else {
     const list = mcqSession.practiceList;
+    const savedPicks = state.mcqPracticePicks || {};
     bodyHtml = `
       <div class="mcq-exam-grid single-col">
         <div class="mcq-list">
@@ -310,8 +421,8 @@ export function renderMcqView(state, bank) {
               : list
                   .map((q, idx) =>
                     renderQuestionCard(q, idx, list.length, {
-                      picked: mcqSession.practicePicks[q.id],
-                      reveal: typeof mcqSession.practicePicks[q.id] === 'number',
+                      picked: savedPicks[q.id],
+                      reveal: typeof savedPicks[q.id] === 'number',
                       isExam: false,
                       flagged: false,
                     })
@@ -347,7 +458,10 @@ export function renderMcqView(state, bank) {
               ⏱ Thi thử Đề thật (20 câu)
             </button>
             <button type="button" class="mcq-mode-btn ${mcqSession.mode === 'wrong' ? 'active' : ''}" data-mcq-mode="wrong">
-              🎯 Ôn câu làm sai (${state.wrongMcqIds.size})
+              🎯 Ôn câu sai (${state.wrongMcqIds.size})
+            </button>
+            <button type="button" class="mcq-mode-btn ${mcqSession.mode === 'history' ? 'active' : ''}" data-mcq-mode="history">
+              📜 Lịch sử thi (${(state.mcqExamHistory || []).length})
             </button>
           </div>
         </div>
@@ -367,7 +481,8 @@ export function renderMcqView(state, bank) {
                 <button type="button" class="btn sm ${mcqSession.tagFilter === 'all' ? 'active' : ''}" data-mcq-tag="all">Mọi nguồn</button>
                 <button type="button" class="btn sm ${mcqSession.tagFilter === 'real-exam' ? 'active' : ''}" data-mcq-tag="real-exam">★ Chỉ Đề thi thật UET (${realCount})</button>
                 <button type="button" class="btn sm ${mcqSession.tagFilter === 'extended' ? 'active' : ''}" data-mcq-tag="extended">Mở rộng chuyên sâu (${bank.length - realCount})</button>
-                <button type="button" class="btn sm accent" id="btnShufflePractice">🔀 Xáo trộn thứ tự &amp; đáp án</button>
+                <button type="button" class="btn sm accent" id="btnShufflePractice">🔀 Xáo trộn</button>
+                <button type="button" class="btn sm ghost" id="btnResetPracticePicks" title="Xóa lựa chọn đã lưu của các câu đang hiển thị để làm lại từ đầu">↺ Làm lại bộ câu này</button>
               </div>`
             : ''
         }
@@ -387,7 +502,7 @@ export function bindMcqView(state, bank, persist, rerender) {
       const m = b.dataset.mcqMode;
       if (m === 'exam') {
         if (mcqSession.examQuestions.length === 0 || mcqSession.examSubmitted) {
-          startNewExam(bank, rerender);
+          startNewExam(bank, state, persist, rerender);
         } else {
           mcqSession.mode = 'exam';
         }
@@ -418,13 +533,31 @@ export function bindMcqView(state, bank, persist, rerender) {
   });
 
   document.getElementById('btnShufflePractice')?.addEventListener('click', () => {
-    mcqSession.practiceList = shuffleArray(mcqSession.practiceList).map(shuffleQuestionOptions);
-    mcqSession.practicePicks = {};
+    mcqSession.practiceList = shuffleArray(mcqSession.practiceList);
     rerender();
   });
 
+  document.getElementById('btnResetPracticePicks')?.addEventListener('click', () => {
+    for (const q of mcqSession.practiceList) {
+      delete state.mcqPracticePicks[q.id];
+    }
+    persist();
+    rerender();
+  });
+
+  document.querySelectorAll('[data-review-exam-id]').forEach((b) => {
+    b.addEventListener('click', () => {
+      const rec = (state.mcqExamHistory || []).find((x) => x.id === b.dataset.reviewExamId);
+      if (rec) {
+        openSavedMcqExam(rec);
+        rerender();
+        scrollTopInstant();
+      }
+    });
+  });
+
   const handleNewExam = () => {
-    startNewExam(bank, rerender);
+    startNewExam(bank, state, persist, rerender);
     rerender();
     scrollTopInstant();
   };
@@ -440,14 +573,7 @@ export function bindMcqView(state, bank, persist, rerender) {
   document.getElementById('btnSubmitMcqExam')?.addEventListener('click', () => {
     stopExamTimer();
     mcqSession.examSubmitted = true;
-    mcqSession.examQuestions.forEach((q, idx) => {
-      if (mcqSession.examPicks[idx] === q.answer) {
-        state.mcqMasteredIds.add(q.id);
-        state.wrongMcqIds.delete(q.id);
-      } else {
-        state.wrongMcqIds.add(q.id);
-      }
-    });
+    recordSubmittedExam(state);
     persist();
     rerender();
     scrollTopInstant();
@@ -455,7 +581,7 @@ export function bindMcqView(state, bank, persist, rerender) {
 
   document.getElementById('btnClearWrong')?.addEventListener('click', () => {
     state.wrongMcqIds.clear();
-    mcqSession.practicePicks = {};
+    mcqSession.wrongPicks = {};
     persist();
     rerender();
   });
@@ -488,7 +614,11 @@ export function bindMcqView(state, bank, persist, rerender) {
         return;
       }
 
-      mcqSession.practicePicks[qid] = opt;
+      if (mcqSession.mode === 'wrong') {
+        mcqSession.wrongPicks[qid] = opt;
+      } else {
+        state.mcqPracticePicks[qid] = opt;
+      }
       const targetList = mcqSession.mode === 'wrong' ? bank.filter((q) => state.wrongMcqIds.has(q.id)) : mcqSession.practiceList;
       const q = targetList.find((x) => x.id === qid) || bank.find((x) => x.id === qid);
       if (q) {

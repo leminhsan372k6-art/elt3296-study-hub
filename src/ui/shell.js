@@ -1,10 +1,22 @@
 import { esc } from '../core/dom.js';
+import { formatSavedTime } from '../core/storage.js';
 import { CHAPTERS } from '../../data/book/chapters-data.js';
 import { OFFICIAL_SEB_50 } from '../../data/code-50/index.js';
+
+function countSavedWork(state) {
+  const codeIds = new Set([
+    ...Object.keys(state.codeSubmissions || {}).filter((id) => (state.codeSubmissions[id] || []).length > 0),
+    ...Object.keys(state.codeDrafts || {}).filter((id) => String(state.codeDrafts[id] || '').trim().length > 0),
+  ]);
+  const totalSnaps = Object.values(state.codeSubmissions || {}).reduce((acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0), 0);
+  const examCount = Array.isArray(state.mcqExamHistory) ? state.mcqExamHistory.length : 0;
+  return { codeCount: codeIds.size, totalSnaps, examCount, totalBadge: codeIds.size + examCount };
+}
 
 export function renderTopBar(state, mcqCount) {
   const wrongCount = state.wrongMcqIds.size;
   const solvedCount = state.solvedCodeIds.size;
+  const savedStats = countSavedWork(state);
 
   return `
     <header class="topbar">
@@ -42,6 +54,10 @@ export function renderTopBar(state, mcqCount) {
       </nav>
 
       <div class="topbar-right">
+        <button type="button" class="btn sm ghost" id="btnOpenVault" title="Xem tất cả bài làm đã lưu trên máy & Sao lưu/Khôi phục không cần tài khoản">
+          💾 Đã lưu${savedStats.totalBadge ? ` <span class="tab-badge is-new">${savedStats.totalBadge}</span>` : ''}
+        </button>
+
         <button type="button" class="btn sm ghost" id="btnOpenSearch" title="Tìm kiếm nhanh bài học, câu code, câu trắc nghiệm (Ctrl + K)">
           🔍 Tìm <span class="kbd">Ctrl K</span>
         </button>
@@ -156,6 +172,127 @@ export function renderSearchModal(state, mcqBank) {
                   .join('')
               : `<div style="padding:24px;text-align:center;color:var(--mut);font-family:var(--font-ui)">Không tìm thấy kết quả phù hợp.</div>`
           }
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+export function renderVaultModal(state, mcqBank) {
+  if (!state.vaultOpen) return '';
+  const stats = countSavedWork(state);
+  const codeRows = OFFICIAL_SEB_50.map((q) => {
+    const snaps = Array.isArray(state.codeSubmissions?.[q.id]) ? state.codeSubmissions[q.id] : [];
+    const draft = String(state.codeDrafts?.[q.id] || '');
+    if (snaps.length === 0 && !draft.trim()) return null;
+    const latest = snaps[0] || null;
+    const score = state.sebScores?.[q.id];
+    const latestCode = latest?.code || draft;
+    const lineCnt = latestCode.trimEnd().split('\n').length;
+    return { q, snaps, latest, draft, score, lineCnt };
+  }).filter(Boolean);
+
+  const exams = Array.isArray(state.mcqExamHistory) ? state.mcqExamHistory : [];
+  const activeTab = state.vaultTab === 'mcq' ? 'mcq' : 'code';
+
+  return `
+    <div class="modal-backdrop" id="vaultModalBackdrop">
+      <div class="modal-card vault-modal-card" role="dialog" aria-label="Kho bài làm đã lưu">
+        <div class="vault-head">
+          <div>
+            <div style="font-size:16px;font-weight:750;color:var(--fg)">💾 Kho Bài Làm Đã Lưu (Không Cần Tài Khoản)</div>
+            <div style="font-size:12.4px;color:var(--mut);margin-top:2px">
+              Tự động lưu kép trên trình duyệt (<code>localStorage</code> + <code>IndexedDB</code>) — đóng tab, tắt máy hay F5 đều giữ nguyên bài làm.
+            </div>
+          </div>
+          <button type="button" class="btn sm ghost" id="btnCloseVault">Đóng · Esc</button>
+        </div>
+
+        <div class="vault-stats-grid">
+          <div class="vault-stat">
+            <div class="vault-stat-val">${stats.codeCount} / 50</div>
+            <div class="vault-stat-lbl">Câu Tự luận đã làm</div>
+          </div>
+          <div class="vault-stat">
+            <div class="vault-stat-val">${stats.totalSnaps}</div>
+            <div class="vault-stat-lbl">Bản nộp Code đã lưu</div>
+          </div>
+          <div class="vault-stat">
+            <div class="vault-stat-val">${state.mcqMasteredIds.size} / ${mcqBank.length}</div>
+            <div class="vault-stat-lbl">Trắc nghiệm đã vững · ${exams.length} đề thi</div>
+          </div>
+        </div>
+
+        <div class="vault-tabs">
+          <button type="button" class="btn sm ${activeTab === 'code' ? 'active' : ''}" data-vault-tab="code">
+            💻 Bài Code đã lưu (${codeRows.length})
+          </button>
+          <button type="button" class="btn sm ${activeTab === 'mcq' ? 'active' : ''}" data-vault-tab="mcq">
+            📝 Lịch sử Thi thử 20 câu (${exams.length})
+          </button>
+        </div>
+
+        <div class="vault-list">
+          ${
+            activeTab === 'code'
+              ? codeRows.length
+                ? codeRows
+                    .map(({ q, snaps, latest, score, lineCnt }) => {
+                      const badge = latest
+                        ? latest.statusLabel
+                        : score
+                          ? `Điểm ${Number(score.score10).toFixed(1)}/10`
+                          : '✍ Bản nháp tự lưu';
+                      const timeStr = latest ? formatSavedTime(latest.savedAt) : 'Tự lưu nháp';
+                      return `
+                        <div class="vault-item">
+                          <div style="min-width:0;flex:1">
+                            <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+                              <span class="mono" style="font-size:11.6px;font-weight:700;padding:1px 7px;border-radius:6px;background:var(--fg);color:var(--surface)">${esc(q.id)}</span>
+                              <strong style="font-size:13.6px;color:var(--fg)">${esc(q.title)}</strong>
+                            </div>
+                            <div style="font-size:12px;color:var(--mut);margin-top:3px">
+                              ${esc(badge)} · ${snaps.length} bản lưu · ${lineCnt} dòng · ${esc(timeStr)}
+                            </div>
+                          </div>
+                          <div style="display:flex;gap:6px;flex-shrink:0">
+                            <button type="button" class="btn sm" data-vault-dl-cr="${esc(q.id)}" title="Tải mã nguồn .c về máy">⬇ .c</button>
+                            <button type="button" class="btn sm primary" data-vault-open-cr="${esc(q.id)}">Mở bài →</button>
+                          </div>
+                        </div>`;
+                    })
+                    .join('')
+                : `<div class="vault-empty">Chưa có bài Code nào được lưu. Khi bạn gõ code hoặc bấm <b>💾 Lưu bài</b> / <b>▶ Biên dịch &amp; Chấm Test ẩn</b>, bài làm sẽ tự động lưu tại đây!</div>`
+              : exams.length
+                ? exams
+                    .map(
+                      (ex) => `
+                        <div class="vault-item">
+                          <div style="min-width:0;flex:1">
+                            <div style="font-size:13.8px;font-weight:700;color:var(--fg)">
+                              Đề Thi thử 20 câu · Đúng ${ex.correct}/${ex.total} (${Number(ex.score10).toFixed(1)}/10 · ${Number(ex.score4).toFixed(2)}/4.0)
+                            </div>
+                            <div style="font-size:12px;color:var(--mut);margin-top:3px">
+                              Nộp lúc ${esc(formatSavedTime(ex.submittedAt))} · Thời gian làm: ${Math.floor((ex.elapsedSec || 0) / 60)}p ${String((ex.elapsedSec || 0) % 60).padStart(2, '0')}s
+                            </div>
+                          </div>
+                          <button type="button" class="btn sm primary" data-vault-open-exam="${esc(ex.id)}">Xem lại bài →</button>
+                        </div>`
+                    )
+                    .join('')
+                : `<div class="vault-empty">Chưa có lượt Thi thử 20 câu nào được nộp. Hãy vào tab <b>Trắc nghiệm → Thi thử Đề thật (20 câu)</b> để làm thử và lưu điểm!</div>`
+          }
+        </div>
+
+        <div class="vault-foot">
+          <div style="font-size:12px;color:var(--mut)" id="vaultBackupMsg">
+            Muốn chuyển bài làm sang máy tính khác? Xuất 1 file sao lưu <code>.json</code> rồi nhập lại trên máy mới.
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn sm" id="btnExportBackup">⬇ Xuất sao lưu (.json)</button>
+            <button type="button" class="btn sm" id="btnImportBackup">⬆ Khôi phục (.json)</button>
+            <input type="file" id="inputImportBackup" accept="application/json,.json" style="display:none" />
+          </div>
         </div>
       </div>
     </div>

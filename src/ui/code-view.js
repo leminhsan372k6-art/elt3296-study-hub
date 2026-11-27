@@ -1,6 +1,7 @@
 import { esc, formatInlineCode, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
 import { renderLatexInElement } from '../core/latex.js';
-import { attachIdeEditor } from '../core/code-editor-ide.js?v=9';
+import { attachIdeEditor } from '../core/code-editor-ide.js?v=10';
+import { formatSavedTime, formatSavedClock } from '../core/storage.js';
 import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=7';
 import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=7';
 import { runRealTestSuite } from '../core/c-runner.js?v=7';
@@ -31,6 +32,56 @@ function getCellClass(state, id) {
   return '';
 }
 
+function downloadCFile(filename, content) {
+  const blob = new Blob([content || ''], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+}
+
+function renderSavedHistoryHtml(snaps, q) {
+  if (!snaps.length) {
+    return `
+      <div style="padding:10px 4px;font-size:12.6px;color:#94a3b8;line-height:1.55">
+        Chưa có bản nộp nào cho <b>${esc(q.id)}</b>. Code bạn gõ vẫn được <b>tự động lưu nháp</b> liên tục; hãy bấm <b>💾 Lưu bài</b> (hoặc <code>Ctrl+S</code>) hoặc <b>▶ Biên dịch &amp; Chấm Test ẩn</b> để lưu thành từng phiên bản cố định tại đây!
+      </div>
+    `;
+  }
+  return `
+    <div class="snap-list">
+      ${snaps
+        .map((sp, i) => {
+          const isPass = sp.total > 0 && sp.passed === sp.total;
+          const preview = String(sp.code || '')
+            .split('\n')
+            .find((l) => l.trim() && !l.trim().startsWith('#include')) || String(sp.code || '').split('\n')[0] || '';
+          return `
+            <div class="snap-row ${isPass ? 'is-pass' : ''}">
+              <div style="min-width:0;flex:1">
+                <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12.5px">
+                  <span style="color:#94a3b8;font-family:var(--font-mono)">#${snaps.length - i}</span>
+                  <strong style="color:${isPass ? '#6ee7b7' : '#f1f5f9'}">${esc(sp.statusLabel)}</strong>
+                  <span style="color:#94a3b8">· ${sp.lines || 0} dòng · ${esc(formatSavedTime(sp.savedAt))}</span>
+                </div>
+                <div class="snap-preview">${esc(preview.trim().slice(0, 96))}</div>
+              </div>
+              <div style="display:flex;gap:5px;flex-shrink:0">
+                <button type="button" class="grade-toggle-btn" data-load-snap="${esc(sp.id)}" title="Nạp lại bản này vào khung gõ code">↺ Nạp lại</button>
+                <button type="button" class="grade-toggle-btn" data-dl-snap="${esc(sp.id)}" title="Tải xuống file .c">⬇ .c</button>
+                <button type="button" class="grade-toggle-btn is-del" data-del-snap="${esc(sp.id)}" title="Xóa bản lưu này">✕</button>
+              </div>
+            </div>`;
+        })
+        .join('')}
+    </div>
+  `;
+}
+
 function renderGradeBox(state, q) {
   const rep = state.sebLastReports?.[q.id];
   const realRun = state.sebRealRuns?.[q.id];
@@ -38,6 +89,8 @@ function renderGradeBox(state, q) {
   const tcList = REAL_TEST_CASES[q.id] || [];
   const hiddenCnt = tcList.filter((t) => t.hidden).length;
   const prev = state.sebScores?.[q.id];
+  const snaps = Array.isArray(state.codeSubmissions?.[q.id]) ? state.codeSubmissions[q.id] : [];
+  const bottomTab = state.sebBottomTab === 'history' ? 'history' : 'judge';
 
   if (isRunning) {
     return `
@@ -50,19 +103,22 @@ function renderGradeBox(state, q) {
     `;
   }
 
-  if (!rep && !realRun) {
+  if (!rep && !realRun && bottomTab !== 'history') {
     return `
       <section class="grade-box grade-panel-bottom is-collapsed" id="gradeResultBox">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <strong style="font-size:13px;color:#f8fafc">🖥 Bảng Biên Dịch GCC Thật (${tcList.length} Test · ${hiddenCnt} Ẩn)</strong>
-            <span style="font-size:12px;color:#94a3b8">Bấm <b>▶ Biên dịch &amp; Chấm Test ẩn</b> hoặc <code>Ctrl+Enter</code> — kết quả &amp; lỗi sẽ hiện gọn tại đây (~1s).</span>
+            <span style="font-size:12px;color:#94a3b8">Bấm <b>▶ Biên dịch &amp; Chấm Test ẩn</b> hoặc <code>Ctrl+Enter</code> (~1s).</span>
           </div>
-          ${
-            prev
-              ? `<span style="font-size:12px;color:#4cc38a;font-weight:700">Điểm gần nhất: ${Number(prev.score10).toFixed(1)} / 10.0</span>`
-              : ''
-          }
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${
+              prev
+                ? `<span style="font-size:12px;color:#4cc38a;font-weight:700">Điểm gần nhất: ${Number(prev.score10).toFixed(1)} / 10.0</span>`
+                : ''
+            }
+            <button type="button" class="grade-toggle-btn" data-bottom-tab="history">🗂 Bài đã lưu (${snaps.length})</button>
+          </div>
         </div>
       </section>
     `;
@@ -75,12 +131,15 @@ function renderGradeBox(state, q) {
         ? `${realRun.passed === realRun.total ? '✅' : '⚠'} Đạt ${realRun.passed}/${realRun.total} Test Case (${realRun.engine}${realRun.elapsedMs ? ` · ${(realRun.elapsedMs / 1000).toFixed(2)}s` : ''})`
         : rep
           ? `Kiểm tra tĩnh: ${rep.score10.toFixed(1)} / 10.0 — ${rep.badge}`
-          : 'Kết quả biên dịch GCC';
+          : `🗂 Đang có ${snaps.length} bản bài làm đã lưu cho ${q.id}`;
     return `
       <section class="grade-box grade-panel-bottom is-collapsed" id="gradeResultBox">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <strong style="font-size:13px;color:#f8fafc">${esc(summaryText)}</strong>
-          <button type="button" class="grade-toggle-btn" id="btnToggleGradePanel">▴ Mở rộng kết quả</button>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button type="button" class="grade-toggle-btn" data-bottom-tab="history">🗂 Bài đã lưu (${snaps.length})</button>
+            <button type="button" class="grade-toggle-btn" id="btnToggleGradePanel">▴ Mở rộng</button>
+          </div>
         </div>
       </section>
     `;
@@ -190,12 +249,21 @@ function renderGradeBox(state, q) {
     `;
   }
 
+  const judgeBody =
+    realHtml || staticHtml
+      ? `${realHtml}${staticHtml}`
+      : `<div style="padding:10px 4px;font-size:12.6px;color:#94a3b8">Chưa có kết quả chạy GCC nào cho ${esc(q.id)}. Bấm <b>▶ Biên dịch &amp; Chấm Test ẩn</b> để chấm ngay (~1s).</div>`;
+
   return `
     <section class="grade-box grade-panel-bottom" id="gradeResultBox">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="bottom-tab-pill ${bottomTab === 'judge' ? 'active' : ''}" data-bottom-tab="judge">🖥 Kết quả GCC &amp; Test ẩn</button>
+          <button type="button" class="bottom-tab-pill ${bottomTab === 'history' ? 'active' : ''}" data-bottom-tab="history">🗂 Bài đã lưu (${snaps.length})</button>
+        </div>
         <button type="button" class="grade-toggle-btn" id="btnToggleGradePanel">▾ Thu gọn để mở rộng khung code</button>
       </div>
-      ${realHtml}${staticHtml}
+      ${bottomTab === 'history' ? renderSavedHistoryHtml(snaps, q) : judgeBody}
     </section>
   `;
 }
@@ -451,8 +519,9 @@ export function renderCodeView(state) {
               <div class="win-actions">
                 ${
                   state.sebMode === 'practice'
-                    ? `<button type="button" class="win-btn" id="btnClearEditor" title="Xóa trắng khung để gõ lại từ đầu">Xóa trắng</button>
+                    ? `<button type="button" class="win-btn" id="btnClearEditor" title="Xóa trắng khung gõ hiện tại (các bản đã lưu trong Lịch sử vẫn giữ nguyên)">Xóa trắng</button>
                        <button type="button" class="win-btn" id="btnCopyEditor">Chép</button>
+                       <button type="button" class="win-btn save" id="btnSaveCodeSnap" title="Lưu phiên bản bài làm này vào lịch sử trên máy (Ctrl + S)">💾 Lưu bài</button>
                        <button type="button" class="win-btn" id="btnStaticCheck" title="Kiểm tra nhanh API bắt buộc & hàm cấm (không cần mạng)">Kiểm tra tĩnh</button>
                        <button type="button" class="win-btn grade" id="btnRunRealGcc" ${state.sebRunningId === activeQ.id ? 'disabled' : ''}>${state.sebRunningId === activeQ.id ? '⏳ Đang chạy GCC…' : '▶ Biên dịch & Chấm Test ẩn'}</button>`
                     : `<button type="button" class="win-btn" id="btnCopyEditor">Sao chép Code</button>
@@ -487,7 +556,7 @@ export function renderCodeView(state) {
 
             <div class="code-win-foot">
               <span style="display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap">
-                ${state.sebMode === 'practice' ? `<span class="mono" id="codeCursorPos" style="color:#cbd5e1;font-weight:600">Dòng 1, Cột 1</span><span>·</span>` : ''}
+                ${state.sebMode === 'practice' ? `<span class="mono" id="codeCursorPos" style="color:#cbd5e1;font-weight:600">Dòng 1, Cột 1</span><span>·</span><span class="autosave-pill" id="codeAutoSaveBadge">${draftVal.trim() ? `✓ Tự lưu${state.lastSavedAt ? ` ${formatSavedClock(state.lastSavedAt)}` : ''}` : '✓ Sẵn sàng tự lưu'}</span><span>·</span>` : ''}
                 <span>Sandbox: <code style="color:#e5eaf2">${esc(spec.compileFlags || 'gcc -O2 -Wall -Wextra -std=c11 -pthread')}</code></span>
               </span>
               ${(() => {
@@ -517,7 +586,8 @@ export function renderCodeView(state) {
   `;
 }
 
-export function bindCodeView(state, persist, rerender) {
+export function bindCodeView(state, persist, rerender, actions = {}) {
+  const { saveCodeSnapshot, deleteCodeSnapshot } = actions;
   if (state.sebLeftView === 'explain') {
     renderLatexInElement(document.getElementById('paneLeftScroll'));
   }
@@ -609,9 +679,49 @@ export function bindCodeView(state, persist, rerender) {
     state.sebLastReports[activeQ.id] = rep;
     state.sebScores[activeQ.id] = { score10: rep.score10, tier: rep.tier };
     state.sebGradeCollapsed = false;
+    state.sebBottomTab = 'judge';
     persist();
     rerender();
     document.getElementById('studioDeck')?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  };
+
+  const handleManualSave = () => {
+    const ed = document.getElementById('codePracticeInput');
+    const code = ed ? ed.value : state.codeDrafts[activeQ.id] ?? '';
+    state.codeDrafts[activeQ.id] = code;
+    if (!code.trim()) {
+      const btn = document.getElementById('btnSaveCodeSnap');
+      if (btn) {
+        const old = btn.textContent;
+        btn.textContent = 'Chưa có code!';
+        setTimeout(() => { btn.textContent = old; }, 1100);
+      }
+      return;
+    }
+    if (saveCodeSnapshot) {
+      const prevRun = state.sebRealRuns?.[activeQ.id];
+      const statusLabel =
+        prevRun && !prevRun.compileError && !prevRun.networkError && prevRun.total > 0
+          ? `${prevRun.passed === prevRun.total ? '✅' : '💾'} Lưu tay · ${prevRun.passed}/${prevRun.total} PASS`
+          : '💾 Lưu thủ công';
+      saveCodeSnapshot(activeQ.id, code, {
+        source: 'manual',
+        statusLabel,
+        passed: prevRun?.passed ?? null,
+        total: prevRun?.total ?? null,
+        score10: state.sebScores?.[activeQ.id]?.score10 ?? null,
+      });
+    } else {
+      persist();
+    }
+    state.sebBottomTab = 'history';
+    state.sebGradeCollapsed = false;
+    rerender();
+    const btn = document.getElementById('btnSaveCodeSnap');
+    if (btn) {
+      btn.textContent = '✓ Đã lưu bài!';
+      setTimeout(() => { btn.textContent = '💾 Lưu bài'; }, 1400);
+    }
   };
 
   const runRealCompiler = async () => {
@@ -653,8 +763,26 @@ export function bindCodeView(state, persist, rerender) {
         const tier = ratio === 1 && staticPenalty === 1 ? 'mastered' : ratio >= 0.7 ? 'good' : 'fail';
         state.sebScores[activeQ.id] = { score10: finalScore, tier };
         if (tier === 'mastered') state.solvedCodeIds.add(activeQ.id);
+        if (saveCodeSnapshot) {
+          saveCodeSnapshot(activeQ.id, code, {
+            source: 'gcc',
+            statusLabel: ratio === 1 ? `✅ ${realRes.passed}/${realRes.total} PASS` : `⚠ ${realRes.passed}/${realRes.total} PASS`,
+            passed: realRes.passed,
+            total: realRes.total,
+            score10: finalScore,
+          });
+        }
       } else {
         state.sebScores[activeQ.id] = { score10: 0, tier: 'fail' };
+        if (saveCodeSnapshot && realRes.compileError) {
+          saveCodeSnapshot(activeQ.id, code, {
+            source: 'gcc',
+            statusLabel: '🔴 Lỗi biên dịch GCC',
+            passed: 0,
+            total: tcList.length,
+            score10: 0,
+          });
+        }
       }
     } catch (err) {
       state.sebRealRuns[activeQ.id] = { networkError: err?.message || 'Timeout' };
@@ -662,12 +790,14 @@ export function bindCodeView(state, persist, rerender) {
       state.sebRunningId = null;
       state.sebRunStatus = '';
       state.sebGradeCollapsed = false;
+      state.sebBottomTab = 'judge';
       persist();
       rerender();
       document.getElementById('studioDeck')?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   };
 
+  document.getElementById('btnSaveCodeSnap')?.addEventListener('click', handleManualSave);
   document.getElementById('btnStaticCheck')?.addEventListener('click', runStaticOnly);
   document.getElementById('btnRunRealGcc')?.addEventListener('click', runRealCompiler);
   document.getElementById('btnToggleGradePanel')?.addEventListener('click', () => {
@@ -676,8 +806,45 @@ export function bindCodeView(state, persist, rerender) {
   });
   document.getElementById('btnJumpGradeBox')?.addEventListener('click', () => {
     state.sebGradeCollapsed = false;
+    state.sebBottomTab = 'judge';
     rerender();
     document.getElementById('studioDeck')?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  });
+
+  document.querySelectorAll('[data-bottom-tab]').forEach((b) => {
+    b.addEventListener('click', () => {
+      state.sebBottomTab = b.dataset.bottomTab === 'history' ? 'history' : 'judge';
+      state.sebGradeCollapsed = false;
+      rerender();
+    });
+  });
+
+  document.querySelectorAll('[data-load-snap]').forEach((b) => {
+    b.addEventListener('click', () => {
+      const snaps = state.codeSubmissions?.[activeQ.id] || [];
+      const found = snaps.find((x) => x.id === b.dataset.loadSnap);
+      if (found) {
+        state.codeDrafts[activeQ.id] = found.code;
+        state.sebMode = 'practice';
+        persist();
+        rerender();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-dl-snap]').forEach((b) => {
+    b.addEventListener('click', () => {
+      const snaps = state.codeSubmissions?.[activeQ.id] || [];
+      const found = snaps.find((x) => x.id === b.dataset.dlSnap);
+      if (found) downloadCFile(`${activeQ.id.toLowerCase()}.c`, found.code);
+    });
+  });
+
+  document.querySelectorAll('[data-del-snap]').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (deleteCodeSnapshot) deleteCodeSnapshot(activeQ.id, b.dataset.delSnap);
+      rerender();
+    });
   });
 
   document.getElementById('btnClearEditor')?.addEventListener('click', () => {
@@ -719,8 +886,11 @@ export function bindCodeView(state, persist, rerender) {
       (val) => {
         state.codeDrafts[activeQ.id] = val;
         persist();
+        const badge = document.getElementById('codeAutoSaveBadge');
+        if (badge) badge.textContent = val.trim() ? `✓ Tự lưu ${formatSavedClock(state.lastSavedAt)}` : '✓ Sẵn sàng tự lưu';
       },
-      runRealCompiler
+      runRealCompiler,
+      handleManualSave
     );
   }
 }
