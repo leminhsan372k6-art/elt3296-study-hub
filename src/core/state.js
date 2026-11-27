@@ -53,11 +53,15 @@ function hydrateStateFromData(state, saved, defaultTopicId) {
   if (saved.bookMode) state.bookMode = saved.bookMode;
   if (saved.codeSide === 'left' || saved.codeSide === 'right') state.codeSide = saved.codeSide;
   if (Array.isArray(saved.bookmarked)) state.bookmarked = new Set(saved.bookmarked);
+  if (Array.isArray(saved.readTopicIds)) state.readTopicIds = new Set(saved.readTopicIds);
 
   if (saved.sebMode === 'solution' || saved.sebMode === 'practice') state.sebMode = saved.sebMode;
   if (saved.sebLeftView === 'explain' || saved.sebLeftView === 'problem') state.sebLeftView = saved.sebLeftView;
-  if (saved.sebSelectedId) state.sebSelectedId = saved.sebSelectedId;
-  if (saved.sebPartFilter) state.sebPartFilter = saved.sebPartFilter;
+  if (saved.sebSelectedId) {
+    const m = String(saved.sebSelectedId).match(/^CR-(\d+)$/);
+    state.sebSelectedId = m && Number(m[1]) <= 40 ? saved.sebSelectedId : 'CR-01';
+  }
+  if (saved.sebPartFilter && saved.sebPartFilter !== 'Tổng hợp') state.sebPartFilter = saved.sebPartFilter;
   if (saved.sebDiffFilter) state.sebDiffFilter = saved.sebDiffFilter;
   if (saved.codeDrafts && typeof saved.codeDrafts === 'object') state.codeDrafts = { ...saved.codeDrafts };
   if (saved.codeSubmissions && typeof saved.codeSubmissions === 'object') state.codeSubmissions = { ...saved.codeSubmissions };
@@ -69,6 +73,7 @@ function hydrateStateFromData(state, saved, defaultTopicId) {
   if (Array.isArray(saved.mcqMasteredIds)) state.mcqMasteredIds = new Set(saved.mcqMasteredIds);
   if (saved.mcqPracticePicks && typeof saved.mcqPracticePicks === 'object') state.mcqPracticePicks = { ...saved.mcqPracticePicks };
   if (Array.isArray(saved.mcqExamHistory)) state.mcqExamHistory = saved.mcqExamHistory.slice(0, 30);
+  if (Array.isArray(saved.mockExamHistory)) state.mockExamHistory = saved.mockExamHistory.slice(0, 20);
 
   if (saved.extrasSub) state.extrasSub = saved.extrasSub;
   if (saved.conceptId) state.conceptId = saved.conceptId;
@@ -90,6 +95,7 @@ export function createAppState(defaultTopicId = '1-1') {
     codeSide: 'right',
     companionStep: 0,
     bookmarked: new Set(),
+    readTopicIds: new Set(),
 
     // Code 50 state
     sebMode: 'practice', // 'practice' | 'solution'
@@ -113,6 +119,7 @@ export function createAppState(defaultTopicId = '1-1') {
     mcqMasteredIds: new Set(),
     mcqPracticePicks: {}, // { [mcqId]: optionIdx }
     mcqExamHistory: [], // [{ id, submittedAt, correct, total, score10, score4, elapsedSec, items }]
+    mockExamHistory: [], // Full 90-min Mock Exams (20 MCQ + 3 Code)
 
     // Extras tab ('cheatsheet' | 'labs' | 'concepts')
     extrasSub: 'cheatsheet',
@@ -143,6 +150,7 @@ export function createAppState(defaultTopicId = '1-1') {
       bookMode: state.bookMode,
       codeSide: state.codeSide,
       bookmarked: [...state.bookmarked],
+      readTopicIds: [...state.readTopicIds],
       sebMode: state.sebMode,
       sebLeftView: state.sebLeftView,
       sebSelectedId: state.sebSelectedId,
@@ -157,6 +165,7 @@ export function createAppState(defaultTopicId = '1-1') {
       mcqMasteredIds: [...state.mcqMasteredIds],
       mcqPracticePicks: state.mcqPracticePicks,
       mcqExamHistory: state.mcqExamHistory.slice(0, 30),
+      mockExamHistory: state.mockExamHistory.slice(0, 20),
       extrasSub: state.extrasSub,
       conceptId: state.conceptId,
     };

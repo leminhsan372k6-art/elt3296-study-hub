@@ -44,8 +44,7 @@ export const PART1_FILE_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Vòng lặp đọc khối byte thô qua File Descriptor. Vì tệp nhị phân có thể chứa byte 0x00 ở giữa, ta duyệt theo đúng số byte n trả về của read() chứ tuyệt đối không dùng hàm chuỗi strlen().",
     "relatedQuestions": [
       "CR-02",
-      "CR-04",
-      "CR-48"
+      "CR-04"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <fcntl.h>\n#include <unistd.h>\n\nint main() {\n    char path[256];\n    scanf(\"%s\", path);\n\n    int fd = open(path, O_RDONLY);\n    if (fd < 0) {\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    unsigned char buf[4096];\n    long long total = 0, newlines = 0, digits = 0;\n    ssize_t n;\n\n    while ((n = read(fd, buf, sizeof(buf))) > 0) {\n        total += n;\n        for (ssize_t i = 0; i < n; i++) {\n            if (buf[i] == '\\n') newlines++;\n            else if (buf[i] >= '0' && buf[i] <= '9') digits++;\n        }\n    }\n\n    close(fd);\n    printf(\"%lld %lld %lld\\n\", total, newlines, digits);\n    return 0;\n}\n",
@@ -233,8 +232,7 @@ export const PART1_FILE_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Mở tệp nguồn kiểm tra hợp lệ TRƯỚC khi gọi open(..., O_CREAT) trên tệp đích (để không tạo nhầm tệp đích nếu nguồn lỗi), dùng vòng lặp bù short write và lấy kích thước cuối bằng fstat().",
     "relatedQuestions": [
       "CR-01",
-      "CR-04",
-      "CR-44"
+      "CR-04"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <fcntl.h>\n#include <unistd.h>\n#include <sys/stat.h>\n\nint main() {\n    char src[256], dst[256];\n    scanf(\"%s %s\", src, dst);\n\n    int fd_in = open(src, O_RDONLY);\n    if (fd_in < 0) {\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    int fd_out = open(dst, O_WRONLY | O_CREAT | O_APPEND, 0644);\n    if (fd_out < 0) {\n        close(fd_in);\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    unsigned char buf[4096];\n    ssize_t n;\n    while ((n = read(fd_in, buf, sizeof(buf))) > 0) {\n        ssize_t written = 0;\n        while (written < n) {\n            ssize_t w = write(fd_out, buf + written, n - written);\n            if (w <= 0) break;\n            written += w;\n        }\n    }\n\n    struct stat st;\n    fstat(fd_out, &st);\n\n    close(fd_in);\n    close(fd_out);\n    printf(\"%lld\\n\", (long long)st.st_size);\n    return 0;\n}\n",
@@ -422,8 +420,7 @@ export const PART1_FILE_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Trường st_mode chứa cả bit loại tệp (S_IFMT) lẫn 12 bit quyền. Để trích đúng 9 bit quyền rwxrwxrwx dưới dạng 3 chữ số bát phân (kể cả trường hợp 007 -> \"007\"), bắt buộc mặt nạ (st.st_mode & 0777) kèm định dạng \"%03o\".",
     "relatedQuestions": [
       "CR-06",
-      "CR-07",
-      "CR-49"
+      "CR-07"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <sys/stat.h>\n#include <unistd.h>\n\nint main() {\n    char path[300];\n    scanf(\"%s\", path);\n\n    struct stat st;\n    if (stat(path, &st) == -1) {\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    if (S_ISREG(st.st_mode)) {\n        printf(\"REG \");\n    } else if (S_ISDIR(st.st_mode)) {\n        printf(\"DIR \");\n    } else {\n        printf(\"OTHER \");\n    }\n\n    printf(\"%lld %03o\\n\", (long long)st.st_size, st.st_mode & 0777);\n    return 0;\n}\n",
@@ -590,8 +587,7 @@ export const PART1_FILE_QUESTIONS = [
     "relatedQuestions": [
       "CR-02",
       "CR-05",
-      "CR-08",
-      "CR-43"
+      "CR-08"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <fcntl.h>\n#include <unistd.h>\n\nint main() {\n    char src[256], dst[256];\n    long long offset, max_bytes;\n    scanf(\"%s %s %lld %lld\", src, dst, &offset, &max_bytes);\n\n    if (offset < 0) {\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    int fd_in = open(src, O_RDONLY);\n    if (fd_in < 0) {\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    int fd_out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0644);\n    if (fd_out < 0) {\n        close(fd_in);\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    lseek(fd_in, (off_t)offset, SEEK_SET);\n\n    unsigned char buf[4096];\n    long long copied = 0;\n    while (copied < max_bytes) {\n        long long remain = max_bytes - copied;\n        size_t chunk = (remain < (long long)sizeof(buf)) ? (size_t)remain : sizeof(buf);\n        ssize_t n = read(fd_in, buf, chunk);\n        if (n <= 0) break;\n\n        ssize_t written = 0;\n        while (written < n) {\n            ssize_t w = write(fd_out, buf + written, n - written);\n            if (w <= 0) break;\n            written += w;\n        }\n        copied += n;\n    }\n\n    close(fd_in);\n    close(fd_out);\n    printf(\"%lld\\n\", copied);\n    return 0;\n}\n",
@@ -772,8 +768,7 @@ export const PART1_FILE_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Đảo ngược tệp lớn trong bộ nhớ giới hạn O(buf_size) thay vì nạp cả tệp vào RAM. Nếu đọc từng 1 byte bằng lseek + read trên tệp 1 MB sẽ tốn 2 triệu lời gọi hệ thống; đọc lùi từng khối buf_size nhanh gấp hàng ngàn lần.",
     "relatedQuestions": [
       "CR-04",
-      "CR-08",
-      "CR-43"
+      "CR-08"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <fcntl.h>\n#include <unistd.h>\n\nint main() {\n    char src[256], dst[256];\n    int buf_size;\n    scanf(\"%s %s %d\", src, dst, &buf_size);\n\n    if (buf_size <= 0) {\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    int fd_in = open(src, O_RDONLY);\n    if (fd_in < 0) {\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    int fd_out = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0644);\n    if (fd_out < 0) {\n        close(fd_in);\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    off_t file_size = lseek(fd_in, 0, SEEK_END);\n    unsigned char *buf = (unsigned char *)malloc(buf_size);\n\n    off_t pos = file_size;\n    long long total = 0;\n\n    while (pos > 0) {\n        int chunk = (pos >= buf_size) ? buf_size : (int)pos;\n        pos -= chunk;\n        lseek(fd_in, pos, SEEK_SET);\n\n        int got = 0;\n        while (got < chunk) {\n            ssize_t n = read(fd_in, buf + got, chunk - got);\n            if (n <= 0) break;\n            got += n;\n        }\n\n        for (int i = 0; i < got / 2; i++) {\n            unsigned char tmp = buf[i];\n            buf[i] = buf[got - 1 - i];\n            buf[got - 1 - i] = tmp;\n        }\n\n        int written = 0;\n        while (written < got) {\n            ssize_t w = write(fd_out, buf + written, got - written);\n            if (w <= 0) break;\n            written += w;\n        }\n        total += got;\n    }\n\n    free(buf);\n    close(fd_in);\n    close(fd_out);\n    printf(\"%lld\\n\", total);\n    return 0;\n}\n",
@@ -962,8 +957,7 @@ export const PART1_FILE_QUESTIONS = [
     ],
     "relatedKnowledgeNote": "Vùng kiến thức: Bẫy kinh điển nhất của readdir() là truyền thẳng de->d_name vào stat() thay vì ghép \"dir_path/d_name\" — khiến stat() tìm nhầm trong thư mục hiện hành và thất bại toàn bộ!",
     "relatedQuestions": [
-      "CR-03",
-      "CR-48"
+      "CR-03"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <string.h>\n#include <dirent.h>\n#include <sys/stat.h>\n\nint main() {\n    char dir_path[300], ext[64];\n    scanf(\"%s %s\", dir_path, ext);\n\n    DIR *dir = opendir(dir_path);\n    if (dir == NULL) {\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    int ext_len = strlen(ext);\n    long long count = 0, total_size = 0;\n    struct dirent *de;\n\n    while ((de = readdir(dir)) != NULL) {\n        if (strcmp(de->d_name, \".\") == 0 || strcmp(de->d_name, \"..\") == 0) {\n            continue;\n        }\n\n        char full_path[600];\n        snprintf(full_path, sizeof(full_path), \"%s/%s\", dir_path, de->d_name);\n\n        struct stat st;\n        if (stat(full_path, &st) == 0 && S_ISREG(st.st_mode)) {\n            int name_len = strlen(de->d_name);\n            if (name_len >= ext_len && strcmp(de->d_name + name_len - ext_len, ext) == 0) {\n                count++;\n                total_size += st.st_size;\n            }\n        }\n    }\n\n    closedir(dir);\n    printf(\"%lld %lld\\n\", count, total_size);\n    return 0;\n}\n",

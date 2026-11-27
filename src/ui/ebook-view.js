@@ -1,10 +1,26 @@
 import { esc, highlightCodeSnippet, scrollTopInstant } from '../core/dom.js';
 import { renderLatexInElement, formatRichInline } from '../core/latex.js';
+import { getTopicProgress, getAllChaptersProgress, snapshotCompletions, notifyNewCompletions } from '../core/progress.js?v=11';
 import { CHAPTERS, TOPICS, ORDERED_TOPIC_IDS, BOSSES } from '../../data/book/chapters-data.js';
 import { ALL_CODE_STEPS } from '../../data/book/code-steps-data.js';
-import { TOPIC_TO_SEB_QUESTIONS } from '../../data/code-50/index.js';
+import { TOPIC_TO_SEB_QUESTIONS } from '../../data/code-50/index.js?v=11';
 
-export function stepBookPage(state, delta) {
+let autoReadTimer = null;
+
+export function clearAutoReadTimer() {
+  if (autoReadTimer) {
+    clearTimeout(autoReadTimer);
+    autoReadTimer = null;
+  }
+}
+
+export function stepBookPage(state, delta, mcqBank = []) {
+  const beforeSnap = snapshotCompletions(state, mcqBank);
+  if (state.bookSubKind === 'topic' && state.topicId) {
+    state.readTopicIds.add(state.topicId);
+  }
+
+  let moved = false;
   if (state.bookSubKind === 'synthesis') {
     const boss = BOSSES[state.bossId] || Object.values(BOSSES)[0];
     const chIdx = CHAPTERS.findIndex((c) => String(c.id) === String(boss?.chapterId));
@@ -14,7 +30,7 @@ export function stepBookPage(state, delta) {
         state.topicId = chTopics[chTopics.length - 1].id;
         state.bookSubKind = 'topic';
         state.companionStep = 0;
-        return true;
+        moved = true;
       }
     } else if (delta > 0 && chIdx >= 0 && chIdx + 1 < CHAPTERS.length) {
       const nextTopics = CHAPTERS[chIdx + 1].topics || [];
@@ -22,25 +38,26 @@ export function stepBookPage(state, delta) {
         state.topicId = nextTopics[0].id;
         state.bookSubKind = 'topic';
         state.companionStep = 0;
-        return true;
+        moved = true;
       }
     }
-    return false;
+  } else {
+    const cur = TOPICS[state.topicId] || TOPICS[ORDERED_TOPIC_IDS[0]];
+    if (cur) {
+      if (delta > 0 && cur.nextTopicId) {
+        state.topicId = cur.nextTopicId;
+        state.companionStep = 0;
+        moved = true;
+      } else if (delta < 0 && cur.prevTopicId) {
+        state.topicId = cur.prevTopicId;
+        state.companionStep = 0;
+        moved = true;
+      }
+    }
   }
 
-  const cur = TOPICS[state.topicId] || TOPICS[ORDERED_TOPIC_IDS[0]];
-  if (!cur) return false;
-  if (delta > 0 && cur.nextTopicId) {
-    state.topicId = cur.nextTopicId;
-    state.companionStep = 0;
-    return true;
-  }
-  if (delta < 0 && cur.prevTopicId) {
-    state.topicId = cur.prevTopicId;
-    state.companionStep = 0;
-    return true;
-  }
-  return false;
+  if (moved) notifyNewCompletions(state, mcqBank, beforeSnap);
+  return moved;
 }
 
 function renderCodeCompanion(spec, stepIdx) {
@@ -84,11 +101,13 @@ function renderCodeCompanion(spec, stepIdx) {
   `;
 }
 
-export function renderEbookView(state) {
+export function renderEbookView(state, mcqBank = []) {
   const isSynth = state.bookSubKind === 'synthesis';
   const topic = TOPICS[state.topicId] || TOPICS[ORDERED_TOPIC_IDS[0]];
   const boss = BOSSES[state.bossId] || Object.values(BOSSES)[0];
   const spec = ALL_CODE_STEPS[isSynth ? boss?.id : topic?.id];
+  const chStats = getAllChaptersProgress(state, mcqBank);
+  const completedTopicCount = ORDERED_TOPIC_IDS.filter((id) => getTopicProgress(state, id, mcqBank).completed).length;
 
   const spreadClass =
     state.bookMode === 'book-only'
@@ -109,7 +128,7 @@ export function renderEbookView(state) {
         }
       </div>
       <div style="font-family:var(--font-ui);font-size:12.4px;color:var(--mut)">
-        Phím <span class="kbd">←</span> <span class="kbd">→</span> lật trang nhanh · Đã nắm vững <b>${state.bookmarked.size}/${ORDERED_TOPIC_IDS.length}</b> trang
+        Phím <span class="kbd">←</span> <span class="kbd">→</span> lật trang · Hoàn thành <b>${completedTopicCount}/${ORDERED_TOPIC_IDS.length}</b> mục · <b>${chStats.completedChapters}/7</b> chương
       </div>
     </div>
   `;
@@ -160,7 +179,7 @@ export function renderEbookView(state) {
           <footer class="sheet-footer">
             <div>${prevT ? `<button type="button" class="btn sm" data-pick-topic="${esc(prevT.id)}">‹ Mục ${esc(prevT.code)}</button>` : ''}</div>
             <span>Tổng hợp Chương ${esc(boss.chapterId)}</span>
-            <div>${nextT ? `<button type="button" class="btn sm primary" data-pick-topic="${esc(nextT.id)}">Sang Chương ${esc(nextT.chapterId)} ›</button>` : `<button type="button" class="btn sm primary" data-switch-tab="code">Luyện 50 câu Tự luận ›</button>`}</div>
+            <div>${nextT ? `<button type="button" class="btn sm primary" data-pick-topic="${esc(nextT.id)}">Sang Chương ${esc(nextT.chapterId)} ›</button>` : `<button type="button" class="btn sm primary" data-switch-tab="code">Luyện 40 câu Tự luận ›</button>`}</div>
           </footer>
         </article>
         ${state.bookMode === 'split' ? renderCodeCompanion(spec, state.companionStep) : ''}
@@ -172,7 +191,7 @@ export function renderEbookView(state) {
   const totalPages = ORDERED_TOPIC_IDS.length;
   const prevT = topic.prevTopicId ? TOPICS[topic.prevTopicId] : null;
   const nextT = topic.nextTopicId ? TOPICS[topic.nextTopicId] : null;
-  const isMarked = state.bookmarked.has(topic.id);
+  const tp = getTopicProgress(state, topic.id, mcqBank);
   const sebLinked = TOPIC_TO_SEB_QUESTIONS[topic.id] || [];
 
   return `
@@ -183,13 +202,36 @@ export function renderEbookView(state) {
           <span>Chương ${esc(topic.chapterId)} · ${esc(topic.chapterTitle)}</span>
           <div style="display:flex;align-items:center;gap:8px">
             <span>Trang ${pageNum} / ${totalPages}</span>
-            <button type="button" class="btn sm ${isMarked ? 'active' : ''}" id="btnBookmarkTopic">
-              ${isMarked ? '✓ Đã nắm vững' : 'Đánh dấu nắm vững'}
+            <button type="button" class="btn sm ${tp.read ? 'active' : ''}" id="btnMarkReadTopic">
+              ${tp.read ? '✓ Đã đọc lý thuyết' : 'Đánh dấu đã đọc'}
             </button>
           </div>
         </div>
 
-        <h1 class="sheet-title">${esc(topic.code)}. ${esc(topic.title)}</h1>
+        <h1 class="sheet-title">${tp.completed ? '<span class="tick-badge">✓</span> ' : ''}${esc(topic.code)}. ${esc(topic.title)}</h1>
+
+        <!-- Automatic Topic Mastery Progress Bar -->
+        <div class="topic-progress-bar ${tp.completed ? 'is-done' : ''}" id="topicProgressBar">
+          <div class="tp-pills">
+            <span class="tp-pill ${tp.read ? 'is-ok' : ''}">
+              📖 Lý thuyết: ${tp.read ? '✓ Đã đọc' : 'Đang đọc…'}
+            </span>
+            <span class="tp-pill ${tp.mcqOk ? 'is-ok' : ''}">
+              📝 Trắc nghiệm mục này: <b>${tp.mcqDone}/${tp.mcqTotal}</b>${tp.mcqTotal > 0 && tp.mcqOk ? ' ✓' : ''}
+            </span>
+            <span class="tp-pill ${tp.codeOk ? 'is-ok' : ''}">
+              💻 Code mục này: <b>${tp.codeDone}/${tp.codeTotal}</b>${tp.codeTotal > 0 && tp.codeOk ? ' ✓' : ''}
+            </span>
+            ${tp.completed ? `<span style="color:var(--ink-ok);font-weight:750">✓ Hoàn thành mục ${esc(topic.code)}!</span>` : ''}
+          </div>
+          ${
+            tp.mcqTotal > 0
+              ? `<button type="button" class="btn sm accent" data-jump-mcq-topic="${esc(topic.id)}" data-jump-mcq-ch-num="${esc(topic.chapterId)}">
+                  📝 Trắc nghiệm Mục ${esc(topic.code)} (${tp.mcqDone}/${tp.mcqTotal}) →
+                </button>`
+              : `<button type="button" class="btn sm" data-jump-mcq-ch="${esc(topic.chapterId)}">📝 Trắc nghiệm Chương ${esc(topic.chapterId)} →</button>`
+          }
+        </div>
 
         ${
           spec?.steps?.[0]?.sub
@@ -222,8 +264,15 @@ export function renderEbookView(state) {
             Liên kết trực tiếp với Đề thi Cuối kỳ
           </div>
           <div class="chip-wrap">
+            ${
+              tp.mcqTotal > 0
+                ? `<button type="button" class="link-chip" data-jump-mcq-topic="${esc(topic.id)}" data-jump-mcq-ch-num="${esc(topic.chapterId)}">
+                    📝 Trắc nghiệm Mục ${esc(topic.code)} (${tp.mcqDone}/${tp.mcqTotal}) →
+                  </button>`
+                : ''
+            }
             <button type="button" class="link-chip" data-jump-mcq-ch="${esc(topic.chapterId)}">
-              📝 Luyện Trắc nghiệm Chương ${esc(topic.chapterId)} →
+              📝 Toàn bộ Trắc nghiệm Chương ${esc(topic.chapterId)} →
             </button>
             ${sebLinked
               .map(
@@ -238,7 +287,7 @@ export function renderEbookView(state) {
         <footer class="sheet-footer">
           <div>${prevT ? `<button type="button" class="btn sm" data-pick-topic="${esc(prevT.id)}">‹ ${esc(prevT.code)}. ${esc(prevT.title.slice(0, 28))}</button>` : '<span>Đầu sách</span>'}</div>
           <span>Mục ${esc(topic.code)} · ${pageNum}/${totalPages}</span>
-          <div>${nextT ? `<button type="button" class="btn sm primary" data-pick-topic="${esc(nextT.id)}">${esc(nextT.code)}. ${esc(nextT.title.slice(0, 28))} ›</button>` : `<button type="button" class="btn sm primary" data-switch-tab="code">Sang 50 Câu Tự luận ›</button>`}</div>
+          <div>${nextT ? `<button type="button" class="btn sm primary" data-pick-topic="${esc(nextT.id)}">${esc(nextT.code)}. ${esc(nextT.title.slice(0, 28))} ›</button>` : `<button type="button" class="btn sm primary" data-switch-tab="code">Sang 40 Câu Tự luận ›</button>`}</div>
         </footer>
       </article>
 
@@ -247,9 +296,31 @@ export function renderEbookView(state) {
   `;
 }
 
-export function bindEbookView(state, persist, rerender, onJumpMcqChapter) {
+export function bindEbookView(state, mcqBank, persist, rerender, onJumpMcqChapter, onJumpMcqTopic) {
+  clearAutoReadTimer();
   const sheet = document.getElementById('bookSheetEl');
   if (sheet) renderLatexInElement(sheet);
+
+  const markCurrentRead = (shouldRerender = false) => {
+    if (state.bookSubKind !== 'topic' || !state.topicId) return;
+    if (state.readTopicIds.has(state.topicId)) return;
+    const beforeSnap = snapshotCompletions(state, mcqBank);
+    state.readTopicIds.add(state.topicId);
+    persist();
+    if (shouldRerender) rerender();
+    notifyNewCompletions(state, mcqBank, beforeSnap);
+  };
+
+  // Auto-mark theory read after ~3 seconds of viewing this topic
+  if (state.bookSubKind === 'topic' && state.topicId && !state.readTopicIds.has(state.topicId)) {
+    const watchingId = state.topicId;
+    autoReadTimer = setTimeout(() => {
+      autoReadTimer = null;
+      if (state.activeTab === 'book' && state.bookSubKind === 'topic' && state.topicId === watchingId) {
+        markCurrentRead(true);
+      }
+    }, 3000);
+  }
 
   document.querySelectorAll('[data-bookmode]').forEach((b) => {
     b.addEventListener('click', () => {
@@ -265,11 +336,18 @@ export function bindEbookView(state, persist, rerender, onJumpMcqChapter) {
     rerender();
   });
 
-  document.getElementById('btnBookmarkTopic')?.addEventListener('click', () => {
-    if (state.bookmarked.has(state.topicId)) state.bookmarked.delete(state.topicId);
-    else state.bookmarked.add(state.topicId);
+  document.getElementById('btnMarkReadTopic')?.addEventListener('click', () => {
+    const beforeSnap = snapshotCompletions(state, mcqBank);
+    if (state.readTopicIds.has(state.topicId)) {
+      state.readTopicIds.delete(state.topicId);
+      state.bookmarked.delete(state.topicId);
+    } else {
+      state.readTopicIds.add(state.topicId);
+      state.bookmarked.add(state.topicId);
+    }
     persist();
     rerender();
+    notifyNewCompletions(state, mcqBank, beforeSnap);
   });
 
   document.querySelectorAll('[data-cstep]').forEach((b) => {
@@ -281,6 +359,8 @@ export function bindEbookView(state, persist, rerender, onJumpMcqChapter) {
 
   document.querySelectorAll('[data-jump-code]').forEach((b) => {
     b.addEventListener('click', () => {
+      clearAutoReadTimer();
+      markCurrentRead(false);
       state.sebSelectedId = b.dataset.jumpCode;
       state.sebPartFilter = 'all';
       state.sebDiffFilter = 'all';
@@ -291,8 +371,18 @@ export function bindEbookView(state, persist, rerender, onJumpMcqChapter) {
     });
   });
 
+  document.querySelectorAll('[data-jump-mcq-topic]').forEach((b) => {
+    b.addEventListener('click', () => {
+      clearAutoReadTimer();
+      markCurrentRead(false);
+      if (onJumpMcqTopic) onJumpMcqTopic(b.dataset.jumpMcqTopic, Number(b.dataset.jumpMcqChNum));
+    });
+  });
+
   document.querySelectorAll('[data-jump-mcq-ch]').forEach((b) => {
     b.addEventListener('click', () => {
+      clearAutoReadTimer();
+      markCurrentRead(false);
       onJumpMcqChapter(Number(b.dataset.jumpMcqCh));
     });
   });

@@ -214,48 +214,4 @@ export const REAL_TEST_CASES = {
     { name: 'Test mẫu', hidden: false, stdin: '5\n1 4 5\n3 5 1\n0 6 8\n4 7 4\n3 8 6\n', expected: '9' },
     { name: 'Test ẩn 1: Input chưa sắp xếp & mốc lớn 10^9', hidden: true, stdin: '3\n500000000 900000000 1000000\n0 500000000 1000000\n100000000 800000000 1500000\n', expected: '2000000', hint: 'f_1 == s_2 được phép ghép; tránh trừ số lớn trong hàm so sánh qsort.' },
   ],
-  'CR-41': [
-    { name: 'Test mẫu (n = 50)', hidden: false, stdin: '50\n', expected: '12586269025' },
-    { name: 'Test ẩn 1: n = 0 và n = 1', hidden: true, stdin: '0\n', expected: '0', hint: 'F(0) = 0.' },
-    { name: 'Test ẩn 2: n = 92 (cận trên long long)', hidden: true, stdin: '92\n', expected: '7540113804746346429', hint: 'Dùng kiểu long long và mở khóa mutex trước khi đệ quy.' },
-  ],
-  'CR-42': [
-    { name: 'Test mẫu', hidden: false, setup: { files: [{ path: 'p42.txt', text: '10 -4 25\n0 -9 5\n' }] }, stdin: 'p42.txt\n', expected: '40' },
-    { name: 'Test ẩn 1: Không có xuống dòng cuối tệp & toàn số âm', hidden: true, setup: { files: [{ path: 'p42b.txt', text: '-5 0 -10 7' }] }, stdin: 'p42b.txt\n', expected: '7', hint: 'Nhớ xử lý số cuối cùng khi tệp kết thúc ngay sau chữ số.' },
-    { name: 'Test ẩn 2: Tệp không tồn tại (-1)', hidden: true, stdin: 'missing42.txt\n', expected: '-1', hint: 'Con gửi -1 qua pipe cho cha.' },
-  ],
-  'CR-43': [
-    { name: 'Test mẫu (byte 0x41)', hidden: false, setup: { files: [{ path: 'f43.bin', bytes: [0x41, 0x00, 0x41, 0x42, 0x00, 0x41, 0x10, 0x41, 0x00, 0x41] }] }, stdin: 'f43.bin 65 4\n', expected: '5' },
-    { name: 'Test ẩn 1: Đếm byte 0x00 (target = 0)', hidden: true, setup: { files: [{ path: 'f43b.bin', bytes: [0x00, 0xff, 0x00, 0x01, 0x00] }] }, stdin: 'f43b.bin 0 4\n', expected: '3', hint: 'Mỗi luồng mở fd riêng và so sánh unsigned char.' },
-    { name: 'Test ẩn 2: Tệp rỗng 0 byte & tệp thiếu', hidden: true, setup: { files: [{ path: 'f43e.bin', text: '' }] }, stdin: 'f43e.bin 65 4\n', expected: '0', hint: 'size == 0 in 0 ngay.' },
-  ],
-  'CR-44': [
-    { name: 'Test mẫu', hidden: false, setup: { files: [{ path: 'ks44_in.txt', text: '4 7\n1 1\n3 4\n4 5\n5 7\n' }] }, stdin: 'ks44_in.txt ks44_out.txt\n', expected: '9', checkFile: { path: 'ks44_out.txt', text: '9\n' } },
-    { name: 'Test ẩn 1: Tệp nguồn lỗi (-1)', hidden: true, stdin: 'missing44.txt out44.txt\n', expected: '-1', hint: 'open(src) < 0 → in -1.' },
-  ],
-  'CR-45': [
-    { name: 'Test mẫu', hidden: false, stdin: '7 3\n15 -42 8 99 0 -3 74\n', expected: '-42 99' },
-    { name: 'Test ẩn 1: k > n & 1 phần tử âm', hidden: true, stdin: '1 8\n-1000000000\n', expected: '-1000000000 -1000000000', hint: 'c = min(n, k) và khởi tạo mn = mx = a[L].' },
-  ],
-  'CR-46': [
-    { name: 'Test mẫu', hidden: false, stdin: '4 10 4\n6 30\n3 14\n4 16\n2 9\n', expected: '46' },
-    { name: 'Test ẩn 1: T > W + 1', hidden: true, stdin: '2 2 8\n1 10\n2 25\n', expected: '25', hint: 'Chia W + 1 trạng thái [0..W] an toàn khi T > W + 1.' },
-  ],
-  'CR-47': [
-    { name: 'Test mẫu', hidden: false, stdin: 'AGGTAB\nGXTXAYB\n', expected: '4' },
-    { name: 'Test ẩn 1: Ký tự cuối khác nhau (tách 2 luồng)', hidden: true, stdin: 'ABCDGH\nAEDFHR\n', expected: '3', hint: 'Không giữ mutex khi gọi đệ quy hoặc pthread_join.' },
-    { name: 'Test ẩn 2: Không có ký tự chung', hidden: true, stdin: 'AAA\nBBB\n', expected: '0', hint: 'Trả về 0.' },
-  ],
-  'CR-48': [
-    { name: 'Test mẫu (có tệp thiếu & byte 0xFF)', hidden: false, setup: { files: [{ path: 'f1.bin', text: 'AB' }, { path: 'f3.bin', bytes: [0x00, 0xff, 0x01] }] }, stdin: '3 2\nf1.bin\nmissing48.bin\nf3.bin\n', expected: '131 -1 256' },
-    { name: 'Test ẩn 1: Tệp rỗng 0 byte & T > k', hidden: true, setup: { files: [{ path: 'e48.bin', text: '' }] }, stdin: '1 8\ne48.bin\n', expected: '0', hint: 'Tệp rỗng cho tổng 0; unsigned char để 0xFF = 255.' },
-  ],
-  'CR-49': [
-    { name: 'Test mẫu (lọc byte không in được)', hidden: false, setup: { files: [{ path: 'raw49.bin', bytes: [72, 105, 33, 0, 1, 127, 10, 79, 75] }] }, stdin: 'raw49.bin clean49.txt\n', expected: '1 6', checkFile: { path: 'clean49.txt', text: 'Hi!\nOK' } },
-    { name: 'Test ẩn 1: Nguồn không tồn tại (-1 -1)', hidden: true, stdin: 'missing49.bin out49.txt\n', expected: '-1 -1', hint: 'Con thoát _exit(1), cha in "-1 -1".' },
-  ],
-  'CR-50': [
-    { name: 'Test mẫu (2 bộ dữ liệu)', hidden: false, setup: { files: [{ path: 'batch50.txt', text: '2\n4\n1 5 8 9\n5\n2 5 7 8 10\n' }] }, stdin: 'batch50.txt out50.txt 2\n', expected: '22', checkFile: { path: 'out50.txt', text: '10\n12\n' } },
-    { name: 'Test ẩn 1: Nguồn lỗi (-1)', hidden: true, stdin: 'missing50.txt out50b.txt 2\n', expected: '-1', hint: 'open(src) < 0 → in -1.' },
-  ],
 };

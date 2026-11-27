@@ -194,8 +194,7 @@ export const PART2_PROCESS_QUESTIONS = [
     "relatedQuestions": [
       "CR-11",
       "CR-12",
-      "CR-15",
-      "CR-42"
+      "CR-15"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <sys/wait.h>\n\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    int *a = (int *)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) scanf(\"%d\", &a[i]);\n\n    int p[2];\n    pipe(p);\n\n    pid_t pid = fork();\n    if (pid == 0) {\n        close(p[1]);\n        long long sum = 0;\n        int x;\n        for (int i = 0; i < n; i++) {\n            read(p[0], &x, sizeof(x));\n            sum += x;\n        }\n        close(p[0]);\n        printf(\"%lld\\n\", sum);\n        fflush(stdout);\n        free(a);\n        _exit(0);\n    } else {\n        close(p[0]);\n        for (int i = 0; i < n; i++) {\n            write(p[1], &a[i], sizeof(a[i]));\n        }\n        close(p[1]);\n        waitpid(pid, NULL, 0);\n        free(a);\n    }\n    return 0;\n}\n",
@@ -358,8 +357,7 @@ export const PART2_PROCESS_QUESTIONS = [
     "relatedQuestions": [
       "CR-09",
       "CR-15",
-      "CR-16",
-      "CR-45"
+      "CR-16"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <unistd.h>\n#include <sys/wait.h>\n\nint main() {\n    int k;\n    scanf(\"%d\", &k);\n\n    int p[2];\n    pipe(p);\n\n    pid_t pids[20];\n    for (int i = 1; i <= k; i++) {\n        pid_t pid = fork();\n        if (pid == 0) {\n            close(p[0]);\n            long long cube = (long long)i * i * i;\n            write(p[1], &cube, sizeof(cube));\n            close(p[1]);\n            _exit(0);\n        }\n        pids[i] = pid;\n    }\n\n    close(p[1]);\n    long long total = 0, val;\n    for (int i = 1; i <= k; i++) {\n        read(p[0], &val, sizeof(val));\n        total += val;\n    }\n    close(p[0]);\n\n    for (int i = 1; i <= k; i++) {\n        waitpid(pids[i], NULL, 0);\n    }\n\n    printf(\"%lld\\n\", total);\n    return 0;\n}\n",
@@ -514,8 +512,7 @@ export const PART2_PROCESS_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Một pipe() chuẩn POSIX chỉ truyền dữ liệu một chiều (half-duplex). Nếu cả cha và con cùng đọc/ghi trên một ống duy nhất, cha có thể tự đọc lại dữ liệu do chính mình vừa ghi! Muốn giao tiếp 2 chiều bắt buộc phải tạo 2 ống độc lập.",
     "relatedQuestions": [
       "CR-10",
-      "CR-13",
-      "CR-42"
+      "CR-13"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <sys/wait.h>\n\nint is_prime(int x) {\n    if (x <= 1) return 0;\n    for (int i = 2; (long long)i * i <= x; i++) {\n        if (x % i == 0) return 0;\n    }\n    return 1;\n}\n\nint main() {\n    int p1[2], p2[2];\n    pipe(p1);\n    pipe(p2);\n\n    pid_t pid = fork();\n    if (pid == 0) {\n        close(p1[1]);\n        close(p2[0]);\n\n        int n, x;\n        long long sum = 0;\n        read(p1[0], &n, sizeof(n));\n        for (int i = 0; i < n; i++) {\n            read(p1[0], &x, sizeof(x));\n            if (is_prime(x)) sum += x;\n        }\n        close(p1[0]);\n\n        write(p2[1], &sum, sizeof(sum));\n        close(p2[1]);\n        _exit(0);\n    } else {\n        close(p1[0]);\n        close(p2[1]);\n\n        int n;\n        scanf(\"%d\", &n);\n        int *a = (int *)malloc(n * sizeof(int));\n        for (int i = 0; i < n; i++) scanf(\"%d\", &a[i]);\n\n        write(p1[1], &n, sizeof(n));\n        for (int i = 0; i < n; i++) {\n            write(p1[1], &a[i], sizeof(a[i]));\n        }\n        close(p1[1]);\n\n        long long sum = 0;\n        read(p2[0], &sum, sizeof(sum));\n        close(p2[0]);\n\n        waitpid(pid, NULL, 0);\n        printf(\"%lld\\n\", sum);\n        free(a);\n    }\n    return 0;\n}\n",
@@ -847,8 +844,7 @@ export const PART2_PROCESS_QUESTIONS = [
     ],
     "relatedKnowledgeNote": "Vùng kiến thức: Tín hiệu chuẩn POSIX không có hàng đợi (nếu con bắn liên tiếp 12 tín hiệu SIGUSR1 không chờ xác nhận, cha có thể chỉ đếm được 1–2 lần!). Chặn trước tín hiệu bằng sigprocmask(SIG_BLOCK) rồi mở chặn nguyên tử trong lúc ngủ chờ bằng sigsuspend() là mẫu chuẩn POSIX triệt tiêu hoàn toàn race condition.",
     "relatedQuestions": [
-      "CR-16",
-      "CR-49"
+      "CR-16"
     ],
     "starterCode": "",
     "solution": "#define _POSIX_C_SOURCE 200809L\n#include <stdio.h>\n#include <signal.h>\n#include <unistd.h>\n#include <sys/wait.h>\n\nvolatile sig_atomic_t parent_count = 0;\nvolatile sig_atomic_t got_usr1 = 0;\nvolatile sig_atomic_t got_ack = 0;\n\nvoid handle_usr1(int sig) {\n    (void)sig;\n    parent_count++;\n    got_usr1 = 1;\n}\n\nvoid handle_usr2(int sig) {\n    (void)sig;\n    got_ack = 1;\n}\n\nint main() {\n    int m;\n    scanf(\"%d\", &m);\n\n    sigset_t mask, oldmask;\n    sigemptyset(&mask);\n    sigaddset(&mask, SIGUSR1);\n    sigaddset(&mask, SIGUSR2);\n    sigprocmask(SIG_BLOCK, &mask, &oldmask);\n\n    struct sigaction sa1 = {0}, sa2 = {0};\n    sa1.sa_handler = handle_usr1;\n    sa2.sa_handler = handle_usr2;\n    sigaction(SIGUSR1, &sa1, NULL);\n    sigaction(SIGUSR2, &sa2, NULL);\n\n    pid_t pid = fork();\n    if (pid == 0) {\n        for (int i = 0; i < m; i++) {\n            got_ack = 0;\n            kill(getppid(), SIGUSR1);\n            while (!got_ack) {\n                sigsuspend(&oldmask);\n            }\n        }\n        _exit(0);\n    } else {\n        for (int i = 0; i < m; i++) {\n            while (!got_usr1) {\n                sigsuspend(&oldmask);\n            }\n            got_usr1 = 0;\n            kill(pid, SIGUSR2);\n        }\n        waitpid(pid, NULL, 0);\n        printf(\"%d\\n\", (int)parent_count);\n    }\n    return 0;\n}\n",
@@ -1029,8 +1025,7 @@ export const PART2_PROCESS_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Khi tạo mảng pipes[w][2] trước vòng lặp fork(), hãy nhớ rằng tiến trình con thứ i sẽ thừa kế cả các đầu ống của các con 0..w-1! Vì vậy con i nên đóng các đầu ống không liên quan, chỉ ghi vào pipes[i][1] rồi _exit(0).",
     "relatedQuestions": [
       "CR-11",
-      "CR-27",
-      "CR-45"
+      "CR-27"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <sys/wait.h>\n\nint main() {\n    int n, k;\n    scanf(\"%d %d\", &n, &k);\n\n    int *A = (int *)malloc(n * sizeof(int));\n    int *B = (int *)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) scanf(\"%d\", &A[i]);\n    for (int i = 0; i < n; i++) scanf(\"%d\", &B[i]);\n\n    int procs = (k < n) ? k : n;\n    int pipes[8][2];\n    pid_t pids[8];\n\n    int base = n / procs;\n    int rem = n % procs;\n\n    for (int c = 0; c < procs; c++) {\n        pipe(pipes[c]);\n        int L = c * base + (c < rem ? c : rem);\n        int R = L + base + (c < rem ? 1 : 0);\n\n        pid_t pid = fork();\n        if (pid == 0) {\n            close(pipes[c][0]);\n            for (int j = 0; j < c; j++) close(pipes[j][0]);\n\n            long long part = 0;\n            for (int i = L; i < R; i++) {\n                part += (long long)A[i] * B[i];\n            }\n            write(pipes[c][1], &part, sizeof(part));\n            close(pipes[c][1]);\n            free(A);\n            free(B);\n            _exit(0);\n        } else {\n            pids[c] = pid;\n            close(pipes[c][1]);\n        }\n    }\n\n    long long dot = 0;\n    for (int c = 0; c < procs; c++) {\n        long long part = 0;\n        read(pipes[c][0], &part, sizeof(part));\n        close(pipes[c][0]);\n        dot += part;\n    }\n\n    for (int c = 0; c < procs; c++) {\n        waitpid(pids[c], NULL, 0);\n    }\n\n    printf(\"%lld\\n\", dot);\n    free(A);\n    free(B);\n    return 0;\n}\n",
@@ -1201,8 +1196,7 @@ export const PART2_PROCESS_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Từ 16-bit trạng thái status do waitpid() ghi nhận, nhân Linux lưu cả nguyên nhân kết thúc: nếu kết thúc bình thường thì WIFEXITED(status) khác 0 và WEXITSTATUS lấy 8 bit mã thoát; nếu chết do tín hiệu thì WIFSIGNALED(status) khác 0 và WTERMSIG trả về số hiệu tín hiệu (ví dụ SIGKILL = 9).",
     "relatedQuestions": [
       "CR-09",
-      "CR-14",
-      "CR-49"
+      "CR-14"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <signal.h>\n#include <unistd.h>\n#include <sys/wait.h>\n\nint main() {\n    int k;\n    scanf(\"%d\", &k);\n\n    int c[20];\n    for (int i = 0; i < k; i++) scanf(\"%d\", &c[i]);\n\n    pid_t pids[20];\n    for (int i = 0; i < k; i++) {\n        pid_t pid = fork();\n        if (pid == 0) {\n            if (c[i] >= 0) {\n                _exit(c[i] % 200);\n            } else {\n                kill(getpid(), SIGKILL);\n            }\n        }\n        pids[i] = pid;\n    }\n\n    int exited_cnt = 0, exit_sum = 0, killed_cnt = 0;\n    for (int i = 0; i < k; i++) {\n        int status;\n        waitpid(pids[i], &status, 0);\n        if (WIFEXITED(status)) {\n            exited_cnt++;\n            exit_sum += WEXITSTATUS(status);\n        } else if (WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL) {\n            killed_cnt++;\n        }\n    }\n\n    printf(\"%d %d %d\\n\", exited_cnt, exit_sum, killed_cnt);\n    return 0;\n}\n",

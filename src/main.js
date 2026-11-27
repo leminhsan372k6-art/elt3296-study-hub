@@ -1,10 +1,12 @@
-import { createAppState } from './core/state.js?v=10';
+import { createAppState } from './core/state.js?v=11';
 import { scrollTopInstant } from './core/dom.js';
+import { snapshotCompletions, notifyNewCompletions } from './core/progress.js?v=11';
 import { TOPICS, ORDERED_TOPIC_IDS } from '../data/book/chapters-data.js';
-import { renderTopBar, renderBookSidebar, renderSearchModal, renderVaultModal } from './ui/shell.js?v=10';
-import { renderEbookView, bindEbookView, stepBookPage } from './ui/ebook-view.js';
-import { renderMcqView, bindMcqView, startMcqForChapter, jumpToMcqById, openSavedMcqExam } from './ui/mcq-view.js?v=10';
-import { renderCodeView, bindCodeView } from './ui/code-view.js?v=10';
+import { renderTopBar, renderBookSidebar, renderSearchModal, renderVaultModal } from './ui/shell.js?v=11';
+import { renderEbookView, bindEbookView, stepBookPage, clearAutoReadTimer } from './ui/ebook-view.js?v=11';
+import { renderMcqView, bindMcqView, startMcqForChapter, startMcqForTopic, jumpToMcqById, openSavedMcqExam } from './ui/mcq-view.js?v=11';
+import { renderCodeView, bindCodeView } from './ui/code-view.js?v=11';
+import { renderMockExamView, bindMockExamView, openSavedFullMockExam } from './ui/mock-exam-view.js?v=11';
 import { renderExtrasView, bindExtrasView } from './ui/extras-view.js';
 
 function isTypingTarget(el) {
@@ -52,13 +54,15 @@ async function boot() {
   function renderMainContent() {
     if (state.activeTab === 'mcq') return renderMcqView(state, mcqBank);
     if (state.activeTab === 'code') return renderCodeView(state);
+    if (state.activeTab === 'mock') return renderMockExamView(state);
     if (state.activeTab === 'extras') return renderExtrasView(state);
-    return renderEbookView(state);
+    return renderEbookView(state, mcqBank);
   }
 
   let lastCodeKey = `${state.activeTab}:${state.sebSelectedId}`;
 
   function render() {
+    clearAutoReadTimer();
     // Capture pane scroll positions BEFORE re-rendering so F2 / Alt+A / Alt+E never jump to top!
     const nextCodeKey = `${state.activeTab}:${state.sebSelectedId}`;
     const keepPaneScroll = nextCodeKey === lastCodeKey && state.activeTab === 'code';
@@ -70,9 +74,9 @@ async function boot() {
 
     root.innerHTML = `
       <div class="app-shell">
-        ${renderTopBar(state, mcqBank.length)}
+        ${renderTopBar(state, mcqBank)}
         <div class="workspace-body">
-          ${renderBookSidebar(state)}
+          ${renderBookSidebar(state, mcqBank)}
           <main class="main-stage">${renderMainContent()}</main>
         </div>
         ${renderSearchModal(state, mcqBank)}
@@ -83,17 +87,30 @@ async function boot() {
     bindShellEvents();
 
     if (state.activeTab === 'book') {
-      bindEbookView(state, persist, render, (chNum) => {
-        startMcqForChapter(mcqBank, chNum);
-        state.activeTab = 'mcq';
-        persist();
-        render();
-        scrollTopInstant();
-      });
+      bindEbookView(
+        state,
+        mcqBank,
+        persist,
+        render,
+        (chNum) => {
+          startMcqForChapter(mcqBank, chNum);
+          state.activeTab = 'mcq';
+          persist();
+          render();
+          scrollTopInstant();
+        },
+        (topicId, chNum) => {
+          startMcqForTopic(mcqBank, topicId, chNum);
+          state.activeTab = 'mcq';
+          persist();
+          render();
+          scrollTopInstant();
+        }
+      );
     } else if (state.activeTab === 'mcq') {
       bindMcqView(state, mcqBank, persist, render);
     } else if (state.activeTab === 'code') {
-      bindCodeView(state, persist, render, { saveCodeSnapshot, deleteCodeSnapshot });
+      bindCodeView(state, persist, render, { saveCodeSnapshot, deleteCodeSnapshot, mcqBank });
       if (keepPaneScroll) {
         const leftEl = document.getElementById('paneLeftScroll');
         if (leftEl) leftEl.scrollTop = prevLeftScroll;
@@ -108,6 +125,8 @@ async function boot() {
         const solEl = document.querySelector('.code-numbered');
         if (solEl) solEl.scrollTop = prevSolScroll;
       }
+    } else if (state.activeTab === 'mock') {
+      bindMockExamView(state, mcqBank, persist, render);
     } else if (state.activeTab === 'extras') {
       bindExtrasView(state, persist, render);
     }
@@ -139,12 +158,17 @@ async function boot() {
 
     document.querySelectorAll('[data-pick-topic]').forEach((b) => {
       b.addEventListener('click', () => {
+        const beforeSnap = snapshotCompletions(state, mcqBank);
+        if (state.activeTab === 'book' && state.bookSubKind === 'topic' && state.topicId && state.topicId !== b.dataset.pickTopic) {
+          state.readTopicIds.add(state.topicId);
+        }
         state.topicId = b.dataset.pickTopic;
         state.bookSubKind = 'topic';
         state.companionStep = 0;
         state.activeTab = 'book';
         persist();
         render();
+        notifyNewCompletions(state, mcqBank, beforeSnap);
         scrollTopInstant();
       });
     });
@@ -283,6 +307,20 @@ async function boot() {
       });
     });
 
+    document.querySelectorAll('[data-vault-open-fullmock]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const rec = (state.mockExamHistory || []).find((x) => x.id === b.dataset.vaultOpenFullmock);
+        if (rec) {
+          state.vaultOpen = false;
+          state.activeTab = 'mock';
+          openSavedFullMockExam(rec);
+          persist();
+          render();
+          scrollTopInstant();
+        }
+      });
+    });
+
     document.getElementById('btnExportBackup')?.addEventListener('click', () => {
       const today = new Date().toISOString().slice(0, 10);
       downloadTextFile(`elt3296-bai-lam-${today}.json`, exportBackup(), 'application/json;charset=utf-8');
@@ -351,12 +389,12 @@ async function boot() {
 
     // ArrowLeft / ArrowRight to turn e-book pages
     if (state.activeTab === 'book') {
-      if (e.key === 'ArrowRight' && stepBookPage(state, 1)) {
+      if (e.key === 'ArrowRight' && stepBookPage(state, 1, mcqBank)) {
         e.preventDefault();
         persist();
         render();
         scrollTopInstant();
-      } else if (e.key === 'ArrowLeft' && stepBookPage(state, -1)) {
+      } else if (e.key === 'ArrowLeft' && stepBookPage(state, -1, mcqBank)) {
         e.preventDefault();
         persist();
         render();

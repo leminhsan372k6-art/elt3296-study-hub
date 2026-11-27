@@ -2,8 +2,9 @@ import { esc, formatInlineCode, highlightCodeSnippet, scrollTopInstant } from '.
 import { renderLatexInElement } from '../core/latex.js';
 import { attachIdeEditor } from '../core/code-editor-ide.js?v=10';
 import { formatSavedTime, formatSavedClock } from '../core/storage.js';
-import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=7';
-import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=7';
+import { getCodePartProgress, snapshotCompletions, notifyNewCompletions } from '../core/progress.js?v=11';
+import { OFFICIAL_SEB_50, SEB_PARTS, gradeSubmission } from '../../data/code-50/index.js?v=11';
+import { REAL_TEST_CASES } from '../../data/code-50/test-cases.js?v=11';
 import { runRealTestSuite } from '../core/c-runner.js?v=7';
 
 const DIFFICULTIES = ['all', 'Dễ', 'Trung bình', 'Khó'];
@@ -457,9 +458,10 @@ export function renderCodeView(state) {
       <section class="studio-header">
         <div class="studio-row">
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${SEB_PARTS.map(
-              (p) => `<button type="button" class="btn sm ${state.sebPartFilter === p.id ? 'active' : ''}" data-seb-part="${esc(p.id)}">${esc(p.label)}</button>`
-            ).join('')}
+            ${SEB_PARTS.map((p) => {
+              const pr = getCodePartProgress(state, p.id);
+              return `<button type="button" class="btn sm ${state.sebPartFilter === p.id ? 'active' : ''}" data-seb-part="${esc(p.id)}">${pr.completed ? '<span class="tick-badge">✓</span> ' : ''}${esc(p.label)}</button>`;
+            }).join('')}
           </div>
 
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
@@ -471,7 +473,7 @@ export function renderCodeView(state) {
           </div>
         </div>
 
-        <div class="matrix-50" aria-label="Chọn câu từ 01 đến 50">
+        <div class="matrix-50" aria-label="Chọn câu từ 01 đến 40">
           ${pool
             .map((q) => {
               const cls = getCellClass(state, q.id);
@@ -587,7 +589,7 @@ export function renderCodeView(state) {
 }
 
 export function bindCodeView(state, persist, rerender, actions = {}) {
-  const { saveCodeSnapshot, deleteCodeSnapshot } = actions;
+  const { saveCodeSnapshot, deleteCodeSnapshot, mcqBank = [] } = actions;
   if (state.sebLeftView === 'explain') {
     renderLatexInElement(document.getElementById('paneLeftScroll'));
   }
@@ -665,10 +667,12 @@ export function bindCodeView(state, persist, rerender, actions = {}) {
   });
 
   document.getElementById('btnToggleSolved')?.addEventListener('click', () => {
+    const beforeSnap = snapshotCompletions(state, mcqBank);
     if (state.solvedCodeIds.has(activeQ.id)) state.solvedCodeIds.delete(activeQ.id);
     else state.solvedCodeIds.add(activeQ.id);
     persist();
     rerender();
+    notifyNewCompletions(state, mcqBank, beforeSnap);
   });
 
   const runStaticOnly = () => {
@@ -740,6 +744,7 @@ export function bindCodeView(state, persist, rerender, actions = {}) {
       return;
     }
 
+    const beforeSnap = snapshotCompletions(state, mcqBank);
     const tcList = REAL_TEST_CASES[activeQ.id] || [];
     state.sebRunningId = activeQ.id;
     state.sebRunStatus = `Đang biên dịch GCC Linux cho ${activeQ.id}…`;
@@ -793,6 +798,7 @@ export function bindCodeView(state, persist, rerender, actions = {}) {
       state.sebBottomTab = 'judge';
       persist();
       rerender();
+      notifyNewCompletions(state, mcqBank, beforeSnap);
       document.getElementById('studioDeck')?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   };

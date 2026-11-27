@@ -1,22 +1,29 @@
 import { esc } from '../core/dom.js';
 import { formatSavedTime } from '../core/storage.js';
+import { getAllChaptersProgress, getTopicProgress, getSolvedCodeCount } from '../core/progress.js?v=11';
 import { CHAPTERS } from '../../data/book/chapters-data.js';
-import { OFFICIAL_SEB_50 } from '../../data/code-50/index.js';
+import { OFFICIAL_SEB_40 } from '../../data/code-50/index.js?v=11';
 
 function countSavedWork(state) {
+  const validIds = new Set(OFFICIAL_SEB_40.map((q) => q.id));
   const codeIds = new Set([
-    ...Object.keys(state.codeSubmissions || {}).filter((id) => (state.codeSubmissions[id] || []).length > 0),
-    ...Object.keys(state.codeDrafts || {}).filter((id) => String(state.codeDrafts[id] || '').trim().length > 0),
+    ...Object.keys(state.codeSubmissions || {}).filter((id) => validIds.has(id) && (state.codeSubmissions[id] || []).length > 0),
+    ...Object.keys(state.codeDrafts || {}).filter((id) => validIds.has(id) && String(state.codeDrafts[id] || '').trim().length > 0),
   ]);
-  const totalSnaps = Object.values(state.codeSubmissions || {}).reduce((acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0), 0);
-  const examCount = Array.isArray(state.mcqExamHistory) ? state.mcqExamHistory.length : 0;
+  const totalSnaps = Object.entries(state.codeSubmissions || {}).reduce(
+    (acc, [id, arr]) => acc + (validIds.has(id) && Array.isArray(arr) ? arr.length : 0),
+    0
+  );
+  const examCount = (state.mcqExamHistory?.length || 0) + (state.mockExamHistory?.length || 0);
   return { codeCount: codeIds.size, totalSnaps, examCount, totalBadge: codeIds.size + examCount };
 }
 
-export function renderTopBar(state, mcqCount) {
+export function renderTopBar(state, mcqBank = []) {
+  const mcqCount = mcqBank.length;
   const wrongCount = state.wrongMcqIds.size;
-  const solvedCount = state.solvedCodeIds.size;
+  const solvedCount = getSolvedCodeCount(state);
   const savedStats = countSavedWork(state);
+  const chStats = getAllChaptersProgress(state, mcqBank);
 
   return `
     <header class="topbar">
@@ -38,15 +45,19 @@ export function renderTopBar(state, mcqCount) {
       <nav class="nav-tabs" aria-label="Điều hướng chính">
         <button type="button" class="nav-tab ${state.activeTab === 'book' ? 'active' : ''}" data-switch-tab="book">
           📖 Đọc sách
-          <span class="tab-badge">7 Chương</span>
+          <span class="tab-badge ${chStats.completedChapters > 0 ? 'is-new' : ''}">${chStats.completedChapters}/${chStats.totalChapters} Ch${chStats.completedChapters === chStats.totalChapters ? ' ✓' : ''}</span>
         </button>
         <button type="button" class="nav-tab ${state.activeTab === 'mcq' ? 'active' : ''}" data-switch-tab="mcq">
           📝 Trắc nghiệm
           <span class="tab-badge is-new">${mcqCount} câu${wrongCount ? ` · ${wrongCount} sai` : ''}</span>
         </button>
         <button type="button" class="nav-tab ${state.activeTab === 'code' ? 'active' : ''}" data-switch-tab="code">
-          💻 50 Câu Tự luận
-          <span class="tab-badge">${solvedCount}/50</span>
+          💻 40 Câu Tự luận
+          <span class="tab-badge ${solvedCount === OFFICIAL_SEB_40.length ? 'is-new' : ''}">${solvedCount}/${OFFICIAL_SEB_40.length}${solvedCount === OFFICIAL_SEB_40.length ? ' ✓' : ''}</span>
+        </button>
+        <button type="button" class="nav-tab ${state.activeTab === 'mock' ? 'active' : ''}" data-switch-tab="mock">
+          🎯 Thi thử Đề thi
+          <span class="tab-badge">20 TN + 3 Code</span>
         </button>
         <button type="button" class="nav-tab ${state.activeTab === 'extras' ? 'active' : ''}" data-switch-tab="extras">
           ⚡ Phụ lục &amp; Lab
@@ -73,33 +84,40 @@ export function renderTopBar(state, mcqCount) {
   `;
 }
 
-export function renderBookSidebar(state) {
+export function renderBookSidebar(state, mcqBank = []) {
   if (state.activeTab !== 'book') return '';
+  const chStats = getAllChaptersProgress(state, mcqBank);
 
   return `
     <aside class="book-sidebar ${state.sidebarOpen ? '' : 'collapsed'}" aria-label="Mục lục 7 Chương">
-      <div class="sb-section-title">Mục lục 7 Chương · 61 Bài học</div>
+      <div class="sb-section-title">Mục lục 7 Chương · Hoàn thành ${chStats.completedChapters}/7 Ch</div>
       ${CHAPTERS.map((ch) => {
         const isCurrentCh =
           (state.bookSubKind === 'topic' && ch.topics.some((t) => t.id === state.topicId)) ||
           (state.bookSubKind === 'synthesis' && ch.boss?.id === state.bossId);
+        const cp = chStats.byChapter[String(ch.id)] || { topicsDone: 0, topicsTotal: ch.topics.length, completed: false };
 
         return `
           <details class="sb-chapter" ${isCurrentCh ? 'open' : ''}>
             <summary>
-              <span>Ch.${esc(ch.id)} · ${esc(ch.title)}</span>
-              <span style="font-size:11px;color:var(--mut)">${ch.topics.length}</span>
+              <span>${cp.completed ? '<span class="tick-badge">✓</span> ' : ''}Ch.${esc(ch.id)} · ${esc(ch.title)}</span>
+              <span style="font-size:11px;color:${cp.completed ? 'var(--ink-ok)' : 'var(--mut)'};font-weight:${cp.completed ? '700' : '500'}">${cp.topicsDone}/${cp.topicsTotal}</span>
             </summary>
             <div class="sb-topic-list">
               ${ch.topics
                 .map((t) => {
                   const active = state.bookSubKind === 'topic' && state.topicId === t.id;
-                  const marked = state.bookmarked.has(t.id);
+                  const tp = getTopicProgress(state, t.id, mcqBank);
+                  const statusIcon = tp.completed
+                    ? `<span title="Đã hoàn thành trọn vẹn (Lý thuyết + Trắc nghiệm + Code)" class="tick-badge">✓</span>`
+                    : tp.read
+                      ? `<span title="Đã đọc lý thuyết (còn bài tập mục này)" style="color:var(--accent-strong);font-size:11px">●</span>`
+                      : '';
                   return `
                     <button type="button" class="sb-topic-btn ${active ? 'active' : ''}" data-pick-topic="${esc(t.id)}">
                       <span class="sb-topic-code">${esc(t.code)}</span>
                       <span style="flex:1">${esc(t.title)}</span>
-                      ${marked ? `<span title="Đã đánh dấu nắm vững" style="color:var(--ink-ok)">✓</span>` : ''}
+                      ${statusIcon}
                     </button>
                   `;
                 })
@@ -133,7 +151,7 @@ export function renderSearchModal(state, mcqBank) {
       }
     }
   }
-  for (const item of OFFICIAL_SEB_50) {
+  for (const item of OFFICIAL_SEB_40) {
     const hay = `${item.id} cau ${item.num} ${item.title} ${item.part} ${(item.graderSpec?.requiredApis || []).join(' ')}`.toLowerCase();
     if (!q || hay.includes(q)) {
       results.push({ kind: 'code', id: item.id, title: `💻 ${item.id} (${item.difficulty}) · ${item.title}`, sub: item.partLabel });
@@ -155,7 +173,7 @@ export function renderSearchModal(state, mcqBank) {
       <div class="modal-card" role="dialog" aria-label="Tìm kiếm nhanh">
         <div class="search-input-wrap">
           <span>🔍</span>
-          <input type="text" id="globalSearchInput" value="${esc(state.searchQuery)}" placeholder="Tìm bài học, lệnh C (mmap, fork, pipe, pthread...), câu CR-01..50, câu trắc nghiệm…" autocomplete="off" />
+          <input type="text" id="globalSearchInput" value="${esc(state.searchQuery)}" placeholder="Tìm bài học, lệnh C (mmap, fork, pipe, pthread...), câu CR-01..40, câu trắc nghiệm…" autocomplete="off" />
           <button type="button" class="btn sm ghost" id="btnCloseSearch">Esc</button>
         </div>
         <div class="search-results">
@@ -181,7 +199,7 @@ export function renderSearchModal(state, mcqBank) {
 export function renderVaultModal(state, mcqBank) {
   if (!state.vaultOpen) return '';
   const stats = countSavedWork(state);
-  const codeRows = OFFICIAL_SEB_50.map((q) => {
+  const codeRows = OFFICIAL_SEB_40.map((q) => {
     const snaps = Array.isArray(state.codeSubmissions?.[q.id]) ? state.codeSubmissions[q.id] : [];
     const draft = String(state.codeDrafts?.[q.id] || '');
     if (snaps.length === 0 && !draft.trim()) return null;
@@ -192,7 +210,8 @@ export function renderVaultModal(state, mcqBank) {
     return { q, snaps, latest, draft, score, lineCnt };
   }).filter(Boolean);
 
-  const exams = Array.isArray(state.mcqExamHistory) ? state.mcqExamHistory : [];
+  const mcqExams = Array.isArray(state.mcqExamHistory) ? state.mcqExamHistory : [];
+  const fullExams = Array.isArray(state.mockExamHistory) ? state.mockExamHistory : [];
   const activeTab = state.vaultTab === 'mcq' ? 'mcq' : 'code';
 
   return `
@@ -210,7 +229,7 @@ export function renderVaultModal(state, mcqBank) {
 
         <div class="vault-stats-grid">
           <div class="vault-stat">
-            <div class="vault-stat-val">${stats.codeCount} / 50</div>
+            <div class="vault-stat-val">${stats.codeCount} / ${OFFICIAL_SEB_40.length}</div>
             <div class="vault-stat-lbl">Câu Tự luận đã làm</div>
           </div>
           <div class="vault-stat">
@@ -219,7 +238,7 @@ export function renderVaultModal(state, mcqBank) {
           </div>
           <div class="vault-stat">
             <div class="vault-stat-val">${state.mcqMasteredIds.size} / ${mcqBank.length}</div>
-            <div class="vault-stat-lbl">Trắc nghiệm đã vững · ${exams.length} đề thi</div>
+            <div class="vault-stat-lbl">Trắc nghiệm vững · ${fullExams.length + mcqExams.length} đề thi</div>
           </div>
         </div>
 
@@ -228,7 +247,7 @@ export function renderVaultModal(state, mcqBank) {
             💻 Bài Code đã lưu (${codeRows.length})
           </button>
           <button type="button" class="btn sm ${activeTab === 'mcq' ? 'active' : ''}" data-vault-tab="mcq">
-            📝 Lịch sử Thi thử 20 câu (${exams.length})
+            🎯 Lịch sử Đề Thi thử (${fullExams.length + mcqExams.length})
           </button>
         </div>
 
@@ -263,24 +282,38 @@ export function renderVaultModal(state, mcqBank) {
                     })
                     .join('')
                 : `<div class="vault-empty">Chưa có bài Code nào được lưu. Khi bạn gõ code hoặc bấm <b>💾 Lưu bài</b> / <b>▶ Biên dịch &amp; Chấm Test ẩn</b>, bài làm sẽ tự động lưu tại đây!</div>`
-              : exams.length
-                ? exams
-                    .map(
+              : fullExams.length + mcqExams.length > 0
+                ? [
+                    ...fullExams.map(
                       (ex) => `
                         <div class="vault-item">
                           <div style="min-width:0;flex:1">
                             <div style="font-size:13.8px;font-weight:700;color:var(--fg)">
-                              Đề Thi thử 20 câu · Đúng ${ex.correct}/${ex.total} (${Number(ex.score10).toFixed(1)}/10 · ${Number(ex.score4).toFixed(2)}/4.0)
+                              🎯 Đề Thi Toàn Diện (20 TN + 3 Code) · ${Number(ex.total10).toFixed(2)} / 10.00đ
+                            </div>
+                            <div style="font-size:12px;color:var(--mut);margin-top:3px">
+                              TN: ${ex.mcqCorrect}/${ex.mcqTotal} (${Number(ex.mcqScore4).toFixed(2)}/4) · Code: ${Number(ex.codeScore6).toFixed(2)}/6 · ${esc(formatSavedTime(ex.submittedAt))}
+                            </div>
+                          </div>
+                          <button type="button" class="btn sm primary" data-vault-open-fullmock="${esc(ex.id)}">Xem lại →</button>
+                        </div>`
+                    ),
+                    ...mcqExams.map(
+                      (ex) => `
+                        <div class="vault-item">
+                          <div style="min-width:0;flex:1">
+                            <div style="font-size:13.8px;font-weight:700;color:var(--fg)">
+                              📝 Đề Thi thử 20 câu TN · Đúng ${ex.correct}/${ex.total} (${Number(ex.score10).toFixed(1)}/10 · ${Number(ex.score4).toFixed(2)}/4.0)
                             </div>
                             <div style="font-size:12px;color:var(--mut);margin-top:3px">
                               Nộp lúc ${esc(formatSavedTime(ex.submittedAt))} · Thời gian làm: ${Math.floor((ex.elapsedSec || 0) / 60)}p ${String((ex.elapsedSec || 0) % 60).padStart(2, '0')}s
                             </div>
                           </div>
-                          <button type="button" class="btn sm primary" data-vault-open-exam="${esc(ex.id)}">Xem lại bài →</button>
+                          <button type="button" class="btn sm primary" data-vault-open-exam="${esc(ex.id)}">Xem lại →</button>
                         </div>`
-                    )
-                    .join('')
-                : `<div class="vault-empty">Chưa có lượt Thi thử 20 câu nào được nộp. Hãy vào tab <b>Trắc nghiệm → Thi thử Đề thật (20 câu)</b> để làm thử và lưu điểm!</div>`
+                    ),
+                  ].join('')
+                : `<div class="vault-empty">Chưa có đề thi thử nào được nộp. Hãy vào tab <b>🎯 Thi thử Đề thi</b> hoặc <b>📝 Trắc nghiệm</b> để làm thử!</div>`
           }
         </div>
 

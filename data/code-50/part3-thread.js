@@ -362,8 +362,7 @@ export const PART3_THREAD_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Khởi tạo mx = arr[left] ngay phần tử đầu đoạn (thay vì khởi tạo mx = 0!) để kết quả hoàn toàn chính xác ngay cả khi toàn bộ mảng đều là số âm (tới -10^9).",
     "relatedQuestions": [
       "CR-17",
-      "CR-26",
-      "CR-45"
+      "CR-26"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <stdlib.h>\n#include <pthread.h>\n\nint *a;\n\ntypedef struct {\n    int left;\n    int right;\n    int local_max;\n} Task;\n\nvoid *find_max(void *arg) {\n    Task *t = (Task *)arg;\n    int mx = a[t->left];\n    for (int i = t->left + 1; i < t->right; i++) {\n        if (a[i] > mx) mx = a[i];\n    }\n    t->local_max = mx;\n    return NULL;\n}\n\nint main() {\n    int n, k;\n    scanf(\"%d %d\", &n, &k);\n    a = (int *)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) scanf(\"%d\", &a[i]);\n\n    int nt = (k < n) ? k : n;\n    pthread_t th[20];\n    Task args[20];\n\n    int base = n / nt, rem = n % nt;\n    for (int i = 0; i < nt; i++) {\n        args[i].left = i * base + (i < rem ? i : rem);\n        args[i].right = args[i].left + base + (i < rem ? 1 : 0);\n        pthread_create(&th[i], NULL, find_max, &args[i]);\n    }\n\n    for (int i = 0; i < nt; i++) pthread_join(th[i], NULL);\n\n    int ans = args[0].local_max;\n    for (int i = 1; i < nt; i++) {\n        if (args[i].local_max > ans) ans = args[i].local_max;\n    }\n\n    printf(\"%d\\n\", ans);\n    free(a);\n    return 0;\n}\n",
@@ -684,8 +683,7 @@ export const PART3_THREAD_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Tại Barrier, nếu luồng tới cuối cùng chỉ gọi pthread_cond_signal() thì chỉ có 1 luồng thức dậy còn k - 2 luồng kia bị treo vĩnh viễn! Bắt buộc dùng pthread_cond_broadcast() kèm biến thế hệ (generation) để chống spurious wakeup.",
     "relatedQuestions": [
       "CR-20",
-      "CR-23",
-      "CR-46"
+      "CR-23"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <pthread.h>\n\nint k;\nlong long a[20], b[20];\nint arrived = 0;\npthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;\npthread_cond_t cond = PTHREAD_COND_INITIALIZER;\n\nvoid *worker(void *arg) {\n    int id = *(int *)arg;\n\n    // Pha 1: binh phuong a[id]\n    a[id] = a[id] * a[id];\n\n    // Barrier tu cai dat bang mutex + condvar\n    pthread_mutex_lock(&mtx);\n    arrived++;\n    if (arrived == k) {\n        pthread_cond_broadcast(&cond);\n    } else {\n        while (arrived < k) {\n            pthread_cond_wait(&cond, &mtx);\n        }\n    }\n    pthread_mutex_unlock(&mtx);\n\n    // Pha 2: tinh b[id] tu gia tri moi sau Pha 1\n    b[id] = a[id] + a[(id + 1) % k];\n    return NULL;\n}\n\nint main() {\n    scanf(\"%d\", &k);\n    for (int i = 0; i < k; i++) scanf(\"%lld\", &a[i]);\n\n    pthread_t th[20];\n    int ids[20];\n    for (int i = 0; i < k; i++) {\n        ids[i] = i;\n        pthread_create(&th[i], NULL, worker, &ids[i]);\n    }\n    for (int i = 0; i < k; i++) pthread_join(th[i], NULL);\n\n    for (int i = 0; i < k; i++) {\n        printf(\"%lld%s\", b[i], (i == k - 1) ? \"\\n\" : \" \");\n    }\n    return 0;\n}\n",

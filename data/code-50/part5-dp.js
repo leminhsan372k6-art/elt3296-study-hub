@@ -193,8 +193,7 @@ export const PART5_DP_QUESTIONS = [
     ],
     "relatedKnowledgeNote": "Vùng kiến thức: Hệ thức chuẩn CLRS: r[0] = 0; với j = 1..n, r[j] = max_{1 <= i <= j} (p[i] + r[j - i]). Trường hợp giữ nguyên không cắt tự động nằm ở lượt i = j (p[j] + r[0] = p[j]).",
     "relatedQuestions": [
-      "CR-39",
-      "CR-50"
+      "CR-39"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n\nlong long p[2005], dp[2005];\n\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 1; i <= n; i++) scanf(\"%lld\", &p[i]);\n\n    dp[0] = 0;\n    for (int j = 1; j <= n; j++) {\n        long long best = 0;\n        for (int i = 1; i <= j; i++) {\n            if (p[i] + dp[j - i] > best) {\n                best = p[i] + dp[j - i];\n            }\n        }\n        dp[j] = best;\n    }\n\n    printf(\"%lld\\n\", dp[n]);\n    return 0;\n}\n",
@@ -637,9 +636,7 @@ export const PART5_DP_QUESTIONS = [
     ],
     "relatedKnowledgeNote": "Vùng kiến thức: Khi tối ưu không gian xuống mảng 1 chiều dp[0..W], vòng lặp sức chứa c bắt buộc phải chạy NGƯỢC từ W về w_i (c--). Nếu chạy xuôi như bài Đổi xu (Câu 36), một đồ vật sẽ bị bỏ vào balo nhiều lần!",
     "relatedQuestions": [
-      "CR-36",
-      "CR-44",
-      "CR-46"
+      "CR-36"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n\nlong long dp[10005];\n\nint main() {\n    int n, W;\n    scanf(\"%d %d\", &n, &W);\n\n    for (int i = 0; i < n; i++) {\n        int w;\n        long long v;\n        scanf(\"%d %lld\", &w, &v);\n\n        for (int j = W; j >= w; j--) {\n            if (dp[j - w] + v > dp[j]) {\n                dp[j] = dp[j - w] + v;\n            }\n        }\n    }\n\n    printf(\"%lld\\n\", dp[W]);\n    return 0;\n}\n",
@@ -779,8 +776,7 @@ export const PART5_DP_QUESTIONS = [
     ],
     "relatedKnowledgeNote": "Vùng kiến thức: Đọc thật kỹ quy ước phá hòa (tie-breaking) của đề bài khi truy vết! Ở bài này, đề quy định rõ: \"nếu dp[i-1][j] > dp[i][j-1] thì giảm i, còn lại giảm j\" — tức dùng dấu LỚN HƠN NGHIÊM NGẶT (>), khi bằng nhau sẽ rẽ trái (j--)!",
     "relatedQuestions": [
-      "CR-39",
-      "CR-47"
+      "CR-39"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n#include <string.h>\n\nchar X[1005], Y[1005];\nint dp[1005][1005];\nchar lcs[1005];\n\nint main() {\n    scanf(\"%s %s\", X, Y);\n    int m = strlen(X);\n    int n = strlen(Y);\n\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (X[i - 1] == Y[j - 1]) {\n                dp[i][j] = dp[i - 1][j - 1] + 1;\n            } else if (dp[i - 1][j] > dp[i][j - 1]) {\n                dp[i][j] = dp[i - 1][j];\n            } else {\n                dp[i][j] = dp[i][j - 1];\n            }\n        }\n    }\n\n    int len = dp[m][n];\n    printf(\"%d\\n\", len);\n\n    if (len == 0) {\n        printf(\"EMPTY\\n\");\n        return 0;\n    }\n\n    int i = m, j = n, pos = len;\n    lcs[pos] = '\\0';\n    while (i > 0 && j > 0) {\n        if (X[i - 1] == Y[j - 1]) {\n            lcs[--pos] = X[i - 1];\n            i--;\n            j--;\n        } else if (dp[i - 1][j] > dp[i][j - 1]) {\n            i--;\n        } else {\n            j--;\n        }\n    }\n\n    printf(\"%s\\n\", lcs);\n    return 0;\n}\n",
@@ -942,8 +938,7 @@ export const PART5_DP_QUESTIONS = [
     "relatedKnowledgeNote": "Vùng kiến thức: Bài toán kiểm tra trực tiếp kiến thức trọng tâm Slide 17–18 Chương 7: lưu s[j] = i (tuyệt đối không gõ nhầm s[i] = i!) dưới điều kiện p[i] + r[j - i] > q, sau đó lặp while (cur > 0) in s[cur] và lùi cur -= s[cur].",
     "relatedQuestions": [
       "CR-34",
-      "CR-38",
-      "CR-50"
+      "CR-38"
     ],
     "starterCode": "",
     "solution": "#include <stdio.h>\n\nlong long p[2005], r[2005];\nint s[2005];\n\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    for (int i = 1; i <= n; i++) scanf(\"%lld\", &p[i]);\n\n    r[0] = 0;\n    for (int j = 1; j <= n; j++) {\n        long long q = -1;\n        for (int i = 1; i <= j; i++) {\n            if (p[i] + r[j - i] > q) {\n                q = p[i] + r[j - i];\n                s[j] = i;\n            }\n        }\n        r[j] = q;\n    }\n\n    printf(\"%lld\\n\", r[n]);\n\n    int cur = n;\n    int first = 1;\n    while (cur > 0) {\n        if (!first) printf(\" \");\n        printf(\"%d\", s[cur]);\n        first = 0;\n        cur -= s[cur];\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",

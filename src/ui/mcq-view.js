@@ -1,6 +1,7 @@
 import { esc, formatInlineCode, highlightCodeSnippet, shuffleArray, scrollTopInstant } from '../core/dom.js';
 import { formatSavedTime } from '../core/storage.js';
 import { renderLatexInElement } from '../core/latex.js';
+import { getMcqChapterProgress, snapshotCompletions, notifyNewCompletions } from '../core/progress.js?v=11';
 
 const CH_NAMES = {
   1: 'Ch.1 Linux & Shell',
@@ -15,6 +16,7 @@ const CH_NAMES = {
 const mcqSession = {
   mode: 'practice', // 'practice' | 'exam' | 'wrong' | 'history'
   chapterFilter: 'all', // 'all' | '1'..'7'
+  topicFilter: null, // null | '1-1'..'7-12'
   tagFilter: 'all', // 'all' | 'real-exam' | 'extended'
   practiceList: [],
   wrongPicks: {},
@@ -60,6 +62,16 @@ export function startMcqForChapter(bank, chapterNum) {
   stopExamTimer();
   mcqSession.mode = 'practice';
   mcqSession.chapterFilter = String(chapterNum);
+  mcqSession.topicFilter = null;
+  mcqSession.tagFilter = 'all';
+  rebuildPracticeList(bank);
+}
+
+export function startMcqForTopic(bank, topicId, chapterNum) {
+  stopExamTimer();
+  mcqSession.mode = 'practice';
+  mcqSession.chapterFilter = chapterNum ? String(chapterNum) : 'all';
+  mcqSession.topicFilter = String(topicId);
   mcqSession.tagFilter = 'all';
   rebuildPracticeList(bank);
 }
@@ -68,6 +80,7 @@ export function jumpToMcqById(bank, id, chapterNum) {
   stopExamTimer();
   mcqSession.mode = 'practice';
   mcqSession.chapterFilter = String(chapterNum || 'all');
+  mcqSession.topicFilter = null;
   mcqSession.tagFilter = 'all';
   rebuildPracticeList(bank, id);
 }
@@ -146,8 +159,9 @@ function recordSubmittedExam(state) {
 function rebuildPracticeList(bank, pinId = null) {
   let list = bank.filter((q) => {
     const okCh = mcqSession.chapterFilter === 'all' || String(q.chapter) === mcqSession.chapterFilter;
+    const okTopic = !mcqSession.topicFilter || q.topicId === mcqSession.topicFilter;
     const okTag = mcqSession.tagFilter === 'all' || q.tag === mcqSession.tagFilter;
-    return okCh && okTag;
+    return okCh && okTopic && okTag;
   });
   if (pinId) {
     const idx = list.findIndex((x) => x.id === pinId);
@@ -469,14 +483,25 @@ export function renderMcqView(state, bank) {
         ${
           mcqSession.mode === 'practice'
             ? `<div class="mcq-filters">
-                <button type="button" class="btn sm ${mcqSession.chapterFilter === 'all' ? 'active' : ''}" data-mcq-ch="all">Tất cả 7 Chương (${bank.length})</button>
+                ${(() => {
+                  const allP = getMcqChapterProgress(state, 'all', bank);
+                  return `<button type="button" class="btn sm ${mcqSession.chapterFilter === 'all' && !mcqSession.topicFilter ? 'active' : ''}" data-mcq-ch="all">${allP.completed ? '<span class="tick-badge">✓</span> ' : ''}Tất cả 7 Chương (${bank.length})</button>`;
+                })()}
                 ${[1, 2, 3, 4, 5, 6, 7]
                   .map((c) => {
-                    const cnt = bank.filter((q) => q.chapter === c).length;
-                    return `<button type="button" class="btn sm ${mcqSession.chapterFilter === String(c) ? 'active' : ''}" data-mcq-ch="${c}">${esc(CH_NAMES[c])} (${cnt})</button>`;
+                    const p = getMcqChapterProgress(state, c, bank);
+                    return `<button type="button" class="btn sm ${mcqSession.chapterFilter === String(c) && !mcqSession.topicFilter ? 'active' : ''}" data-mcq-ch="${c}">${p.completed ? '<span class="tick-badge">✓</span> ' : ''}${esc(CH_NAMES[c])} (${p.done}/${p.total})</button>`;
                   })
                   .join('')}
               </div>
+              ${
+                mcqSession.topicFilter
+                  ? `<div style="margin-top:8px;padding:8px 12px;border-radius:10px;background:var(--accent-soft);border:1px solid var(--accent);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-family:var(--font-ui);font-size:12.8px">
+                      <span>🎯 Đang lọc đúng các câu trắc nghiệm của <b>Mục ${esc(mcqSession.topicFilter.replace('-', '.'))}</b> (${mcqSession.practiceList.length} câu)</span>
+                      <button type="button" class="btn sm" id="btnClearMcqTopicFilter">✕ Xem toàn bộ Chương</button>
+                    </div>`
+                  : ''
+              }
               <div class="mcq-filters" style="margin-top:8px;padding-top:10px">
                 <button type="button" class="btn sm ${mcqSession.tagFilter === 'all' ? 'active' : ''}" data-mcq-tag="all">Mọi nguồn</button>
                 <button type="button" class="btn sm ${mcqSession.tagFilter === 'real-exam' ? 'active' : ''}" data-mcq-tag="real-exam">★ Chỉ Đề thi thật UET (${realCount})</button>
@@ -519,9 +544,16 @@ export function bindMcqView(state, bank, persist, rerender) {
   document.querySelectorAll('[data-mcq-ch]').forEach((b) => {
     b.addEventListener('click', () => {
       mcqSession.chapterFilter = b.dataset.mcqCh;
+      mcqSession.topicFilter = null;
       rebuildPracticeList(bank);
       rerender();
     });
+  });
+
+  document.getElementById('btnClearMcqTopicFilter')?.addEventListener('click', () => {
+    mcqSession.topicFilter = null;
+    rebuildPracticeList(bank);
+    rerender();
   });
 
   document.querySelectorAll('[data-mcq-tag]').forEach((b) => {
@@ -571,11 +603,13 @@ export function bindMcqView(state, bank, persist, rerender) {
   });
 
   document.getElementById('btnSubmitMcqExam')?.addEventListener('click', () => {
+    const beforeSnap = snapshotCompletions(state, bank);
     stopExamTimer();
     mcqSession.examSubmitted = true;
     recordSubmittedExam(state);
     persist();
     rerender();
+    notifyNewCompletions(state, bank, beforeSnap);
     scrollTopInstant();
   });
 
@@ -621,6 +655,7 @@ export function bindMcqView(state, bank, persist, rerender) {
       }
       const targetList = mcqSession.mode === 'wrong' ? bank.filter((q) => state.wrongMcqIds.has(q.id)) : mcqSession.practiceList;
       const q = targetList.find((x) => x.id === qid) || bank.find((x) => x.id === qid);
+      const beforeSnap = snapshotCompletions(state, bank);
       if (q) {
         if (opt === q.answer) {
           state.mcqMasteredIds.add(q.id);
@@ -631,6 +666,7 @@ export function bindMcqView(state, bank, persist, rerender) {
         persist();
       }
       rerender();
+      notifyNewCompletions(state, bank, beforeSnap);
     });
   });
 
