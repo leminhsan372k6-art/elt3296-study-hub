@@ -2,7 +2,7 @@
 import { esc, formatInlineCode, highlightCodeSnippet, shuffleArray, scrollTopInstant } from '../core/dom.js?v=12';
 import { renderLatexInElement } from '../core/latex.js';
 import { attachIdeEditor } from '../core/code-editor-ide.js?v=12';
-import { runRealTestSuite } from '../core/c-runner.js?v=14';
+import { runRealTestSuite, buildSetupSummary, buildCheckFileSummary, formatStdinPreview } from '../core/c-runner.js?v=15';
 import { formatSavedTime } from '../core/storage.js';
 import { snapshotCompletions, notifyNewCompletions } from '../core/progress.js?v=11';
 import { OFFICIAL_SEB_40, gradeSubmission } from '../../data/code-50/index.js?v=11';
@@ -577,16 +577,37 @@ function renderCodePart(idx) {
         run.results?.length
           ? `<div class="tc-run-list">
               ${run.results
-                .map(
-                  (r) => `
+                .map((r, rIdx) => {
+                  const tcMeta = tcList[rIdx];
+                  const setupText = r.setupSummary || (tcMeta ? buildSetupSummary(tcMeta) : '');
+                  const stdinText = r.stdin !== undefined && r.stdin !== '' ? r.stdin : tcMeta ? formatStdinPreview(tcMeta.stdin) : '';
+                  const checkFileText = r.checkFileSummary || (tcMeta ? buildCheckFileSummary(tcMeta) : '');
+                  return `
                 <div class="tc-run-row ${r.ok ? 'is-pass' : 'is-fail'}">
-                  <div style="display:flex;justify-content:space-between;font-size:12.4px;font-weight:650">
-                    <span style="color:#f1f5f9">${r.ok ? '✅' : '❌'} ${esc(r.name)} ${r.hidden ? '<span style="color:#94a3b8">(Ẩn)</span>' : ''}</span>
-                    <span style="font-family:var(--font-mono);color:${r.ok ? '#4cc38a' : '#f06a6a'}">${esc(r.status)}</span>
+                  <div class="tc-run-head">
+                    <span style="color:#f1f5f9">${r.ok ? '✅' : '❌'} ${esc(r.name)} ${r.hidden ? '<span style="font-size:11.2px;color:#94a3b8;font-weight:500">(Ẩn)</span>' : ''}</span>
+                    <span style="font-family:var(--font-mono);font-size:11.8px;font-weight:700;color:${r.ok ? '#34d399' : '#f06a6a'}">${esc(r.status)}${r.signal ? ` (${esc(r.signal)})` : ''}</span>
                   </div>
-                  ${!r.ok && r.hint ? `<div style="font-size:11.8px;color:#fde68a;margin-top:3px">💡 ${esc(r.hint)}</div>` : ''}
-                </div>`
-                )
+                  ${setupText ? `<div class="tc-setup-line">📁 Tệp tạo sẵn: ${esc(setupText)}</div>` : ''}
+                  <div class="tc-diff-grid">
+                    <div>
+                      <div class="tc-io-label">Đầu vào (stdin)</div>
+                      <div class="tc-diff-box">${esc(stdinText || '(rỗng)')}</div>
+                    </div>
+                    <div>
+                      <div class="tc-io-label">Kỳ vọng (Expected)</div>
+                      <div class="tc-diff-box">${esc(r.expected || '(rỗng)')}</div>
+                    </div>
+                    <div>
+                      <div class="tc-io-label">Thực tế in ra (Actual)</div>
+                      <div class="tc-diff-box">${esc(r.actual || '(không in gì)')}</div>
+                    </div>
+                  </div>
+                  ${r.ok && checkFileText ? `<div class="tc-file-ok-line">✓ Kiểm tra tệp đích: ${esc(checkFileText)} (khớp từng byte)</div>` : ''}
+                  ${!r.ok && r.fileFailReason ? `<div style="font-size:12px;color:#fca5a5;margin-top:6px">📁 Kiểm tra tệp đích: ${esc(r.fileFailReason)}</div>` : ''}
+                  ${!r.ok && r.hint ? `<div style="font-size:12px;color:#fde68a;margin-top:5px">💡 Gợi ý sửa: ${esc(r.hint)}</div>` : ''}
+                </div>`;
+                })
                 .join('')}
             </div>`
           : ''

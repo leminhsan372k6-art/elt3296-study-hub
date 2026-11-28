@@ -15,6 +15,48 @@ function toByteArray(spec) {
   return [];
 }
 
+export function getSpecByteLength(spec) {
+  if (!spec) return 0;
+  if (Array.isArray(spec.repeatBytes) && spec.repeatCount > 0) return spec.repeatBytes.length * spec.repeatCount;
+  if (typeof spec.repeatText === 'string' && spec.repeatCount > 0) {
+    return new TextEncoder().encode(spec.repeatText).length * spec.repeatCount;
+  }
+  if (Array.isArray(spec.bytes)) return spec.bytes.length;
+  if (typeof spec.text === 'string') return new TextEncoder().encode(spec.text).length;
+  return 0;
+}
+
+export function buildSetupSummary(tc) {
+  if (!tc?.setup) return '';
+  const items = [];
+  if (Array.isArray(tc.setup.dirs)) {
+    for (const d of tc.setup.dirs) items.push(`${d}/ [DIR]`);
+  }
+  if (Array.isArray(tc.setup.files)) {
+    for (const f of tc.setup.files) {
+      const len = getSpecByteLength(f);
+      const modeTag = f.mode ? `, 0${f.mode.toString(8).padStart(3, '0')}` : '';
+      items.push(`${f.path} [${len}B${modeTag}]`);
+    }
+  }
+  return items.join(', ');
+}
+
+export function buildCheckFileSummary(tc) {
+  if (!tc?.checkFile?.path) return '';
+  const len = getSpecByteLength(tc.checkFile);
+  return `${tc.checkFile.path} [${len}B]`;
+}
+
+export function formatStdinPreview(stdin) {
+  const clean = String(stdin ?? '').replace(/\r\n/g, '\n').trimEnd();
+  if (!clean) return '';
+  if (clean.length > 260) {
+    return `${clean.slice(0, 220).trimEnd()} … (${clean.length} ký tự)`;
+  }
+  return clean;
+}
+
 function escapeCString(str) {
   return String(str).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
@@ -357,7 +399,9 @@ export async function runRealTestSuite(studentCode, testCases, onProgress) {
       hidden: Boolean(tc.hidden),
       ok,
       status: sigNum === 14 ? 'QUÁ THỜI GIAN' : crashed ? 'RUNTIME ERROR' : ok ? 'PASS' : !stdoutMatch ? 'SAI STDOUT' : 'SAI TỆP ĐÍCH',
-      stdin: tc.stdin,
+      stdin: formatStdinPreview(tc.stdin),
+      setupSummary: buildSetupSummary(tc),
+      checkFileSummary: buildCheckFileSummary(tc),
       expected,
       actual,
       fileFailReason,
